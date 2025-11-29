@@ -1,7 +1,7 @@
 <?php
-
 require_once "framework/Model.php";
 require_once "utils/Role.php";
+
 
 class Member extends Model {
 
