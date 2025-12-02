@@ -14,7 +14,7 @@ class ControllerTest extends Controller {
             (new View("test"))->show(["member" => $member]);
         } else {
             // Membre de test si personne n'est connecté
-            $test = new Member("Testy Testy", "test@test.com", "testy", "Dummy123,", Role::USER);
+            $test = new Member("99999", "Testy Testy", "test@test.com", "testy", "Dummy123,", Role::USER);
             (new View("test"))->show(["member" => $test]);
         }
     }
@@ -57,7 +57,7 @@ class ControllerTest extends Controller {
             $password = $_POST["password"];
             $password_confirm = $_POST["password_confirm"];
 
-            $member = new Member($full_name, $email, $pseudo, password_hash($password, PASSWORD_BCRYPT), Role::USER);
+            $member = new Member(null, $full_name, $email, $pseudo, password_hash($password, PASSWORD_BCRYPT), Role::USER);
             // On vérifie que le pseudo et email sont uniques
             $errors = Member::validate_unicity($pseudo, $email);
             // On vérifie les règles métiers du pseudo

@@ -5,21 +5,29 @@ require_once "utils/Role.php";
 
 class Member extends Model {
 
-    // ID s'autoincrémente, ce qui veut dire que pas besoin de le mettre quand on créé un membre
-    // Du coup je l'ai mis derrière vu qu'il est optionel (flemme d'ecrire des "null" pour creer un membre)
+    /**
+     * ID nullable :
+     *
+     * Un nouveau utilisateur n'a pas d'ID (la base de données lui en donne un).
+     *
+     * Un utilisateur existant a déjà un ID.
+     *
+     * On fait comme ça pour ne pas avoir d'insertions vides quand on inscrit quelqu’un.
+     */
+
     public function __construct(
+        private ?int $id,
         private string $full_name,
         private string $email,
         private string $pseudo,
         private string $password,
         private Role $role,
         private ?string $picture_path = null,
-        private ?int $id = null,
         private ?string $iban = null
     )
     { }
 
-    public function get_id(): ?int {
+    public function get_id(): int {
         return $this->id;
     }
     public function get_full_name(): string {
@@ -70,13 +78,16 @@ class Member extends Model {
     }
 
     public function persist(): Member {
-        if(self::get_member_by_pseudo($this->pseudo)) {
-            self::execute("UPDATE users SET full_name=:full_name, email=:email, password=:password, role=:role, picture_path=:picture_path, iban=:iban WHERE pseudo=:pseudo",
-                ["full_name" => $this->full_name, "email" => $this->email, "pseudo" => $this->pseudo, "password" => $this->password, "role" => $this->role->value, "picture_path" => $this->picture_path, "iban" => $this->iban]);
+        // Si l'ID existe (utilisateur existe), on update
+        if($this->id !== null) {
+            // On met à jour l'utilisateur existant (un ID attribué déjà)
+            self::execute("UPDATE users SET full_name=:full_name, email=:email, pseudo=:pseudo, password=:password, role=:role, picture_path=:picture_path, iban=:iban WHERE id=:id",
+                ["id" => $this->id, "full_name" => $this->full_name, "email" => $this->email, "pseudo" => $this->pseudo, "password" => $this->password, "role" => $this->role->value, "picture_path" => $this->picture_path, "iban" => $this->iban]);
         } else {
+            // Insertion nouveau utilisateur (pas d'ID)
             self::execute("INSERT INTO users(full_name,email,pseudo,password,role,picture_path,iban) VALUES(:full_name, :email, :pseudo, :password, :role, :picture_path, :iban)",
                 ["full_name" => $this->full_name, "email" => $this->email, "pseudo" => $this->pseudo, "password" => $this->password, "role" => $this->role->value, "picture_path" => $this->picture_path, "iban" => $this->iban]);
-            // récupère l'id auto-incrémenté généré par MySQL
+            // Récupère l'id auto-incrémenté généré par MySQL
             $this->id = self::lastInsertId();
         }
         return $this;
@@ -90,7 +101,7 @@ class Member extends Model {
         } else {
             // On transforme la string en enum
             $role = Role::from($data["role"]);
-            return new Member($data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["id"], $data["iban"]);
+            return new Member($data["id"], $data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["iban"]);
         }
     }
 
@@ -102,7 +113,7 @@ class Member extends Model {
         } else {
             // On transforme la string en enum
             $role = Role::from($data["role"]);
-            return new Member($data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["id"], $data["iban"]);
+            return new Member($data["id"], $data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["iban"]);
         }
     }
 
@@ -116,7 +127,7 @@ class Member extends Model {
 
         // Une majuscule, une minuscule, un chiffre, un charactère non alphanumérique
         if (!((preg_match("/[A-Z]/", $password)) && preg_match("/[a-z]/", $password) && preg_match("/\d/", $password) && preg_match("/[^a-zA-Z0-9]/", $password))) {
-            $errors[] = "Le mot de passe doit contenir une majuscule, une minuscule, un chiifre et un charact&egrave;re non alphanum&eacute;rique.";
+            $errors[] = "Le mot de passe doit contenir une majuscule, une minuscule, un chiffre et un charact&egrave;re non alphanum&eacute;rique.";
         }
         return $errors;
     }
@@ -134,7 +145,7 @@ class Member extends Model {
         $member_pseudo = self::get_member_by_pseudo($pseudo);
         $member_email = self::get_member_by_email($email);
         if ($member_pseudo) {
-            $errors[] = "Cet nom d'utilisateur '$pseudo' existe d&eacute;j&agrave;.";
+            $errors[] = "Ce nom d'utilisateur '$pseudo' existe d&eacute;j&agrave;.";
         }
         if ($member_email) {
             $errors[] = "Cet email '$email' existe d&eacute;j&agrave;.";
