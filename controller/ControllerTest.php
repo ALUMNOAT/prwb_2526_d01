@@ -19,8 +19,6 @@ class ControllerTest extends Controller {
         }
     }
 
-
-
     // gestion de la connection d'un utilisateur
     public function login(): void {
         $email = "";
@@ -75,4 +73,23 @@ class ControllerTest extends Controller {
         }
         (new View("signup"))->show(["email"=>$email, "full_name"=>$full_name, "pseudo"=>$pseudo, "password"=>$password, "password_confirm"=>$password_confirm, "errors"=>$errors]);
     }
+
+    public function login_as(): void {
+        if (!isset($_GET['email'])) {
+            // pas d'email fourni, on peut rediriger ou afficher une erreur
+            header("Location: index.php?controller=test&action=index");
+            exit;
+        }
+
+        $email = $_GET['email'];
+        $member = Member::get_member_by_email($email);
+        if ($member !== false) {
+            $this->log_user($member);
+        }
+
+        header("Location: index.php?controller=test&action=index");
+        exit;
+    }
+
+
 }
