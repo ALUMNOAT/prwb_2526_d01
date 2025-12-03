@@ -9,6 +9,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-    <p>Test</p>
+    <ul>
+        <?php foreach($available_items as $item_status): ?>
+            <li><?= $item_status->get_end_at()." -> ".$item_status->get_item()->get_title(); ?></li>
+        <?php endforeach; ?>
+    </ul>
 </body>
 </html>

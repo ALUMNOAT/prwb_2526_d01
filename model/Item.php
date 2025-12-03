@@ -1,5 +1,6 @@
 <?php
 require_once "framework/Model.php";
+require_once "utils/AppTime.php";
 require_once "model/Member.php";
 
 
@@ -65,5 +66,23 @@ class Item extends Model {
     }
     public function set_starting_bid(?float $new_starting_bid): void {
         $this->starting_bid = $new_starting_bid;
+    }
+
+    public static function get_item(int $id) : Item|false {
+        $query = self::execute(
+            "SELECT * FROM items
+            WHERE id = :id", 
+            ["id" => $id]
+        );
+
+        if($query->rowCount() == 0)
+            return false;
+        else {
+            $row = $query->fetch();
+            $item = new Item(
+                $row['id'], $row['title'], Member::get_member($row['owner']), $row['created_at'], 
+                $row['duration_days'], $row['description'], $row['buy_now_price'], $row['starting_bid']);
+            return $item;
+        }
     }
 }
