@@ -75,8 +75,8 @@ class Member extends Model {
         if($this->id == NULL) {
             $errors = $this->validate();
             if(empty($errors)){
-                self::execute('
-                    INSERT INTO users (full_name, email, pseudo, password, role, picture_path, iban) 
+                self::execute(
+                    'INSERT INTO users (full_name, email, pseudo, password, role, picture_path, iban) 
                     VALUES (:full_name, :email, :pseudo, :password, :role, :picture_path, :iban)', 
                     ['full_name' => $this->full_name,
                     'email' => $this->email,
@@ -88,7 +88,7 @@ class Member extends Model {
                     ]
                 );
                 $member = self::get_member(self::lastInsertId());
-                $this->id = $member->post_id;
+                $this->id = $member->id;
                 return $this;
             } else {
                 return $errors; 
@@ -103,6 +103,8 @@ class Member extends Model {
 
     }
 
-    public static function get_member(int $id)
+    public static function get_member(int $id) : ?Member {
+        return new Member("test", "test@test.com", "testy", "Dummy123", Role::USER, 0);
+    }
    
 }
