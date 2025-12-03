@@ -1,0 +1,69 @@
+<?php
+require_once "framework/Model.php";
+require_once "model/Member.php";
+
+
+class Item extends Model {
+
+    public function __construct(
+        private int $id,
+        private string $title,
+        private Member $owner,
+        private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
+        private int $duration_days,
+        private ?string $description,
+        private ?float $buy_now_price,
+        private ?float $starting_bid,
+    ) {
+    }
+
+    public function get_id(): int {
+        return $this->id;
+    }
+    public function get_title(): string {
+        return $this->title;
+    }
+    public function get_owner(): Member {
+        return $this->owner;
+    }
+    public function get_created_at(): string { // /!\
+        return $this->created_at;
+    }
+    public function get_duration_days(): int {
+        return $this->duration_days;
+    }
+    public function get_description(): ?string {
+        return $this->description;
+    }
+    public function get_buy_now_price(): ?float {
+        return $this->buy_now_price;
+    }
+    public function get_starting_bid(): ?float {
+        return $this->starting_bid;
+    }
+
+    public function set_id(int $new_id): void {
+        $this->id = $new_id;
+    }
+    public function set_title(string $new_title): void {
+        $this->title = $new_title;
+    }
+    public function set_owner(Member $new_owner): void {
+        $this->owner = $new_owner;
+    }
+    public function set_created_at(string $new_created_at): void { // /!\
+        $this->created_at = $new_created_at;
+    }
+    public function set_duration_days(int $new_duration_day): void {
+        $this->duration_days = $new_duration_day;
+    }
+    public function set_description(?string $new_description): void {
+        $this->description = $new_description;
+    }
+    public function set_buy_now_price(?float $new_buy_now_price): void {
+        $this->buy_now_price = $new_buy_now_price;
+    }
+    public function set_starting_bid(?float $new_starting_bid): void {
+        $this->starting_bid = $new_starting_bid;
+    }
+}

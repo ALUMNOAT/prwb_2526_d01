@@ -1,9 +1,11 @@
 <?php
 require_once "framework/Controller.php";
+require_once "model/Member.php";
+
 
 class ControllerTest extends Controller {
     public function index(): void {
-        echo "<h1>Hello PRWB_2526_D01 !</h1>";
-        echo "<p><a href='time'>Time management</a><p>";
+        $test = new Member(0, "test_name", "test@test.com", "testy", "Dummy123,", Role::USER); 
+        (new View("test"))->show(["member" => $test]);
     }
 }
