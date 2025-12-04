@@ -8,29 +8,28 @@
     <link rel="stylesheet" href="css/browse.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+
 <body>
-    <ul>
-        <?php foreach($available_items as $item_status): ?>
-            <li><a href="item/<?= $item_status->get_item()->get_id() ?>">
-                <?= $item_status->get_end_at()." -> ".$item_status->get_item()->get_title(); ?>
-            </a></li>
+    <div class="browse">
+        <?php foreach ($available_items as $item_status):
+            $item = $item_status->get_item(); ?>
+            <div class="card">
+                <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar" style="width:100%">
+                <div class="container">
+                    <h4><b><?= $item->get_title() ?></b></h4>
+                    <p><?= $item_status->get_end_at() ?></p>
+                </div>
+            </div>
         <?php endforeach; ?>
-    </ul>
+    </div>
 
     <ul class="menu">
-        <li><a href="browse">
-            Browse
-        </a></li>
-        <li><a href="myitems">
-            My Items
-        </a></li>
-        <li><a href="add">
-            Add Offer
-        </a></li>
-        <li><a href="profile">
-            Profile
-        </a></li>
+        <li><a href="browse">Browse</a></li>
+        <li><a href="myitems">My Items</a></li>
+        <li><a href="add">Add Offer</a></li>
+        <li><a href="profile">Profile</a></li>
     </ul>
-    
+
 </body>
+
 </html>

@@ -1,10 +1,38 @@
 /* 
 https://www.w3schools.com/css/css_navbar_horizontal.asp 
 https://www.w3schools.com/csS/css3_flexbox_items.asp
+https://www.w3schools.com/howto/howto_css_cards.asp
+
+https://www.geeksforgeeks.org/css/comparison-between-css-grid-css-flexbox/
 */
 
 body {
     margin: 0;
+}
+
+.browse {
+    display: grid;
+    grid: auto auto / auto auto auto auto;
+    grid-gap: 10px; 
+    padding: 10px;
+}
+
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    transition: 0.3s;
+    border-radius: 5px;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+}
+
+.container {
+    padding: 2px 16px;
+}
+
+img {
+    border-radius: 5px 5px 0 0;
 }
 
 ul.menu {
