@@ -84,4 +84,37 @@ class ItemStatus extends Model {
         }
         return $available_items;
     }
+    
+    public function ends_in(int $precision=2) : string {
+        /*
+        doc: //https://stackoverflow.com/questions/1416697/converting-timestamp-to-time-ago-in-php-e-g-1-day-ago-2-days-ago/18602474#18602474
+        this function has a major flaw, which is that it doesn't take care of negative 
+        time scale values... but that's maybe outside the scope of this project for now
+        */
+
+        $now = new DateTime(AppTime::get_current_datetime());
+        $ago = new DateTime($this->end_at);
+        $diff = $ago->diff($now);
+
+        $time_scale = array( 
+            'y' => $diff->y,
+            'm' => $diff->m,
+            'w' => floor($diff->d/7), //I think it's python which has '/' and '//' hehe :)
+            'd' => $diff->d%7,
+            'h' => $diff->h,
+            'min' => $diff->i,
+            's' => $diff->s,
+        );
+
+        //doc: https://www.php.net/manual/en/function.array-filter.php
+        $test = array_filter($time_scale); //removes values equals to 0 (amazing !)
+        $test = array_slice($test, 0, $precision); //takes at most the first 2 elements (or precision)
+        $ends_in = "";
+
+        foreach($test as $k => $v) {
+            $ends_in = $ends_in.$v.$k." ";
+        }
+
+        return $ends_in === "" ? "now" : $ends_in."left";
+    }
 }

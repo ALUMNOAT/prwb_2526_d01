@@ -17,7 +17,7 @@
                 <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar" style="width:100%">
                 <div class="container">
                     <h4><b><?= $item->get_title() ?></b></h4>
-                    <p><?= $item_status->get_end_at() ?></p>
+                    <p><?= $item_status->ends_in() ?></p>
                 </div>
             </div>
         <?php endforeach; ?>
