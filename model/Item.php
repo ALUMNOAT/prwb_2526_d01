@@ -2,6 +2,8 @@
 require_once "framework/Model.php";
 require_once "utils/AppTime.php";
 require_once "model/Member.php";
+require_once "model/ItemPicture.php";
+
 
 
 class Item extends Model {
@@ -84,5 +86,9 @@ class Item extends Model {
                 $row['duration_days'], $row['description'], $row['buy_now_price'], $row['starting_bid']);
             return $item;
         }
+    }
+
+    public function get_main_picture_path() : string {
+        return ItemPicture::get_main_picture($this)->get_picture_path();
     }
 }
