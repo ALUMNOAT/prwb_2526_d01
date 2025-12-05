@@ -17,7 +17,9 @@ class Item extends Model {
         private ?string $description,
         private ?float $buy_now_price,
         private ?float $starting_bid,
+        private ?array $item_pictures = [],
     ) {
+        $item_pictures = $this->get_pictures() ;
     }
 
     public function get_id(): int {
@@ -88,7 +90,33 @@ class Item extends Model {
         }
     }
 
-    public function get_main_picture_path() : string {
-        return ItemPicture::get_main_picture($this)->get_picture_path();
+    public function get_main_picture() : ItemPicture {
+        return $this->item_pictures->
+    }
+
+    public function get_pictures() : array {
+        //SQL ne doit pas forcément être appellé dans son modèle !!!
+        //c'est l'objet modèle qui doit respecter les principes OOP, pas forcément SQL
+        $query = self::execute(
+            "SELECT * FROM item_pictures
+            WHERE item = :id", 
+            ["id" => $this->id]
+        );
+        
+        $data = $query->fetchAll();
+        $item_pictures = [];
+        foreach ($data as $row) {
+            $item_pictures[] = new ItemPicture(
+                new Item(
+                    $row['id'], $row['title'], Member::get_member($row['owner']), 
+                    $row['created_at'], $row['duration_days'], $row['description'], 
+                    $row['buy_now_price'], $row['starting_bid'] 
+                ),
+                $row['priority'],
+                $row['picture_path']
+            );
+        }
+
+        return $item_pictures;
     }
 }
