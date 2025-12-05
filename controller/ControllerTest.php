@@ -57,9 +57,13 @@ class ControllerTest extends Controller {
 
             $member = new Member(null, $full_name, $email, $pseudo, password_hash($password, PASSWORD_BCRYPT), Role::USER);
             // On vérifie que le pseudo et email sont uniques
-            $errors = Member::validate_unicity($pseudo, $email);
+            $errors = Member::validate_unicity($pseudo, $email, $full_name);
+            // On vérifie les règles métiers du full_name
+            $errors = array_merge($errors, $member->validate_full_name());
             // On vérifie les règles métiers du pseudo
             $errors = array_merge($errors, $member->validate_pseudo());
+            // On vérifie les règles métiers du email
+            $errors = array_merge($errors, $member->validate_email());
             // On vérifie d'abord les règles metiers du mot de passe récursivement (validate_passwords() appelle validate_password())
             // Puis, on vérifie si les 2 mots de passe sont identiques
             $errors = array_merge($errors, Member::validate_passwords($password, $password_confirm));

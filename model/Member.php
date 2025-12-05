@@ -117,6 +117,26 @@ class Member extends Model {
         }
     }
 
+    public static function get_member_by_full_name(string $full_name): Member|false {
+        $query = self::execute("SELECT * FROM users WHERE full_name = :full_name", [":full_name" => $full_name]);
+        $data = $query->fetch();
+        if ($query->rowCount() === 0) {
+            return false;
+        } else {
+            // On transforme la string en enum
+            $role = Role::from($data["role"]);
+            return new Member($data["id"], $data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["iban"]);
+        }
+    }
+
+    /**
+     * Règles metiers du Password :
+     *
+     * Minimum 8 charactères
+     *
+     * Doit contenir un chiffre, une Maj, une min, un symbole
+     */
+
     private static function validate_password(string $password): array {
         $errors = [];
 
@@ -140,15 +160,25 @@ class Member extends Model {
         return $errors;
     }
 
-    public static function validate_unicity(string $pseudo, string $email) : array {
+    /**
+     * Règles metiers de l'unique :
+     *
+     * email et pseudo doivent etre unique
+     */
+
+    public static function validate_unicity(string $pseudo, string $email, string $full_name) : array {
         $errors = [];
         $member_pseudo = self::get_member_by_pseudo($pseudo);
         $member_email = self::get_member_by_email($email);
+        $member_full_name = self::get_member_by_full_name($full_name);
         if ($member_pseudo) {
-            $errors[] = "Ce nom d'utilisateur '$pseudo' existe d&eacute;j&agrave;.";
+            $errors[] = "Ce pseudo '$pseudo' existe d&eacute;j&agrave;.";
         }
         if ($member_email) {
             $errors[] = "Cet email '$email' existe d&eacute;j&agrave;.";
+        }
+        if ($member_full_name) {
+            $errors[] = "Ce nom d'utilisateur '$full_name' existe d&eacute;j&agrave;.";
         }
         return $errors;
     }
@@ -157,6 +187,12 @@ class Member extends Model {
         return password_verify($clear_password, $hash);
     }
 
+    /**
+     * Règles métiers Pseudo :
+     *
+     * [3;30] charactères
+     */
+
     public function validate_pseudo() : array {
         $errors = [];
         if (strlen($this->pseudo) === 0) {
@@ -164,6 +200,31 @@ class Member extends Model {
         }
         if (!(strlen($this->pseudo) >= 3 && strlen($this->pseudo) <= 30 )) {
             $errors[] = "Le pseudo doit contenir entre 3 et 30 caract&egrave;res.";
+        }
+        return $errors;
+    }
+
+    /**
+     * Règles métiers full_name :
+     *
+     * Minimum 3 charactères
+     */
+
+    public function validate_full_name() : array {
+        $errors = [];
+        if (strlen($this->full_name) === 0) {
+            $errors[] = "Un nom est requis.";
+        }
+        if (!(strlen($this->full_name) > 3)) {
+            $errors[] = "Le nom doit avoir minimum 3 caract&egrave;res.";
+        }
+        return $errors;
+    }
+
+    public function validate_email() : array {
+        $errors = [];
+        if (!(filter_var($this->email, FILTER_VALIDATE_EMAIL))) {
+            $errors[] = "L'adresse email n'est pas valide.";
         }
         return $errors;
     }
