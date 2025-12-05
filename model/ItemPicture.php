@@ -33,18 +33,25 @@ class ItemPicture extends Model {
     }
 
     public static function get_item_pictures(Item $item): array|false {
+        //prendre dans la query les item picture ET les items !!!
+        // TODO
         $query = self::execute(
-            "SELECT * FROM item_pictures
-            WHERE id = :id
+            "SELECT * FROM item_pictures, items
+            INNER JOIN item_pictures ON item_pictures.id=items.id
+            WHERE item_pictures.id = :id
             ORDER BY priority ASC", 
-            ["id" => $item->get_id()]
+            ["id" => $this->item->get_id()]
         );
 
         $data = $query->fetchAll();
         $item_pictures = [];
         foreach ($data as $row) {
             $item_pictures[] = new ItemPicture(
-                Item::get_item($row['id']),
+                new Item(
+                    $row['id'], $row['title'], Member::get_member($row['owner']), 
+                    $row['created_at'], $row['duration_days'], $row['description'], 
+                    $row['buy_now_price'], $row['starting_bid'] 
+                ),
                 $row['priority'],
                 $row['picture_path']
             );
