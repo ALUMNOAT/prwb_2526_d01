@@ -51,7 +51,7 @@ class ItemStatus extends Model {
         return $this->not_purchased_direct_sale;
     }
 
-    public static function get_item_status(int $id) : Item|false {
+    public static function get_item_status(int $id) : ItemStatus|false {
         $query = self::execute(
             "SELECT * FROM v_items_status
             WHERE id = :id", 
@@ -62,10 +62,12 @@ class ItemStatus extends Model {
             return false;
         else {
             $row = $query->fetch();
-            $item = new Item(
-                $row['id'], $row['title'], Member::get_member($row['owner']), $row['created_at'], 
-                $row['duration_days'], $row['description'], $row['buy_now_price'], $row['starting_bid']);
-            return $item;
+            $item_status = new ItemStatus(
+                Item::get_item($row['id']), $row['end_at'], $row['bid_count'], $row['max_bid'], $row['is_direct_sale'], 
+                $row['is_auction'], $row['has_buy_now'], $row['has_bids'], $row['buy_now_reached'], $row['not_purchased_direct_sale']
+            );
+
+            return $item_status;
         }
     }
 

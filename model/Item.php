@@ -9,17 +9,16 @@ require_once "model/ItemPicture.php";
 class Item extends Model {
 
     public function __construct(
-        private int $id,
+        private int $id, //is id needed ? yes
         private string $title,
         private Member $owner,
         private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
         private int $duration_days,
+        private array $pictures = [],
         private ?string $description,
         private ?float $buy_now_price,
         private ?float $starting_bid,
-        private ?array $item_pictures = [],
     ) {
-        $item_pictures = $this->get_pictures() ;
     }
 
     public function get_id(): int {
@@ -72,51 +71,67 @@ class Item extends Model {
         $this->starting_bid = $new_starting_bid;
     }
 
-    public static function get_item(int $id) : Item|false {
+    public static function get_item(int $id): Item|false {
+        /*
+        doc 'A' : https://www.reddit.com/r/SQL/comments/10ytngc/how_do_i_join_two_tables_with_all_fields_from/
+        doc 'B' : https://stackoverflow.com/questions/1921421/get-the-first-element-of-an-array
+        doc 'C' : https://www.php.net/manual/en/backedenum.from.php
+        */
         $query = self::execute(
             "SELECT * FROM items
-            WHERE id = :id", 
+            JOIN item_pictures ON items.id = item_pictures.item;    # 'A'
+            JOIN users ON items.owner = users.id;                   # 'A'
+            WHERE item.id = :id",
             ["id" => $id]
         );
 
-        if($query->rowCount() == 0)
+        if ($query->rowCount() == 0)
             return false;
         else {
-            $row = $query->fetch();
+            $data = $query->fetchAll();
+
+            //PICTURES
+            $item_pictures = [];
+            foreach ($data as $row) {
+                $item_pictures[] = new ItemPicture(
+                    Item::get_item($row['item']),
+                    $row['priority'],
+                    $row['picture_path']
+                );
+            }
+
+            $row = array_pop($data);    # 'B', we care about efficiency here !
+
+            //OWNER
+            $owner = new Member(
+                $row['full_name'],
+                $row['email'],
+                $row['pseudo'],
+                $row['password'],
+                Role::from($row['role']),
+                $row['users.id'],
+                $row['picture_path'],
+                $row['iban']
+            );
+            //ITEM
             $item = new Item(
-                $row['id'], $row['title'], Member::get_member($row['owner']), $row['created_at'], 
-                $row['duration_days'], $row['description'], $row['buy_now_price'], $row['starting_bid']);
+                $row['items.id'],
+                $row['title'],
+                $owner,
+                $row['created_at'],
+                $row['duration_days'],
+                $item_pictures,
+                $row['description'],
+                $row['buy_now_price'],
+                $row['starting_bid']
+            );
+
             return $item;
         }
     }
 
-    public function get_main_picture() : ItemPicture {
-        return $this->item_pictures->
-    }
-
-    public function get_pictures() : array {
-        //SQL ne doit pas forcément être appellé dans son modèle !!!
-        //c'est l'objet modèle qui doit respecter les principes OOP, pas forcément SQL
-        $query = self::execute(
-            "SELECT * FROM item_pictures
-            WHERE item = :id", 
-            ["id" => $this->id]
-        );
-        
-        $data = $query->fetchAll();
-        $item_pictures = [];
-        foreach ($data as $row) {
-            $item_pictures[] = new ItemPicture(
-                new Item(
-                    $row['id'], $row['title'], Member::get_member($row['owner']), 
-                    $row['created_at'], $row['duration_days'], $row['description'], 
-                    $row['buy_now_price'], $row['starting_bid'] 
-                ),
-                $row['priority'],
-                $row['picture_path']
-            );
-        }
-
-        return $item_pictures;
+    public function get_main_picture_path(): string {
+        return ItemPicture::get_main_picture($this)->get_picture_path();
     }
 }
+
