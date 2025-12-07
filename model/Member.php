@@ -13,8 +13,10 @@ class Member extends Model {
         private Role $role,
         private ?int $id,
         private ?string $picture_path = null,
-        private ?string $iban = null
+        private ?string $iban = null,
+        private array $my_bids = []
     ) {
+        $this->get_my_bids();
     }
 
     public function get_full_name(): string {
@@ -67,31 +69,32 @@ class Member extends Model {
         $this->iban = $new_iban;
     }
 
-    public function validate() : array {
+    public function validate(): array {
         return [];
     }
 
-    public function persist() : Member|array {
-        if($this->id == NULL) {
+    public function persist(): Member|array {
+        if ($this->id == NULL) {
             $errors = $this->validate();
-            if(empty($errors)){
+            if (empty($errors)) {
                 self::execute(
                     'INSERT INTO users (full_name, email, pseudo, password, role, picture_path, iban) 
-                    VALUES (:full_name, :email, :pseudo, :password, :role, :picture_path, :iban)', 
-                    ['full_name' => $this->full_name,
-                    'email' => $this->email,
-                    'pseudo' => $this->pseudo,
-                    'password' => $this->password,
-                    'role' => $this->role->value,
-                    'picture_path' => $this->picture_path ?? "",
-                    'iban' => $this->iban ?? ""
+                    VALUES (:full_name, :email, :pseudo, :password, :role, :picture_path, :iban)',
+                    [
+                        'full_name' => $this->full_name,
+                        'email' => $this->email,
+                        'pseudo' => $this->pseudo,
+                        'password' => $this->password,
+                        'role' => $this->role->value,
+                        'picture_path' => $this->picture_path ?? "",
+                        'iban' => $this->iban ?? ""
                     ]
                 );
                 $member = self::get_member(self::lastInsertId());
                 $this->id = $member->id;
                 return $this;
             } else {
-                return $errors; 
+                return $errors;
             }
         } else {
             //we need to add the eventual modifications
@@ -99,12 +102,48 @@ class Member extends Model {
         }
     }
 
-    public function delete() : void {
-
+    public function delete(): void {
     }
 
-    public static function get_member(int $id) : ?Member {
+    public static function get_member(int $id): ?Member {
         return new Member("test", "test@test.com", "testy", "Dummy123", Role::USER, 0);
     }
-   
+
+    private function get_my_bids(): void {
+        /*
+        
+        */
+        $query = self::execute(
+            "SELECT * 
+            FROM bids AS b
+            WHERE b.owner = :id
+            AND b.item, b.created_at IN (
+                SELECT b2.item, MAX(b.created_at)
+                FROM bids as b2
+                WHERE b2.owner = :id
+                GROUP BY b2.item
+            )",
+            [
+                "id" => $this->get_id(),
+            ]
+        );
+
+        $data = $query->fetchAll();
+        foreach ($data as $row) {
+            $my_bids[] = new Bid(
+                $this, 
+                Item::get_item($row['item']),
+                $row['created_at'],
+                $row['amount']
+            );
+        }
+
+        usort($my_bids, )
+    }
+
+    private function compare_owner($id_a, $id_b): int {
+        //https://www.w3schools.com/php/func_array_usort.asp
+        if ($id_a == $id_b) return 0;
+        return ($id_a < $id_b) ? -1 : 1;
+    }
 }
