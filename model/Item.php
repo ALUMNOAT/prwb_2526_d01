@@ -15,9 +15,9 @@ class Item extends Model {
         private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
         private int $duration_days,
         private array $pictures = [],
-        private ?string $description,
-        private ?float $buy_now_price,
-        private ?float $starting_bid,
+        private ?string $description = null,
+        private ?float $buy_now_price = null,
+        private ?float $starting_bid = null,
     ) {
     }
 
@@ -130,8 +130,6 @@ class Item extends Model {
         }
     }
 
-    public function get_main_picture_path(): string {
-        return ItemPicture::get_main_picture($this)->get_picture_path();
     }
 }
 

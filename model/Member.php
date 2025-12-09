@@ -14,7 +14,6 @@ class Member extends Model {
         private ?int $id,
         private ?string $picture_path = null,
         private ?string $iban = null,
-        private array $my_bids = []
     ) {
         $this->get_my_bids();
     }
@@ -109,27 +108,40 @@ class Member extends Model {
         return new Member("test", "test@test.com", "testy", "Dummy123", Role::USER, 0);
     }
 
-    private function get_my_bids(): void {
+    private function get_my_bidded_items(): array {
         /*
-        
+        doc : https://www.dataforgelabs.com/advanced-sql-concepts/join-with-subquery-sql
+        doc: https://stackoverflow.com/questions/13131496/how-to-do-join-on-multiple-criteria-returning-all-combinations-of-both-criteria
         */
         $query = self::execute(
-            "SELECT * 
-            FROM bids AS b
-            WHERE b.owner = :id
-            AND b.item, b.created_at IN (
-                SELECT b2.item, MAX(b.created_at)
-                FROM bids as b2
-                WHERE b2.owner = :id
-                GROUP BY b2.item
-            )",
+            "SELECT *
+            FROM v_items_status AS v  
+            JOIN item_pictures AS ip ON v.id = ip.item
+            JOIN users ON v.owner = users.id
+            WHERE v.id IN (
+                SELECT bids.item                
+                FROM bids
+                WHERE bids.owner = :user_id
+            )
+            AND v.end_at > :now
+            ORDER BY v.end_at ASC",
             [
-                "id" => $this->get_id(),
+                "user_id" => $this->get_id(),
+                "now" => AppTime::get_current_datetime()
             ]
         );
+        
+        $member = [];
+        $item = [];
 
         $data = $query->fetchAll();
         foreach ($data as $row) {
+            if(!array_key_exists($row['users.id'])) {
+                $member[$row['users.id']] = new Member(
+                    $row['users.fulln_name'], $row['users.email'], $row['users.pseudo'], $row['users.fulln_name'],
+                )
+            }
+            $item = new Item($row['id'], $row['title'], $row);
             $my_bids[] = new Bid(
                 $this, 
                 Item::get_item($row['item']),
@@ -137,8 +149,6 @@ class Member extends Model {
                 $row['amount']
             );
         }
-
-        usort($my_bids, )
     }
 
     private function compare_owner($id_a, $id_b): int {
