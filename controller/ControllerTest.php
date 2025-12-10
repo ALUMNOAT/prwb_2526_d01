@@ -56,7 +56,7 @@ class ControllerTest extends Controller {
             $password_confirm = $_POST["password_confirm"];
 
             $member = new Member(null, $full_name, $email, $pseudo, password_hash($password, PASSWORD_BCRYPT), Role::USER);
-            // On vérifie que le pseudo et email sont uniques
+            // On vérifie que le pseudo, email et full_name sont uniques
             $errors = Member::validate_unicity($pseudo, $email, $full_name);
             // On vérifie les règles métiers du full_name
             $errors = array_merge($errors, $member->validate_full_name());

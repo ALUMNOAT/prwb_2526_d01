@@ -3,7 +3,8 @@ require_once "framework/Model.php";
 require_once "utils/Role.php";
 
 
-class Member extends Model {
+class Member extends Model
+{
 
     /**
      * ID nullable :
@@ -16,70 +17,102 @@ class Member extends Model {
      */
 
     public function __construct(
-        private ?int $id,
-        private string $full_name,
-        private string $email,
-        private string $pseudo,
-        private string $password,
-        private Role $role,
+        private ?int    $id,
+        private string  $full_name,
+        private string  $email,
+        private string  $pseudo,
+        private string  $password,
+        private Role    $role,
         private ?string $picture_path = null,
         private ?string $iban = null
     )
-    { }
+    {
+    }
 
-    public function get_id(): int {
+    public function get_id(): int
+    {
         return $this->id;
     }
-    public function get_full_name(): string {
+
+    public function get_full_name(): string
+    {
         return $this->full_name;
     }
-    public function get_email(): string {
+
+    public function get_email(): string
+    {
         return $this->email;
     }
-    public function get_pseudo(): string {
+
+    public function get_pseudo(): string
+    {
         return $this->pseudo;
     }
-    public function get_password(): string {
+
+    public function get_password(): string
+    {
         return $this->password;
     }
-    public function get_role(): Role {
+
+    public function get_role(): Role
+    {
         return $this->role;
     }
-    public function get_picture_path(): ?string {
+
+    public function get_picture_path(): ?string
+    {
         return $this->picture_path;
     }
-    public function get_iban(): ?string {
+
+    public function get_iban(): ?string
+    {
         return $this->iban;
     }
 
-    public function set_id(int $new_id): void {
+    public function set_id(int $new_id): void
+    {
         $this->id = $new_id;
     }
-    public function set_full_name(string $new_full_name): void {
+
+    public function set_full_name(string $new_full_name): void
+    {
         $this->full_name = $new_full_name;
     }
-    public function set_email(string $new_email): void {
+
+    public function set_email(string $new_email): void
+    {
         $this->email = $new_email;
     }
-    public function set_pseudo(string $new_pseudo): void {
+
+    public function set_pseudo(string $new_pseudo): void
+    {
         $this->pseudo = $new_pseudo;
     }
-    public function set_password(string $new_password): void {
+
+    public function set_password(string $new_password): void
+    {
         $this->password = $new_password;
     }
-    public function set_role(Role $new_role): void {
+
+    public function set_role(Role $new_role): void
+    {
         $this->role = $new_role;
     }
-    public function set_picture_path(string $new_picture_path): void {
+
+    public function set_picture_path(string $new_picture_path): void
+    {
         $this->picture_path = $new_picture_path;
     }
-    public function set_iban(string $new_iban): void {
+
+    public function set_iban(?string $new_iban): void
+    {
         $this->iban = $new_iban;
     }
 
-    public function persist(): Member {
+    public function persist(): Member
+    {
         // Si l'ID existe (utilisateur existe), on update
-        if($this->id !== null) {
+        if ($this->id !== null) {
             // On met à jour l'utilisateur existant (un ID attribué déjà)
             self::execute("UPDATE users SET full_name=:full_name, email=:email, pseudo=:pseudo, password=:password, role=:role, picture_path=:picture_path, iban=:iban WHERE id=:id",
                 ["id" => $this->id, "full_name" => $this->full_name, "email" => $this->email, "pseudo" => $this->pseudo, "password" => $this->password, "role" => $this->role->value, "picture_path" => $this->picture_path, "iban" => $this->iban]);
@@ -93,7 +126,8 @@ class Member extends Model {
         return $this;
     }
 
-    public static function get_member_by_pseudo(string $pseudo): Member|false {
+    public static function get_member_by_pseudo(string $pseudo): Member|false
+    {
         $query = self::execute("SELECT * FROM users WHERE pseudo = :pseudo", [":pseudo" => $pseudo]);
         $data = $query->fetch();
         if ($query->rowCount() === 0) {
@@ -105,7 +139,8 @@ class Member extends Model {
         }
     }
 
-    public static function get_member_by_email(string $email): Member|false {
+    public static function get_member_by_email(string $email): Member|false
+    {
         $query = self::execute("SELECT * FROM users WHERE email = :email", [":email" => $email]);
         $data = $query->fetch();
         if ($query->rowCount() === 0) {
@@ -117,7 +152,8 @@ class Member extends Model {
         }
     }
 
-    public static function get_member_by_full_name(string $full_name): Member|false {
+    public static function get_member_by_full_name(string $full_name): Member|false
+    {
         $query = self::execute("SELECT * FROM users WHERE full_name = :full_name", [":full_name" => $full_name]);
         $data = $query->fetch();
         if ($query->rowCount() === 0) {
@@ -137,7 +173,8 @@ class Member extends Model {
      * Doit contenir un chiffre, une Maj, une min, un symbole
      */
 
-    private static function validate_password(string $password): array {
+    private static function validate_password(string $password): array
+    {
         $errors = [];
 
         // 8 charactères minimum
@@ -152,7 +189,8 @@ class Member extends Model {
         return $errors;
     }
 
-    public static function validate_passwords(string $password, string $password_confirm) : array {
+    public static function validate_passwords(string $password, string $password_confirm): array
+    {
         $errors = Member::validate_password($password);
         if ($password !== $password_confirm) {
             $errors[] = "Les mots de passe ne correspondent pas.";
@@ -166,24 +204,26 @@ class Member extends Model {
      * email et pseudo doivent etre unique
      */
 
-    public static function validate_unicity(string $pseudo, string $email, string $full_name) : array {
+    public static function validate_unicity(string $pseudo, string $email, string $full_name, ?int $exclude_id = null): array
+    {
         $errors = [];
         $member_pseudo = self::get_member_by_pseudo($pseudo);
         $member_email = self::get_member_by_email($email);
         $member_full_name = self::get_member_by_full_name($full_name);
-        if ($member_pseudo) {
+        if ($member_pseudo && $member_pseudo->get_id() !== $exclude_id) {
             $errors[] = "Ce pseudo '$pseudo' existe d&eacute;j&agrave;.";
         }
-        if ($member_email) {
+        if ($member_email && $member_email->get_id() !== $exclude_id) {
             $errors[] = "Cet email '$email' existe d&eacute;j&agrave;.";
         }
-        if ($member_full_name) {
+        if ($member_full_name && $member_full_name->get_id() !== $exclude_id) {
             $errors[] = "Ce nom d'utilisateur '$full_name' existe d&eacute;j&agrave;.";
         }
         return $errors;
     }
 
-    private static function check_password(string $clear_password, string $hash) : bool {
+    private static function check_password(string $clear_password, string $hash): bool
+    {
         return password_verify($clear_password, $hash);
     }
 
@@ -193,12 +233,13 @@ class Member extends Model {
      * [3;30] charactères
      */
 
-    public function validate_pseudo() : array {
+    public function validate_pseudo(): array
+    {
         $errors = [];
         if (strlen($this->pseudo) === 0) {
             $errors[] = "Un pseudo est requis.";
         }
-        if (!(strlen($this->pseudo) >= 3 && strlen($this->pseudo) <= 30 )) {
+        if (!(strlen($this->pseudo) >= 3 && strlen($this->pseudo) <= 30)) {
             $errors[] = "Le pseudo doit contenir entre 3 et 30 caract&egrave;res.";
         }
         return $errors;
@@ -210,7 +251,8 @@ class Member extends Model {
      * Minimum 3 charactères
      */
 
-    public function validate_full_name() : array {
+    public function validate_full_name(): array
+    {
         $errors = [];
         if (strlen($this->full_name) === 0) {
             $errors[] = "Un nom est requis.";
@@ -221,7 +263,8 @@ class Member extends Model {
         return $errors;
     }
 
-    public function validate_email() : array {
+    public function validate_email(): array
+    {
         $errors = [];
         if (!(filter_var($this->email, FILTER_VALIDATE_EMAIL))) {
             $errors[] = "L'adresse email n'est pas valide.";
@@ -229,16 +272,82 @@ class Member extends Model {
         return $errors;
     }
 
-    public static function validate_login(string $email, string $password) : array {
+    public static function validate_login(string $email, string $password): array
+    {
         $errors = [];
         $member = self::get_member_by_email($email);
         if ($member) {
             if (!self::check_password($password, $member->password)) {
                 $errors[] = "Le mot de passe est incorrect. Essayez encore une fois.";
             }
-        }
-        else {
+        } else {
             $errors[] = "Un utilisateur avec cet email '$email' n'existe pas. Veuillez vous inscrire.";
+        }
+        return $errors;
+    }
+
+    /**
+     * An IBAN is validated by converting it into an integer and performing a basic mod-97 operation (as described in ISO 7064) on it.
+     * If the IBAN is valid, the remainder equals 1. The algorithm of IBAN validation is as follows:
+     *
+     * 1) Check that the total IBAN length is correct as per the country. If not, the IBAN is invalid
+     *
+     * 2) Move the four initial characters to the end of the string
+     *
+     * 3) Replace each letter in the string with two digits, thereby expanding the string, where A = 10, B = 11, ..., Z = 35
+     *
+     * 4) Interpret the string as a decimal integer and compute the remainder of that number on division by 97
+     *
+     * If the remainder is 1, the check digit test is passed and the IBAN might be valid.
+     *
+     * Example (fictitious United Kingdom bank, sort code 12-34-56, account number 98765432):
+     *
+     * • IBAN:        GB82 WEST 1234 5698 7654 32
+     *
+     * • Rearrange:        WEST 1234 5698 7654 32 GB82
+     *
+     * • Convert to integer:        3214282912345698765432161182
+     *
+     * • Compute remainder:        3214282912345698765432161182    mod 97 = 1
+     *
+     */
+    public static function validate_iban(string $iban): array
+    {
+        // Chez nous il faut juste transformer les 2 premieres lettres en nombres
+        $errors = [];
+
+        // Nettoyer l'IBAN (je fait pas le check ou je mets tout en uppercase)
+        $iban = trim($iban);               // enlève espaces début/fin
+        $iban = str_replace(' ', '', $iban); // enlève tous les espaces
+
+        if ($iban) {
+            $small_sublist_iban = substr($iban, 0, 4); //BE99 [0;3]
+            $big_sublist_iban = substr($iban, 4, strlen($iban)); // le reste
+
+            $converted = '';
+            for ($i = 0; $i < strlen($small_sublist_iban) - 2; $i++) {
+                // char(B) = 66, 66-55 = 11, B = 11 ici
+                $converted .= ord($small_sublist_iban[$i]) - 55;
+            }
+
+            // On rajoute les 2 nombres après BE  (99 par exemple si BE99)
+            $converted .= substr($small_sublist_iban, 2, 2);
+
+            $verify_iban = $big_sublist_iban . $converted;
+
+            // Dans JAVA on a BigInteger() pour les grands nombres
+            // ici on a bcmod() pour faire le modulo des grands nombres
+
+            // Si on ecrit "dfsdfsd" la transformation en ascii fait des choses bizarres
+            // Du coup, on check avec ctype_digit() notre IBAN qui doit etre qu'une suite des nombres
+
+            if (!ctype_digit($verify_iban)) {
+                $errors[] = "L'IBAN '$iban' n'est pas valide.";
+            } else {
+                if (bcmod($verify_iban, '97') != '1') {
+                    $errors[] = "L'IBAN '$iban' n'est pas valide.";
+                }
+            }
         }
         return $errors;
     }
