@@ -58,7 +58,7 @@ class ControllerMember extends Controller {
             $pseudo = $_POST["pseudo"];
             $email = $_POST["email"];
             $iban = $_POST["iban"] ?? null;
-            // Pour avoir NULL dans la BD
+            // Pour avoir NULL dans la BD (On économise 8x plus d'espace memoire, 0,125 octet = NULL)
             if ($iban === ""){
                 $iban = null;
             }
@@ -95,7 +95,9 @@ class ControllerMember extends Controller {
                 $member->set_full_name($full_name);
                 $member->set_pseudo($pseudo);
                 $member->set_email($email);
-                $member->set_iban($iban);
+                // On enlève les espaces de la bd (un espace = 1 octet de mémoire = 8 bits)
+                // 8 bits * 3 espaces = 24 bits pour un seul IBAN en bd (OPTIMISATION)
+                $member->set_iban(str_replace(" ", "",$iban));
                 $member->persist();
                 $success = "Profile updated successfully!";
             }

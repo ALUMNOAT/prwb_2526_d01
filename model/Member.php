@@ -338,7 +338,7 @@ class Member extends Model
             // Dans JAVA on a BigInteger() pour les grands nombres
             // ici on a bcmod() pour faire le modulo des grands nombres
 
-            // Si on ecrit "dfsdfsd" la transformation en ascii fait des choses bizarres
+            // Si on ecrit "dfsdfsd" la transformation en ASCII fait des choses bizarres
             // Du coup, on check avec ctype_digit() notre IBAN qui doit etre qu'une suite des nombres
 
             if (!ctype_digit($verify_iban)) {

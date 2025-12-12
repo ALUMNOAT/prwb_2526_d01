@@ -33,7 +33,8 @@
             <p class="desc">We'll use this email to send you notifications about your sales and purchases</p>
 
             <label class="label">IBAN <span class="secondary">(Optional)</span></label>
-            <input type="text" id="iban" name="iban" class="input" <?= $member->get_iban() !== null ? 'value="'. $member->get_iban() . '"' : 'placeholder="BE99 9999 9999 9999 9999"' ?>>
+            <!--Magie. Ici on separe l'IBAN par 4 pour la lisibilité -->
+            <input type="text" id="iban" name="iban" class="input" <?= $member->get_iban() !== null ? 'value="'. trim(chunk_split($member->get_iban(), 4, " ")) . '"' : 'placeholder="BE99 9999 9999 9999 9999"' ?>>
             <p class="desc">For receiving payments from your sales. Leave this empty if you don't want to receive payments directly.</p>
         </div>
 
