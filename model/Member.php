@@ -3,7 +3,8 @@ require_once "framework/Model.php";
 require_once "utils/Role.php";
 
 
-class Member extends Model {
+class Member extends Model
+{
 
     public function __construct(
         private string $full_name,
@@ -14,65 +15,81 @@ class Member extends Model {
         private ?int $id,
         private ?string $picture_path = null,
         private ?string $iban = null,
-    ) {
-        $this->get_my_bids();
-    }
+    ) {}
 
-    public function get_full_name(): string {
+    public function get_full_name(): string
+    {
         return $this->full_name;
     }
-    public function get_email(): string {
+    public function get_email(): string
+    {
         return $this->email;
     }
-    public function get_pseudo(): string {
+    public function get_pseudo(): string
+    {
         return $this->pseudo;
     }
-    public function get_password(): string {
+    public function get_password(): string
+    {
         return $this->password;
     }
-    public function get_role(): Role {
+    public function get_role(): Role
+    {
         return $this->role;
     }
-    public function get_id(): ?int {
+    public function get_id(): ?int
+    {
         return $this->id;
     }
-    public function get_picture_path(): ?string {
+    public function get_picture_path(): ?string
+    {
         return $this->picture_path;
     }
-    public function get_iban(): ?string {
+    public function get_iban(): ?string
+    {
         return $this->iban;
     }
 
-    public function set_full_name(string $new_full_name): void {
+    public function set_full_name(string $new_full_name): void
+    {
         $this->full_name = $new_full_name;
     }
-    public function set_email(string $new_email): void {
+    public function set_email(string $new_email): void
+    {
         $this->email = $new_email;
     }
-    public function set_pseudo(string $new_pseudo): void {
+    public function set_pseudo(string $new_pseudo): void
+    {
         $this->pseudo = $new_pseudo;
     }
-    public function set_password(string $new_password): void {
+    public function set_password(string $new_password): void
+    {
         $this->password = $new_password;
     }
-    public function set_role(Role $new_role): void {
+    public function set_role(Role $new_role): void
+    {
         $this->role = $new_role;
     }
-    public function set_id(?int $new_id): void {
+    public function set_id(?int $new_id): void
+    {
         $this->id = $new_id;
     }
-    public function set_picture_path(?string $new_picture_path): void {
+    public function set_picture_path(?string $new_picture_path): void
+    {
         $this->picture_path = $new_picture_path;
     }
-    public function set_iban(?string $new_iban): void {
+    public function set_iban(?string $new_iban): void
+    {
         $this->iban = $new_iban;
     }
 
-    public function validate(): array {
+    public function validate(): array
+    {
         return [];
     }
 
-    public function persist(): Member|array {
+    public function persist(): Member|array
+    {
         if ($this->id == NULL) {
             $errors = $this->validate();
             if (empty($errors)) {
@@ -101,14 +118,15 @@ class Member extends Model {
         }
     }
 
-    public function delete(): void {
-    }
+    public function delete(): void {}
 
-    public static function get_member(int $id): ?Member {
+    public static function get_member(int $id): ?Member
+    {
         return new Member("test", "test@test.com", "testy", "Dummy123", Role::USER, 0);
     }
 
-    private function get_my_bidded_items(): array {
+    private function get_my_bidded_items(): array
+    {
         /*
         doc : https://www.dataforgelabs.com/advanced-sql-concepts/join-with-subquery-sql
         doc: https://stackoverflow.com/questions/13131496/how-to-do-join-on-multiple-criteria-returning-all-combinations-of-both-criteria
@@ -116,8 +134,6 @@ class Member extends Model {
         $query = self::execute(
             "SELECT *
             FROM v_items_status AS v  
-            JOIN item_pictures AS ip ON v.id = ip.item
-            JOIN users ON v.owner = users.id
             WHERE v.id IN (
                 SELECT bids.item                
                 FROM bids
@@ -130,20 +146,27 @@ class Member extends Model {
                 "now" => AppTime::get_current_datetime()
             ]
         );
-        
+
         $member = [];
         $item = [];
 
         $data = $query->fetchAll();
         foreach ($data as $row) {
-            if(!array_key_exists($row['users.id'])) {
-                $member[$row['users.id']] = new Member(
-                    $row['users.fulln_name'], $row['users.email'], $row['users.pseudo'], $row['users.fulln_name'],
-                )
+            if (!array_key_exists($row['id'])) {
+                $member[$row['id']] = new Member(
+                    $row['full_name'],
+                    $row['email'],
+                    $row['pseudo'],
+                    $row['password'],
+                    Role::from($row['role']),
+                    $row['id'],
+                    $row['picture_path'],
+                    $row['iban']
+                );
             }
             $item = new Item($row['id'], $row['title'], $row);
             $my_bids[] = new Bid(
-                $this, 
+                $this,
                 Item::get_item($row['item']),
                 $row['created_at'],
                 $row['amount']
@@ -151,9 +174,36 @@ class Member extends Model {
         }
     }
 
-    private function compare_owner($id_a, $id_b): int {
-        //https://www.w3schools.com/php/func_array_usort.asp
-        if ($id_a == $id_b) return 0;
-        return ($id_a < $id_b) ? -1 : 1;
+    private function get_users(array $users_id): array
+    {
+        $query = self::execute(
+            "SELECT *
+            FROM users  
+            WHERE users.id IN (
+                :users_id
+            )
+            AND v.end_at > :now
+            ORDER BY v.end_at ASC",
+            [
+                "users_id" => implode(',', $users_id)
+            ]
+        );
+
+        $data = $query->fetchAll();
+        $users = [];
+        foreach ($data as $row) {
+            $users[$row['id']] = new Member(
+                $row['full_name'],
+                $row['email'],
+                $row['pseudo'],
+                $row['password'],
+                Role::from($row['role']),
+                $row['id'],
+                $row['picture_path'],
+                $row['iban']
+            );
+        }
+
+        return $users;
     }
 }
