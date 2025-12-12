@@ -95,5 +95,11 @@ class ControllerTest extends Controller {
         exit;
     }
 
+    public function logout(): void {
+        if ($this->user_logged()) {
+            parent::logout();
+        }
+    }
+
 
 }
