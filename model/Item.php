@@ -36,6 +36,9 @@ class Item extends Model {
     public function get_duration_days(): int {
         return $this->duration_days;
     }
+    public function get_pictures(): array {
+        return $this->pictures;
+    } 
     public function get_description(): ?string {
         return $this->description;
     }
@@ -61,6 +64,9 @@ class Item extends Model {
     public function set_duration_days(int $new_duration_day): void {
         $this->duration_days = $new_duration_day;
     }
+    public function set_pictures(array $pictures): void {
+        return $this->pictures = $pictures;
+    } 
     public function set_description(?string $new_description): void {
         $this->description = $new_description;
     }
