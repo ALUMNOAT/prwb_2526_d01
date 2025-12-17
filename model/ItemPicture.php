@@ -50,4 +50,25 @@ class ItemPicture extends Model {
             return $item_picture;
         }
     }
+
+    public static function get_items_picture(array $items_id) {
+        $query = self::execute(
+            "SELECT * 
+            FROM item_pictures
+            WHERE item IN (
+                :items_id
+            )",
+            [
+                "items_id" => implode(',', $items_id)
+            ]
+        );
+
+        $data = $query->fetchAll();
+        $items_pictures = [];
+        foreach($data as $row) {
+            $items_pictures[$row['item']][] = new ItemPicture(
+                
+            )
+        }
+    }
 }
