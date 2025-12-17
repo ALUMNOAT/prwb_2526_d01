@@ -167,7 +167,7 @@ class Member extends Model {
         return $my_bidded_items;
     }
 
-    private function get_users(array $users_id): array {
+    public static function get_members(array $users_id): array {
         $query = self::execute(
             "SELECT *
             FROM users  
