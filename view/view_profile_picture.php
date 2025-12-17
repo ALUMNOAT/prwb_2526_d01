@@ -26,23 +26,23 @@
             </div>
         </div>
 
-    <form method="POST" action='member/profile_picture' class="form-box">
+    <form method="POST" action='member/profile_picture' class="form-box" enctype="multipart/form-data">
 
         <div class="section">
             <h3>Upload New Picture</h3>
 
             <label class="label"><strong>Select Image *</strong></label>
-            Choose File : <input type="file" id="file" name="file" class="input" placeholder="No file chosen" accept="image/jpg, image/jpeg, image/x-png, image/gif, image/webp">
+            Choose File : <input type="file" id="file" name="image" class="input" placeholder="No file chosen" accept="image/jpg, image/jpeg, image/x-png, image/gif, image/webp">
             <p class="desc">Supported formats: JPG, PNG, GIF, WebP. This will replace your current profile picture.</p>
 
-            <button type="submit" class="btn">Upload Picture</button>
+            <button type="submit" name="upload" class="btn">Upload Picture</button>
         </div>
 
         <div class="section">
             <h3>Remove Current Picture</h3>
 
             <p>This will permanently delete your current profile picture. You can upload a new one anytime.</p>
-            <button type="submit" class="btn-delete">Delete Picture</button>
+            <button type="submit" name="delete" class="btn-delete">Delete Picture</button>
         </div>
 
     </form>

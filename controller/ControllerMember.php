@@ -6,8 +6,6 @@ require_once 'framework/Controller.php';
 
 class ControllerMember extends Controller {
 
-    const UPLOAD_ERR_OK = 0;
-
     // page d'accueil (à adapter)
     public function index() : void {
         $this->profile();
@@ -114,37 +112,86 @@ class ControllerMember extends Controller {
         $errors = [];
         $success = "";
 
-        // Il est nécessaire de vérifier le statut de l'erreur car, dans le cas où on fait un submit
-        // sans avoir choisi une image, $_FILES['image'] est "set", mais le statut 'error' est à 4 (UPLOAD_ERR_NO_FILE).
-        if (isset($_FILES['image']) && $_FILES['image']['error'] === self::UPLOAD_ERR_OK) {
-            $errors = Member::validate_photo($_FILES['image']);
-            if (empty($errors)) {
-                $saveTo = $member->generate_photo_name($_FILES['image']);
-                $oldFileName = $member->picture_path;
-                if ($oldFileName && file_exists("uploads/" . $oldFileName)) {
-                    unlink("uploads/" . $oldFileName);
+        /**
+         * UPLOAD DE LA PHOTO avec button "Upload Picture"
+         */
+
+        if (isset($_POST['upload'])) {
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $errors = Member::validate_photo($_FILES['image']);
+                if (empty($errors)) {
+
+                    // Dossier utilisateur
+                    $userDir = "uploads/users/" . $member->get_id();
+                    // si il n'y a pas de dossier, on le crée
+                    if (!is_dir($userDir)) {
+                        // Permission : owner peut r-w-x, group peut r-x, reste peut r-x
+                        mkdir($userDir, 0755, true);
+                    }
+
+                    // Nom du fichier
+                    $ext = Member::get_photo_extension($_FILES['image']);
+                    $relativePath = $userDir . "/profile." . $ext;
+
+                    // Suppression ancienne photo (uniquement la photo de la BD)
+                    if ($member->get_picture_path() && file_exists($member->get_picture_path())) {
+                        unlink($member->get_picture_path());
+                    }
+
+                    // Upload
+                    move_uploaded_file($_FILES['image']['tmp_name'], $relativePath);
+
+                    // DB -> chemin relatif
+                    $member->set_picture_path($relativePath);
+                    $member->persist();
+                    $success = "Profile picture uploaded successfully!";
                 }
-                move_uploaded_file($_FILES['image']['tmp_name'], "uploads/$saveTo");
-                $member->picture_path = $saveTo;
-                $member->persist();
+            } else {
+                $errors[] = "Upload failed!";
             }
         }
 
-        if (isset($_POST["profile"])) {
-            //le profil peut être vide : pas de soucis.
-            $profile = $_POST['profile'];
-            $member->profile = $profile;
+        /**
+         * SUPPRESSION DE LA PHOTO avec button "Delete Picture"
+         */
+
+        elseif (isset($_POST['delete'])) {
+            if ($member->get_picture_path() && file_exists($member->get_picture_path())) {
+                unlink($member->get_picture_path());
+            }
+            $member->set_picture_path(null);
             $member->persist();
+
+            $success = "Your profile picture has been successfully deleted.";
         }
 
-        // si on est en POST et sans erreurs, on redirige avec un paramètre 'ok'
-        if (count($_POST) > 0 && count($errors) == 0) {
+        /**
+         * LE RESTE EST COMMUN POUR LES 2 BOUTONS
+         *
+         * UPDATE DU PROFIL
+         */
+
+        if (isset($_POST["profile"])) {
+            $member->profile = $_POST['profile'];
+            $member->persist();
+            $success = "Your profile has been successfully updated.";
+        }
+
+        /**
+         * REDIRECTION POST
+         */
+
+        if (!empty($_POST) && empty($errors)) {
             $this->redirect("member", "profile_picture", "ok");
         }
 
-        // si param 'ok' dans l'url, on affiche le message de succès
-        if (isset($_GET['param1']) && $_GET['param1'] === "ok")
+        /**
+         * AFFICHAGE DU MESSAGE DE SUCCES
+         */
+
+        if (isset($_GET['param1']) && $_GET['param1'] === "ok") {
             $success = "Your profile has been successfully updated.";
+        }
 
         (new View("profile_picture"))->show(["member" => $member, "errors" => $errors, "success" => $success]);
 

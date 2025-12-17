@@ -99,7 +99,7 @@ class Member extends Model
         $this->role = $new_role;
     }
 
-    public function set_picture_path(string $new_picture_path): void
+    public function set_picture_path(?string $new_picture_path): void
     {
         $this->picture_path = $new_picture_path;
     }
@@ -355,38 +355,39 @@ class Member extends Model
     public static function validate_photo(array $file): array
     {
         $errors = [];
-        if (isset($file['name']) && $file['name'] !== '') {
-            if ($file['error'] == 0) {
-                $valid_types = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                if (!in_array($_FILES['image']['type'], $valid_types)) {
-                    $errors[] = "Le fichier n'est pas valide.";
-                }
-            } else {
-                $errors[] = "Une erreur est survenue lors de l'upload.";
-            }
+
+        if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
+            $errors[] = "Une erreur est survenue lors de l'upload.";
+            return $errors;
         }
+
+        $mime = mime_content_type($file['tmp_name']);
+
+        $valid_types = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp'
+        ];
+
+        // Si j'envoye un fichier .mp3, ceci s'affiche
+        if (!in_array($mime, $valid_types, true)) {
+            $errors[] = "Le fichier n'est pas une image valide.";
+        }
+
         return $errors;
     }
 
-    public function generate_photo_name(): string {
-        /**
-         * time() est utilisé pour que la nouvelle image n'aie pas
-         *
-         * le meme nom afin d'éviter que le navigateur affiche
-         *
-         * une ancienne image présente dans le cache
-         */
-        if ($_FILES["image"]["type"] == "image/jpg" || $_FILES["image"]["type"] == "image/jpeg") {
-            $saveTo = $this->pseudo . time() . ".jpg";
-        } else if ($_FILES["image"]["type"] == "image/png") {
-            $saveTo = $this->pseudo . time() . ".png";
-        } else if ($_FILES["image"]["type"] == "image/gif") {
-            $saveTo = $this->pseudo . time() . ".gif";
-        } else if ($_FILES["image"]["type"] == "image/webp") {
-            $saveTo = $this->pseudo . time() . ".webp";
-        }
-        return $saveTo;
-    }
+    public static function get_photo_extension(array $file): string
+    {
+        $mime = mime_content_type($file['tmp_name']);
 
+        return match ($mime) {
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/gif'  => 'gif',
+            'image/webp' => 'webp',
+        };
+    }
 
 }
