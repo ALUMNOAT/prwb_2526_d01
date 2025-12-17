@@ -13,7 +13,7 @@
 
     <div class="section">
         <?php if (!$member->get_picture_path()): ?>
-            <p>You have no picture.<p>
+            <p>You have no picture.</p>
             <p>Set it up <a href="member/profile_picture">here</a></p>
         <?php else: ?>
             <img src="<?= $member->get_picture_path()?>" width="100" alt="<?= $member->get_pseudo() ?>&apos;s photo!">

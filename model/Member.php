@@ -352,4 +352,41 @@ class Member extends Model
         return $errors;
     }
 
+    public static function validate_photo(array $file): array
+    {
+        $errors = [];
+        if (isset($file['name']) && $file['name'] !== '') {
+            if ($file['error'] == 0) {
+                $valid_types = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!in_array($_FILES['image']['type'], $valid_types)) {
+                    $errors[] = "Le fichier n'est pas valide.";
+                }
+            } else {
+                $errors[] = "Une erreur est survenue lors de l'upload.";
+            }
+        }
+        return $errors;
+    }
+
+    public function generate_photo_name(): string {
+        /**
+         * time() est utilisé pour que la nouvelle image n'aie pas
+         *
+         * le meme nom afin d'éviter que le navigateur affiche
+         *
+         * une ancienne image présente dans le cache
+         */
+        if ($_FILES["image"]["type"] == "image/jpg" || $_FILES["image"]["type"] == "image/jpeg") {
+            $saveTo = $this->pseudo . time() . ".jpg";
+        } else if ($_FILES["image"]["type"] == "image/png") {
+            $saveTo = $this->pseudo . time() . ".png";
+        } else if ($_FILES["image"]["type"] == "image/gif") {
+            $saveTo = $this->pseudo . time() . ".gif";
+        } else if ($_FILES["image"]["type"] == "image/webp") {
+            $saveTo = $this->pseudo . time() . ".webp";
+        }
+        return $saveTo;
+    }
+
+
 }
