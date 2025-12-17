@@ -51,7 +51,10 @@ class ItemPicture extends Model {
         }
     }
 
-    public static function get_items_picture(array $items_id) {
+    public static function get_items_picture(array $items) {
+        /*
+        doc: https://www.php.net/manual/en/function.array-keys.php
+        */
         $query = self::execute(
             "SELECT * 
             FROM item_pictures
@@ -59,7 +62,7 @@ class ItemPicture extends Model {
                 :items_id
             )",
             [
-                "items_id" => implode(',', $items_id)
+                "items_id" => implode(',', array_keys($items))
             ]
         );
 
@@ -67,8 +70,12 @@ class ItemPicture extends Model {
         $items_pictures = [];
         foreach($data as $row) {
             $items_pictures[$row['item']][] = new ItemPicture(
-                
-            )
+                $items[$row['item']],
+                $row['priority'],
+                $row['picture_path']
+            );
         }
+
+        return $items_pictures;
     }
 }

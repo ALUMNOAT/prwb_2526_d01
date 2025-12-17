@@ -134,7 +134,7 @@ class Member extends Model {
         $data = $query->fetchAll();
 
         $owner = Member::get_members(array_column($data, 'id'));
-        $item_pictures = ItemPicture::get_items_pictures(array_column($data, 'item'));
+        $items = [];
         $my_bidded_items = [];
 
         foreach ($data as $row) {
@@ -144,13 +144,15 @@ class Member extends Model {
                 $owner[$row['id']],
                 $row['created_at'],
                 $row['duration_days'],
-                $item_pictures[$row['id']],
+                [],
                 $row['description'] ?? "",
                 $row['buy_now_price'],
                 $row['starting_bid']
             );
 
-            $my_bidded_items[] = new ItemStatus(
+            $items[$row['id']] = $item;
+
+            $my_bidded_items[$row['id']] = new ItemStatus(
                 $item,
                 $row['end_at'],
                 $row['bid_count'],
@@ -162,6 +164,11 @@ class Member extends Model {
                 $row['buy_now_reached'] === 1,
                 $row['not_purchased_direct_sale'] === 1
             );
+        }
+
+        $items_pictures = ItemPicture::get_items_picture($items);
+        foreach($items as $item) {
+            $item->set_pictures($items_pictures[$item->get_id()]);
         }
 
         return $my_bidded_items;
