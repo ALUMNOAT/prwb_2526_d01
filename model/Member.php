@@ -107,7 +107,7 @@ class Member extends Model {
         return new Member("test", "test@test.com", "testy", "Dummy123", Role::USER, 0);
     }
 
-    private function get_my_bidded_items(): array {
+    public function get_my_bidded_items(): array {
         /*
         doc : https://www.dataforgelabs.com/advanced-sql-concepts/join-with-subquery-sql
         doc: https://stackoverflow.com/questions/13131496/how-to-do-join-on-multiple-criteria-returning-all-combinations-of-both-criteria
@@ -180,9 +180,7 @@ class Member extends Model {
             FROM users  
             WHERE users.id IN (
                 :users_id
-            )
-            AND v.end_at > :now
-            ORDER BY v.end_at ASC",
+            )",
             [
                 "users_id" => implode(',', $users_id)
             ]

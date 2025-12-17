@@ -11,13 +11,15 @@
 
 <body>
     <div>
-        <h1>Other Available Items</h1>
+        <h1>My Bids</h1>
     </div>
+
     <div class="browse">
-        <?php foreach ($available_items as $item_status):
+        <p><?php var_dump($my_bidded_items)?></p>
+        <?php foreach ($my_bidded_items as $item_status):
             $item = $item_status->get_item(); ?>
             <div class="card">
-                <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar" style="width:100%">
+                <img src="<?= $item->get_pictures()[1] ?>" alt="Avatar" style="width:100%">
                 <div class="container">
                     <h4><b><?= $item->get_title() ?></b></h4>
                     <p><?= $item_status->ends_in() ?></p>
@@ -25,12 +27,13 @@
             </div>
         <?php endforeach; ?>
     </div>
-    
+
+    <!--
     <div>
         <h1>Other Available Items</h1>
-    </div>
+    </div> 
     <div class="browse">
-        <?php foreach ($available_items as $item_status):
+        <?php /* foreach ($available_items as $item_status):
             $item = $item_status->get_item(); ?>
             <div class="card">
                 <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar" style="width:100%">
@@ -39,8 +42,9 @@
                     <p><?= $item_status->ends_in() ?></p>
                 </div>
             </div>
-        <?php endforeach; ?>
+        <?php endforeach; */ ?>
     </div>
+    -->
 
     <ul class="menu">
         <li><a href="browse">Browse</a></li>

@@ -65,7 +65,7 @@ class Item extends Model {
         $this->duration_days = $new_duration_day;
     }
     public function set_pictures(array $pictures): void {
-        return $this->pictures = $pictures;
+        $this->pictures = $pictures;
     } 
     public function set_description(?string $new_description): void {
         $this->description = $new_description;
@@ -85,9 +85,9 @@ class Item extends Model {
         */
         $query = self::execute(
             "SELECT * FROM items
-            JOIN item_pictures ON items.id = item_pictures.item;    # 'A'
-            JOIN users ON items.owner = users.id;                   # 'A'
-            WHERE item.id = :id",
+            JOIN item_pictures ON items.id = item_pictures.item   
+            JOIN users ON items.owner = users.id
+            WHERE items.id = :id",
             ["id" => $id]
         );
 
@@ -136,6 +136,5 @@ class Item extends Model {
         }
     }
 
-    }
 }
 
