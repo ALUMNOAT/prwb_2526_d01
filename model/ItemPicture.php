@@ -54,16 +54,22 @@ class ItemPicture extends Model {
     public static function get_items_picture(array $items) {
         /*
         doc: https://www.php.net/manual/en/function.array-keys.php
+        doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
         */
+        $placeholders = [];
+        $params = [];
+        foreach ($items as $i => $u) {
+            $placeholders[] = ":u$i";
+            $params[":u$i"] = $u->get_id();
+        }
+
         $query = self::execute(
             "SELECT * 
             FROM item_pictures
-            WHERE item IN (
-                :items_id
-            )",
-            [
-                "items_id" => implode(',', array_keys($items))
-            ]
+            WHERE item IN ("
+                .implode(',', $placeholders).
+            ")",
+            $params
         );
 
         $data = $query->fetchAll();
