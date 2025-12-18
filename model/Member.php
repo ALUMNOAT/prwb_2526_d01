@@ -103,8 +103,32 @@ class Member extends Model {
     public function delete(): void {
     }
 
-    public static function get_member(int $id): ?Member {
-        return new Member("test", "test@test.com", "testy", "Dummy123", Role::USER, 0);
+    public static function get_member(int $id): Member|false {
+        $query = self::execute(
+            "SELECT *
+            FROM users 
+            WHERE users.id = :user_id",
+            [
+                "user_id" => $id,
+            ]
+        );
+
+        if ($query->rowCount() == 0)
+            return false;
+
+        $row = $query->fetch();
+        $member = new Member(
+            $row['full_name'],
+            $row['email'],
+            $row['pseudo'],
+            $row['password'],
+            Role::from($row['role']),
+            $row['id'],
+            $row['picture_path'],
+            $row['iban']
+        );
+
+        return $member;
     }
 
     public function get_my_bidded_items(): array {
@@ -126,14 +150,14 @@ class Member extends Model {
             AND v.end_at > :now
             ORDER BY v.end_at ASC",
             [
-                "user_id" => $this->get_id(),
+                "user_id" => $this->id,
                 "now" => AppTime::get_current_datetime()
             ]
         );
 
         $data = $query->fetchAll();
 
-        $owner = Member::get_members(array_column($data, 'id'));
+        $owner = Member::get_members(array_column($data, 'owner'));
         $items = [];
         $my_bidded_items = [];
 
@@ -141,7 +165,7 @@ class Member extends Model {
             $item = new Item(
                 $row['id'],
                 $row['title'],
-                $owner[$row['id']],
+                $owner[$row['owner']],
                 $row['created_at'],
                 $row['duration_days'],
                 [],
@@ -167,7 +191,7 @@ class Member extends Model {
         }
 
         $items_pictures = ItemPicture::get_items_picture($items);
-        foreach($items as $item) {
+        foreach ($items as $item) {
             $item->set_pictures($items_pictures[$item->get_id()]);
         }
 
@@ -175,18 +199,28 @@ class Member extends Model {
     }
 
     public static function get_members(array $users_id): array {
+        /*
+        doc: https://stackoverflow.com/questions/907806/passing-an-array-to-a-query-using-a-where-clause
+        doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
+        */
+        $placeholders = [];
+        $params = [];
+        foreach ($users_id as $i => $u) {
+            $placeholders[] = ":u$i";
+            $params[":u$i"] = $u;
+        }
+
         $query = self::execute(
             "SELECT *
             FROM users  
-            WHERE users.id IN (
-                :users_id
-            )",
-            [
-                "users_id" => implode(',', $users_id)
-            ]
+            WHERE users.id IN ("
+                . implode(',', $placeholders) .
+                ")",
+            $params
         );
 
         $data = $query->fetchAll();
+
         $users = [];
         foreach ($data as $row) {
             $users[$row['id']] = new Member(
