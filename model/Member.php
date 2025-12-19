@@ -133,7 +133,7 @@ class Member extends Model {
 
     public function get_my_bidded_items(): array {
         /*
-        doc : https://www.dataforgelabs.com/advanced-sql-concepts/join-with-subquery-sql
+        doc: https://www.dataforgelabs.com/advanced-sql-concepts/join-with-subquery-sql
         doc: https://stackoverflow.com/questions/13131496/how-to-do-join-on-multiple-criteria-returning-all-combinations-of-both-criteria
         doc: https://stackoverflow.com/questions/1416980/how-to-fetch-result-from-mysql-row-with-multiple-same-name-columns-with-php
         doc: https://stackoverflow.com/questions/329931/sql-select-join-is-it-possible-to-prefix-all-columns-as-prefix
@@ -174,7 +174,7 @@ class Member extends Model {
                 $row['starting_bid']
             );
 
-            $items[$row['id']] = $item;
+            $items[$row['id']] = $item;  //ça marche bien
 
             $my_bidded_items[$row['id']] = new ItemStatus(
                 $item,
@@ -237,4 +237,18 @@ class Member extends Model {
 
         return $users;
     }
+
+    /*public function get_my_bids() : array {
+        $query = self::execute(
+            "SELECT *
+            FROM bids
+            WHERE bids.owner = :user_id",
+            [
+                "user_id" => $this->id,
+            ]
+        );
+
+        $data = $query->fetchAll();
+        $my_bids = [];
+    }*/
 }

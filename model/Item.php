@@ -136,5 +136,58 @@ class Item extends Model {
         }
     }
 
+    public static function get_all_available_items(): array {
+        $query = self::execute(
+            "SELECT *
+            FROM v_items_status AS v
+            WHERE v.end_at > :now
+            ORDER BY v.end_at ASC",
+            [
+                "now" => AppTime::get_current_datetime()
+            ]
+        );
+
+        $data = $query->fetchAll();
+
+        $owner = Member::get_members(array_column($data, 'owner'));
+        $items = [];
+        $available_items = [];
+
+        foreach ($data as $row) {
+            $item = new Item(
+                $row['id'],
+                $row['title'],
+                $owner[$row['owner']],
+                $row['created_at'],
+                $row['duration_days'],
+                [],
+                $row['description'] ?? "",
+                $row['buy_now_price'],
+                $row['starting_bid']
+            );
+
+            $items[$row['id']] = $item;
+
+            $available_items[$row['id']] = new ItemStatus(
+                $item,
+                $row['end_at'],
+                $row['bid_count'],
+                $row['max_bid'],
+                $row['is_direct_sale'] === 1,
+                $row['is_auction'] === 1,
+                $row['has_buy_now'] === 1,
+                $row['has_bids'] === 1,
+                $row['buy_now_reached'] === 1,
+                $row['not_purchased_direct_sale'] === 1
+            );
+        }
+
+        $items_pictures = ItemPicture::get_items_picture($items);
+        foreach ($items as $item) {
+            $item->set_pictures($items_pictures[$item->get_id()]);
+        }
+
+        return $available_items;
+    }
 }
 
