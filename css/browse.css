@@ -8,12 +8,19 @@ https://www.geeksforgeeks.org/css/comparison-between-css-grid-css-flexbox/
 
 body {
     margin: 0;
+    font-family: Arial, sans-serif;
 }
+
+/* Rules for icon sizes from google: */
+.material-icons.md-18 { font-size: 18px;}
+.material-icons.md-24 { font-size: 24px; position: relative; top: 2px} /* Default */
+.material-icons.md-36 { font-size: 36px; position: relative; top: 2px}
+.material-icons.md-48 { font-size: 48px; position: relative; top: 2px}
 
 .browse {
     display: grid;
     grid: auto auto / auto auto auto auto;
-    grid-gap: 10px; 
+    grid-gap: 10px;
     padding: 10px;
 }
 
@@ -29,6 +36,68 @@ body {
 
 .container {
     padding: 2px 16px;
+}
+
+/* Container holding the image and the text */
+.container_image {
+    position: relative;
+    text-align: center;
+    color: white;
+}
+
+/* Bottom left text */
+.bottom-left {
+    position: absolute;
+    bottom: 8px;
+    left: 16px;
+    padding: 0.4em 0.8em;
+    border-radius: 1em;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Top left text */
+.top-left {
+    position: absolute;
+    top: 8px;
+    left: 16px;
+    padding: 0.4em 0.8em;
+    border-radius: 1em;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Top right text */
+.top-right {
+    position: absolute;
+    top: 8px;
+    right: 16px;
+    padding: 0.4em 0.8em;
+    border-radius: 1em;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Bottom right text */
+.bottom-right {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap: 0.2em;
+    /*text-align: center;
+    line-height: 2em;
+    margin: auto;*/
+    position: absolute;
+    bottom: 8px;
+    right: 16px;
+    padding: 0.4em 0.8em;
+    border-radius: 1em;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Centered text */
+.centered {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 img {
