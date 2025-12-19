@@ -34,3 +34,31 @@ body {
 img {
     border-radius: 5px 5px 0 0;
 }
+
+ul.menu {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333333;
+    display: flex;
+}
+
+ul.menu li {
+    display: inline-block;
+    float: none;
+    flex-grow: 1;
+    /* float: left; */
+}
+
+ul.menu li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+ul.menu li a:hover {
+    background-color: #111111;
+}
