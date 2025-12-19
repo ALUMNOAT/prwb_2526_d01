@@ -97,7 +97,12 @@ class ControllerMember extends Controller {
                 $member->set_email($email);
                 // On enlève les espaces de la bd (un espace = 1 octet de mémoire = 8 bits)
                 // 8 bits * 3 espaces = 24 bits pour un seul IBAN en bd (OPTIMISATION)
-                $member->set_iban(str_replace(" ", "",$iban));
+                // Je fais comme ca pour que PHP ne rale pas (str_replace n'aime pas gerer les "null")
+                if ($iban !== null) {
+                    $iban = str_replace(" ", "", $iban);
+                }
+
+                $member->set_iban($iban);
                 $member->persist();
                 $success = "Profile updated successfully!";
             }
