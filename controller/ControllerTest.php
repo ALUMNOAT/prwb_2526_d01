@@ -21,6 +21,13 @@ class ControllerTest extends Controller {
 
     // gestion de la connection d'un utilisateur
     public function login(): void {
+
+        // Déja connecté -> redirection
+        if ($this->get_user_or_false() !== false) {
+            $this->redirect();
+            return;
+        }
+
         $email = "";
         $password = "";
         $errors = [];
@@ -41,6 +48,13 @@ class ControllerTest extends Controller {
     }
 
     public function signup(): void {
+
+        // Déja connecté -> redirection
+        if ($this->get_user_or_false() !== false) {
+            $this->redirect();
+            return;
+        }
+
         $email = "";
         $full_name = "";
         $pseudo = "";
