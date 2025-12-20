@@ -39,10 +39,18 @@ class ControllerMember extends Controller {
             if (count($errors) == 0){
                 $member->set_password(password_hash($new_password, PASSWORD_BCRYPT));
                 $member->persist();
-                $success = "Password updated successfully!";
 
+                // Redirect après POST (principe PRG)
+                $this->redirect("member", "change_password", "ok");
+                return; // on stoppe le reste du code
             }
         }
+
+        // Si la page est chargée via GET après le redirect
+        if (isset($_GET['param1']) && $_GET['param1'] === "ok") {
+            $success = "Password updated successfully!";
+        }
+
         (new View("change_password"))->show(["member" => $member, "errors" => $errors, "success" => $success]);
     }
 
@@ -103,9 +111,16 @@ class ControllerMember extends Controller {
                 }
                 $member->set_iban($iban);
                 $member->persist();
-                $success = "Profile updated successfully!";
-            }
 
+                // Redirect après POST (principe PRG)
+                $this->redirect("member", "edit_profile", "ok");
+                return; // on stoppe le reste du code
+            }
+        }
+
+        // Si la page est chargée via GET après le redirect
+        if (isset($_GET['param1']) && $_GET['param1'] === "ok") {
+            $success = "Profile updated successfully!";
         }
 
         (new View("edit_profile"))->show(["member" => $member, "errors" => $errors, "success" => $success]);
@@ -182,7 +197,7 @@ class ControllerMember extends Controller {
         }
 
         /**
-         * REDIRECTION POST
+         * REDIRECTION POST (PRG)
          */
 
         if (!empty($_POST) && empty($errors)) {
@@ -190,7 +205,7 @@ class ControllerMember extends Controller {
         }
 
         /**
-         * AFFICHAGE DU MESSAGE DE SUCCES
+         * AFFICHAGE DU MESSAGE DE SUCCES (si on recharge la page en GET)
          */
 
         if (isset($_GET['param1']) && $_GET['param1'] === "ok") {
@@ -200,6 +215,4 @@ class ControllerMember extends Controller {
         (new View("profile_picture"))->show(["member" => $member, "errors" => $errors, "success" => $success]);
 
     }
-
-
 }
