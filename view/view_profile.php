@@ -57,7 +57,7 @@
         </a>
 
         <form action="test/logout" method="post" class="logout-form">
-            <button type="submit" class="row logout">
+            <button type="submit" name="logout" class="row logout">
                 <div class="logout-title">Logout</div>
                 <div class="logout-desc">Sign out of your account</div>
             </button>

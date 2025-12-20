@@ -95,7 +95,7 @@ class ControllerTest extends Controller {
     public function login_as(): void {
         if (!isset($_GET['email'])) {
             // pas d'email fourni, on peut rediriger ou afficher une erreur
-            header("Location: index.php?controller=test&action=index");
+            header("Location: index");
             exit;
         }
 
@@ -105,15 +105,20 @@ class ControllerTest extends Controller {
             $this->log_user($member);
         }
 
-        header("Location: index.php?controller=test&action=index");
+        header("Location: index");
         exit;
     }
 
-    public function logout(): void {
-        if ($this->user_logged()) {
-            parent::logout();
+    // Il faut override la methode parente sinon on peut logout avec un GET
+    public function logout(): void
+    {
+        // On peut faire ca meme si profile est dans le ControllerMember
+        // car le form et button est [form action="test/logout"]
+        // du coup le controlleur connait le bouton
+        if (!isset($_POST["logout"])) {
+            echo "Logout must be done via POST.";
+            return;
         }
+        parent::logout();
     }
-
-
 }
