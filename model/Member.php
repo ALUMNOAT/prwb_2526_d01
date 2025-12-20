@@ -313,20 +313,30 @@ class Member extends Model
      */
     public static function validate_iban(string $iban): array
     {
-        // Chez nous il faut juste transformer les 2 premieres lettres en nombres
         $errors = [];
+        // Pour ne pas avoir 3 retours dans la fonction, on va créer un booléen
+        $isvalid = true;
 
-        // Nettoyer l'IBAN (je fait pas le check ou je mets tout en uppercase)
-        $iban = trim($iban);               // enlève espaces début/fin
-        $iban = str_replace(' ', '', $iban); // enlève tous les espaces
+        // Vérification IBAN belge
+        if (!preg_match('/^BE\d{2}(?: ?\d{4}){3}$/', $iban)) {
+            $errors[] = "L'IBAN '$iban' n'est pas un IBAN Belge.";
+            $isvalid = false;
+        }
 
-        if ($iban) {
+        // Si regex non valide, on renvoit une erreur, sinon on continue et on renvoie une erreur aussi
+        // Une seule erreur partout
+        if ($isvalid) {
+            // Nettoyer l'IBAN (je fait pas le check ou je mets tout en uppercase car le regex le fait)
+            $iban = str_replace(' ', '', $iban); // enlève tous les espaces
+
+
             $small_sublist_iban = substr($iban, 0, 4); //BE99 [0;3]
             $big_sublist_iban = substr($iban, 4, strlen($iban)); // le reste
 
             $converted = '';
             for ($i = 0; $i < strlen($small_sublist_iban) - 2; $i++) {
                 // char(B) = 66, 66-55 = 11, B = 11 ici
+                // le code peut bug mais pas possible pratiquement car regex check
                 $converted .= ord($small_sublist_iban[$i]) - 55;
             }
 
@@ -335,18 +345,8 @@ class Member extends Model
 
             $verify_iban = $big_sublist_iban . $converted;
 
-            // Dans JAVA on a BigInteger() pour les grands nombres
-            // ici on a bcmod() pour faire le modulo des grands nombres
-
-            // Si on ecrit "dfsdfsd" la transformation en ASCII fait des choses bizarres
-            // Du coup, on check avec ctype_digit() notre IBAN qui doit etre qu'une suite des nombres
-
-            if (!ctype_digit($verify_iban)) {
+            if (bcmod($verify_iban, '97') !== '1') {
                 $errors[] = "L'IBAN '$iban' n'est pas valide.";
-            } else {
-                if (bcmod($verify_iban, '97') != '1') {
-                    $errors[] = "L'IBAN '$iban' n'est pas valide.";
-                }
             }
         }
         return $errors;

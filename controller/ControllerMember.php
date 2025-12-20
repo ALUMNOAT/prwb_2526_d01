@@ -101,7 +101,6 @@ class ControllerMember extends Controller {
                 if ($iban !== null) {
                     $iban = str_replace(" ", "", $iban);
                 }
-
                 $member->set_iban($iban);
                 $member->persist();
                 $success = "Profile updated successfully!";
