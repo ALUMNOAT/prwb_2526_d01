@@ -3,6 +3,7 @@
 require_once 'model/Member.php';
 require_once 'framework/View.php';
 require_once 'framework/Controller.php';
+require_once 'utils/Image.php';
 
 class ControllerMember extends Controller {
 
@@ -126,6 +127,9 @@ class ControllerMember extends Controller {
         (new View("edit_profile"))->show(["member" => $member, "errors" => $errors, "success" => $success]);
     }
 
+    /**
+     * @throws Exception
+     */
     public function profile_picture() : void {
         $member = $this->get_user_or_redirect();
         $errors = [];
@@ -140,6 +144,18 @@ class ControllerMember extends Controller {
                 $errors = Member::validate_photo($_FILES['image']);
                 if (empty($errors)) {
 
+                    // Ancien chemin avant modification
+                    $oldPath = $member->get_picture_path();
+
+                    // Suppression de l'ancienne image et du thumbnail
+                    if ($oldPath && file_exists($oldPath)) {
+                        unlink($oldPath);
+                        $oldThumb = str_replace('.jpg', '_thumbnail.jpg', $oldPath);
+                        if (file_exists($oldThumb)) {
+                            unlink($oldThumb);
+                        }
+                    }
+
                     // Dossier utilisateur
                     $userDir = "uploads/users/" . $member->get_id();
                     // si il n'y a pas de dossier, on le crée
@@ -148,20 +164,21 @@ class ControllerMember extends Controller {
                         mkdir($userDir, 0755, true);
                     }
 
-                    // Nom du fichier
-                    $ext = Member::get_photo_extension($_FILES['image']);
-                    $relativePath = $userDir . "/profile." . $ext;
+                    //pour avoir le nom originel du fichier (ne pas utiliser)
+                    //$originalName = pathinfo($_FILES['image']['name'], PATHINFO_FILENAME);
 
-                    // Suppression ancienne photo (uniquement la photo de la BD)
-                    if ($member->get_picture_path() && file_exists($member->get_picture_path())) {
-                        unlink($member->get_picture_path());
-                    }
+                    $basePath = $userDir . "/profile";
+                    // Image principale
+                    $mainPath = $basePath . ".jpg";
+                    // Thumbnail
+                    $thumbPath = $basePath . "_thumbnail.jpg";
 
-                    // Upload
-                    move_uploaded_file($_FILES['image']['tmp_name'], $relativePath);
+                    // Création images
+                    Image::resizeToJpeg($_FILES['image']['tmp_name'], $mainPath, Configuration::get("IMAGE_MAX_WIDTH"), Configuration::get("IMAGE_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
+                    Image::resizeToJpeg($_FILES['image']['tmp_name'], $thumbPath, Configuration::get("THUMB_MAX_WIDTH"), Configuration::get("THUMB_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
 
-                    // DB -> chemin relatif
-                    $member->set_picture_path($relativePath);
+                    // Sauvegarde DB (image principale uniquement)
+                    $member->set_picture_path($mainPath);
                     $member->persist();
                     $success = "Profile picture uploaded successfully!";
                 }
@@ -175,8 +192,15 @@ class ControllerMember extends Controller {
          */
 
         elseif (isset($_POST['delete'])) {
-            if ($member->get_picture_path() && file_exists($member->get_picture_path())) {
-                unlink($member->get_picture_path());
+            $oldPath = $member->get_picture_path();
+            if ($oldPath && file_exists($oldPath)) {
+                unlink($oldPath);
+
+                // Suppression du thumbnail associé
+                $thumbPath = str_replace('.jpg', '_thumbnail.jpg', $oldPath);
+                if (file_exists($thumbPath)) {
+                    unlink($thumbPath);
+                }
             }
             $member->set_picture_path(null);
             $member->persist();

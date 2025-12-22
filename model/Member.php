@@ -361,8 +361,11 @@ class Member extends Model
             return $errors;
         }
 
-        $mime = mime_content_type($file['tmp_name']);
+        if ($file['size'] > Configuration::get("MAX_UPLOAD_SIZE")) {
+            $errors[] = "Le fichier dépasse la taille maximale autorisée (5MB).";
+        }
 
+        $mime = mime_content_type($file['tmp_name']);
         $valid_types = [
             'image/jpeg',
             'image/png',
@@ -372,22 +375,10 @@ class Member extends Model
 
         // Si j'envoye un fichier .mp3, ceci s'affiche
         if (!in_array($mime, $valid_types, true)) {
-            $errors[] = "Le fichier n'est pas une image valide.";
+            $errors[] = "Format d'image non supporté.";
         }
 
         return $errors;
-    }
-
-    public static function get_photo_extension(array $file): string
-    {
-        $mime = mime_content_type($file['tmp_name']);
-
-        return match ($mime) {
-            'image/jpeg' => 'jpg',
-            'image/png'  => 'png',
-            'image/gif'  => 'gif',
-            'image/webp' => 'webp',
-        };
     }
 
 }
