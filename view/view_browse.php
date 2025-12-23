@@ -11,85 +11,37 @@
 </head>
 
 <body>
-    <div>
-        <h1>My Bids</h1>
-    </div>
+    <div class="margin">
+        <div>
+            <h1>My Bids</h1>
+        </div>
 
-    <div class="browse">
         <!-- 
         doc: https://www.w3schools.com/howto/howto_css_image_text.asp 
         doc: https://www.w3schools.com/icons/tryit.asp?filename=tryicons_google-collections
-
+        doc: https://www.w3docs.com/snippets/css/how-to-make-a-div-a-clickable-link.html
+        doc: https://stackoverflow.com/questions/796087/make-a-div-into-a-link
         -->
-        <?php foreach ($my_bidded_items as $item_status):
-            $item = $item_status->get_item(); ?>
-            <div class="card">
-                <div class="container_image">
-                    <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar" style="width:100%">
+        <div class="browse">
+            <?php foreach ($my_bidded_items as $item_status):
+                $item = $item_status->get_item(); ?>
+                <?php require 'item_card.php' ?>
+            <?php endforeach; ?>
+        </div>
 
-                    <div class="bottom-left">Bottom Left</div>
+        <div>
+            <h1>Available Items</h1>
+        </div>
 
-                    <div class="top-left">Auction</div>
-
-                    <div class="top-right">Auction</div>
-
-                    <?php if (count($item->get_pictures()) > 1): ?>
-                        <div class="bottom-right">
-                            <i class="material-icons md-18">collections</i><?= count($item->get_pictures()) ?> images
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="centered">Centered</div>
-                </div>
-                <div class="container">
-                    <h4><b><?= $item->get_title() ?></b></h4>
-                    <p>by <?= $item->get_owner()->get_full_name() ?></p>
-                    <p><?= $item_status->ends_in() ?></p>
-                </div>
-            </div>
-        <?php endforeach; ?>
+        <div class="browse">
+            <?php foreach ($available_items as $item_status2):
+                $item = $item_status2->get_item(); ?>
+                <?php require 'item_card.php' ?>
+            <?php endforeach; ?>
+        </div>
     </div>
 
-    <div>
-        <h1>Available Items</h1>
-    </div>
-
-    <div class="browse">
-        <?php foreach ($available_items as $item_status2):
-            $item = $item_status2->get_item(); ?>
-            <div class="card">
-                <div class="container_image">
-                    <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar" style="width:100%">
-
-                    <div class="bottom-left">Bottom Left</div>
-
-                    <div class="top-left">Auction</div>
-
-                    <div class="top-right">Auction</div>
-
-                    <?php if (count($item->get_pictures()) > 1): ?>
-                        <div class="bottom-right">
-                            <i class="material-icons md-18">collections</i><?= count($item->get_pictures()) ?> images
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="centered">Centered</div>
-                </div>
-                <div class="container">
-                    <h4><b><?= $item->get_title() ?></b></h4>
-                    <p>by <?= $item->get_owner()->get_full_name() ?></p>
-                    <p><?= $item_status->ends_in() ?></p>
-                </div>
-            </div>
-        <?php endforeach; ?>
-    </div>
-
-    <ul class="menu">
-        <li><a href="browse">Browse</a></li>
-        <li><a href="myitems">My Items</a></li>
-        <li><a href="add">Add Offer</a></li>
-        <li><a href="profile">Profile</a></li>
-    </ul>
+    <?php require 'menu.php' ?>
 
 </body>
 
