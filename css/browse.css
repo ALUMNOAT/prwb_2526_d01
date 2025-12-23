@@ -9,13 +9,14 @@ https://www.geeksforgeeks.org/css/comparison-between-css-grid-css-flexbox/
 body {
     margin: 0;
     font-family: Arial, sans-serif;
+    background-color: grey;
 }
 
 /* Rules for icon sizes from google: */
 .material-icons.md-18 { font-size: 18px;}
-.material-icons.md-24 { font-size: 24px; position: relative; top: 2px} /* Default */
-.material-icons.md-36 { font-size: 36px; position: relative; top: 2px}
-.material-icons.md-48 { font-size: 48px; position: relative; top: 2px}
+.material-icons.md-24 { font-size: 24px; position: relative; top: 2px;} /* Default */
+.material-icons.md-36 { font-size: 36px; position: relative; top: 2px;}
+.material-icons.md-48 { font-size: 48px; position: relative; top: 2px;}
 
 .browse {
     display: grid;

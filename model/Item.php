@@ -77,6 +77,10 @@ class Item extends Model {
         $this->starting_bid = $new_starting_bid;
     }
 
+    public function add_picture(ItemPicture $picture) : void {
+        $this->pictures[] = $picture;
+    }
+
     public static function get_item(int $id): Item|false {
         /*
         doc 'A' : https://www.reddit.com/r/SQL/comments/10ytngc/how_do_i_join_two_tables_with_all_fields_from/
@@ -136,6 +140,13 @@ class Item extends Model {
         }
     }
 
+    public function get_main_picture_path(): string {
+        if(empty($this->pictures))
+            return false;
+        $first = min(array_keys($this->pictures));
+        return $this->pictures[$first]->get_picture_path();
+    }
+
     public static function get_all_available_items(): array {
         $query = self::execute(
             "SELECT *
@@ -188,6 +199,42 @@ class Item extends Model {
         }
 
         return $available_items;
+    }
+
+    private static function set_items_pictures(array $items) : void {
+        /*
+        doc: https://www.php.net/manual/en/function.array-keys.php
+        doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
+        */
+        $placeholders = [];
+        $params = [];
+        foreach ($items as $i => $u) {
+            $placeholders[] = ":u$i";
+            $params[":u$i"] = $u->get_id();
+        }
+
+        $query = self::execute(
+            "SELECT * 
+            FROM item_pictures
+            WHERE item IN ("
+                .implode(',', $placeholders).
+            ")",
+            $params
+        );
+
+        $data = $query->fetchAll();
+        $items_pictures = [];
+        foreach($data as $row) {
+            $picture = new ItemPicture(
+                $items[$row['item']],
+                $row['priority'],
+                $row['picture_path']
+            );
+
+            $items[$row['item']]->add_picture($picture);
+        }
+
+        
     }
 }
 

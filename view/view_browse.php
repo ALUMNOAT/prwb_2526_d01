@@ -25,7 +25,7 @@
             $item = $item_status->get_item(); ?>
             <div class="card">
                 <div class="container_image">
-                    <img src="<?= $item->get_pictures()[1]->get_picture_path() ?>" alt="Avatar" style="width:100%">
+                    <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar" style="width:100%">
 
                     <div class="bottom-left">Bottom Left</div>
 
@@ -55,11 +55,11 @@
     </div>
 
     <div class="browse">
-        <?php foreach ($available_items as $item_status):
-            $item = $item_status->get_item(); ?>
+        <?php foreach ($available_items as $item_status2):
+            $item = $item_status2->get_item(); ?>
             <div class="card">
                 <div class="container_image">
-                    <img src="<?= $item->get_pictures()[1]->get_picture_path() ?>" alt="Avatar" style="width:100%">
+                    <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar" style="width:100%">
 
                     <div class="bottom-left">Bottom Left</div>
 
@@ -68,7 +68,9 @@
                     <div class="top-right">Auction</div>
 
                     <?php if (count($item->get_pictures()) > 1): ?>
-                        <div class="bottom-right"><?= count($item->get_pictures()) ?> images</div>
+                        <div class="bottom-right">
+                            <i class="material-icons md-18">collections</i><?= count($item->get_pictures()) ?> images
+                        </div>
                     <?php endif; ?>
 
                     <div class="centered">Centered</div>

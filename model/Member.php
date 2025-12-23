@@ -202,6 +202,7 @@ class Member extends Model {
         /*
         doc: https://stackoverflow.com/questions/907806/passing-an-array-to-a-query-using-a-where-clause
         doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
+        doc A: https://www.codestudy.net/blog/default-array-values-if-key-doesn-t-exist/#method-4-null-coalescing-assignment-
         */
         $placeholders = [];
         $params = [];
@@ -223,7 +224,9 @@ class Member extends Model {
 
         $users = [];
         foreach ($data as $row) {
-            $users[$row['id']] = new Member(
+            //see 'doc A' for '??='
+            //it assigns a value if there are none already
+            $users[$row['id']] ??= new Member(
                 $row['full_name'],
                 $row['email'],
                 $row['pseudo'],
