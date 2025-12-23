@@ -311,6 +311,11 @@ class Member extends Model {
         doc: https://stackoverflow.com/questions/329931/sql-select-join-is-it-possible-to-prefix-all-columns-as-prefix
         doc: https://www.php.net/manual/en/function.array-column.php
         */
+
+        //GUEST
+        if($this->id === null)
+            return [];
+
         $query = self::execute(
             "SELECT *
             FROM v_items_status AS v  
@@ -376,6 +381,9 @@ class Member extends Model {
         doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
         doc A: https://www.codestudy.net/blog/default-array-values-if-key-doesn-t-exist/#method-4-null-coalescing-assignment-
         */
+        if(empty($users_id)) 
+            return [];
+
         $placeholders = [];
         $params = [];
         foreach ($users_id as $i => $u) {

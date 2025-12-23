@@ -17,7 +17,7 @@ class ControllerLogin extends Controller {
 
     public function index(): void {
         if ($this->user_logged())   //already connected, redirect
-            $this->redirect("placeholder");
+            $this->redirect("browse");
         else                        //nobody connected, or trying connection
             $email = "";
             $password = "";
@@ -36,7 +36,7 @@ class ControllerLogin extends Controller {
                     //Luca: $member will evaluate to 'true' if there is an object, otherwise it will be false
                     //Luca: log_user() also redirects
                     if ($member) // s'assure que le membre existe
-                        $this->log_user($member, "placeholder"); // stocke le membre connecté dans la session
+                        $this->log_user($member, "browse"); // stocke le membre connecté dans la session
                 }
             }
             //Luca: the login view can now work without any variables sent if we so desire. usefull when we first land on the page
@@ -45,10 +45,10 @@ class ControllerLogin extends Controller {
 
     public function guest(): void {
         if ($this->user_logged())
-            $this->redirect("placeholder");
+            $this->redirect("browse");
         else {
             $guest = new Member(null, "guest", null, "guest", null, Role::USER, null, null);
-            $this->log_user($guest, "placeholder");
+            $this->log_user($guest, "browse");
         }
     }
 
@@ -62,7 +62,7 @@ class ControllerLogin extends Controller {
         $pseudo = $_GET['param1'];
         $member = Member::get_member_by_pseudo($pseudo);
         if ($member)
-            $this->log_user($member, "placeholder");
+            $this->log_user($member, "browse");
         else
             $this->redirect("login");
     }
