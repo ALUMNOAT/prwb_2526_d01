@@ -95,5 +95,9 @@ class ControllerTest extends Controller {
         exit;
     }
 
+    public function logout_user(): void {
+        $this->logout();
+    }
+
 
 }

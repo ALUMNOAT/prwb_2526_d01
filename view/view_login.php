@@ -21,27 +21,27 @@
             <hr>
 
             <!-- LOGIN FORM -->
-            <form action="test/login" method="post">
+            <form action="login" method="post">
                 <input type="text" id="email" name="email" placeholder="Mail" value="<?= $email ?? null ?>" required>
-                <input type="password" id="password" name="password" placeholder="******" required>
+                <input type="password" id="password" name="password" placeholder="***" required>
                 <button type="submit" class="btn-login">Login</button>
             </form>
 
             <!-- GUEST -->
             <!-- https://www.geeksforgeeks.org/html/how-to-create-an-html-button-that-acts-like-a-link/ -->
-            <form action='test/index'>
+            <form action='login/guest'>
                 <button type="submit" class="btn-guest">Continue as guest</button>
             </form>
 
             <!-- SIGNUP LINK -->
             <p class="signup-link">
-                <a href="test/signup">New here? Click here to subscribe!</a>
+                <a href="signup">New here? Click here to subscribe!</a>
             </p>
 
             <hr>
 
             <!-- ERRORS -->
-            <?php if (isset($errors) && $errorscount($errors) != 0): ?>
+            <?php if (isset($errors) && count($errors) != 0): ?>
                 <div class="errors">
                     <p>Please correct the following error(s) :</p>
                     <ul>
@@ -55,10 +55,12 @@
             <!-- LOGIN DEBUG -->
             <div class="debug">
                 <h3>For Debug Purpose</h3>
-                <p>Login as <a href="index.php?controller=test&action=login_as&email=boverhaegen@epfc.eu" class="white"><strong>boverhaegen@epfc.eu</strong></a></p>
-                <p>Login as <a href="index.php?controller=test&action=login_as&email=mamichel@epfc.eu" class="white"><strong>mamichel@epfc.eu</strong></a></p>
-                <p>Login as <a href="index.php?controller=test&action=login_as&email=quhouben@epfc.eu" class="white"><strong>quhouben@epfc.eu</strong></a></p>
-                <p>Login as <a href="index.php?controller=test&action=login_as&email=xapigeolet@epfc.eu" class="white"><strong>xapigeolet@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/Boris" class="white"><strong>boverhaegen@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/Marc" class="white"><strong>mamichel@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/Quentin" class="white"><strong>quhouben@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/Xavier" class="white"><strong>xapigeolet@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/Admin" class="white"><strong>admin@epfc.eu</strong></a></p>
+
                 <a href="#" class="green">Restore original data</a>
                 <a href="#" class="orange">Backup personal data</a>
                 <a href="#" class="orange">Restore personal data</a>

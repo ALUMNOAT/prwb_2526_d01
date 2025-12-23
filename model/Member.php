@@ -18,28 +18,28 @@ class Member extends Model {
     public function __construct(
         private ?int $id,
         private string $full_name,
-        private string $email,
+        private ?string $email,     //Luca: guests don't have emails
         private string $pseudo,
-        private string $password,
+        private ?string $password,   //Luca: guests don't have passwords
         private Role $role,
         private ?string $picture_path = null,
         private ?string $iban = null
     ) {
     }
 
-    public function get_id(): int {
+    public function get_id(): ?int {
         return $this->id;
     }
     public function get_full_name(): string {
         return $this->full_name;
     }
-    public function get_email(): string {
+    public function get_email(): ?string {
         return $this->email;
     }
     public function get_pseudo(): string {
         return $this->pseudo;
     }
-    public function get_password(): string {
+    public function get_password(): ?string {
         return $this->password;
     }
     public function get_role(): Role {
