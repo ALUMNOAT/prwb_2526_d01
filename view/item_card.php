@@ -1,7 +1,17 @@
+<?php
+/*
+doc: https://stackoverflow.com/questions/42623498/php-cast-to-my-class 
+*/
+
+/** @var Item $item */
+/** @var ItemStatus $item_status */
+?>
+
 <div class="card">
     <a href="item/<?= $item->get_id() ?>">
         <span class="link-card"></span>
     </a>
+
     <div class="container_image">
         <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar" style="width:100%">
 
