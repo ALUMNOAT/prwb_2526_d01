@@ -252,6 +252,29 @@ class Member extends Model {
         return $errors;
     }
 
+    public function validate_email(): array {
+        $errors = [];
+
+        if (!filter_var($this->email, FILTER_VALIDATE_EMAIL))
+            $errors[] = "L'adresse email n'est pas valide.";
+
+        return $errors;
+    }
+
+    public static function validate_login(string $email, string $password): array {
+        $errors = [];
+
+        $member = self::get_member_by_email($email);
+        if ($member) {
+            if (!self::check_password($password, $member->password))
+                $errors[] = "Le mot de passe est incorrect. Essayez encore une fois.";
+        } else {
+            $errors[] = "Un utilisateur avec cet email '$email' n'existe pas. Veuillez vous inscrire.";
+        }
+
+        return $errors;
+    }
+
     public static function get_member(int $id): Member|false {
         $query = self::execute(
             "SELECT *
