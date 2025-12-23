@@ -23,7 +23,7 @@ class Member extends Model {
         private ?string $password,   //Luca: guests don't have passwords
         private Role $role,
         private ?string $picture_path = null,
-        private ?string $iban = null
+        private ?string $iban = null,
     ) {
     }
 
@@ -252,26 +252,155 @@ class Member extends Model {
         return $errors;
     }
 
-    public function validate_email(): array {
-        $errors = [];
+    public static function get_member(int $id): Member|false {
+        $query = self::execute(
+            "SELECT *
+            FROM users 
+            WHERE users.id = :user_id",
+            [
+                "user_id" => $id,
+            ]
+        );
 
-        if (!filter_var($this->email, FILTER_VALIDATE_EMAIL))
-            $errors[] = "L'adresse email n'est pas valide.";
+        if ($query->rowCount() == 0)
+            return false;
 
-        return $errors;
+        $row = $query->fetch();
+        $member = new Member(
+            $row['id'],
+            $row['full_name'],
+            $row['email'],
+            $row['pseudo'],
+            $row['password'],
+            Role::from($row['role']),
+            $row['picture_path'],
+            $row['iban']
+        );
+
+        return $member;
     }
 
-    public static function validate_login(string $email, string $password): array {
-        $errors = [];
+    public function get_my_bidded_items(): array {
+        /*
+        doc: https://www.dataforgelabs.com/advanced-sql-concepts/join-with-subquery-sql
+        doc: https://stackoverflow.com/questions/13131496/how-to-do-join-on-multiple-criteria-returning-all-combinations-of-both-criteria
+        doc: https://stackoverflow.com/questions/1416980/how-to-fetch-result-from-mysql-row-with-multiple-same-name-columns-with-php
+        doc: https://stackoverflow.com/questions/329931/sql-select-join-is-it-possible-to-prefix-all-columns-as-prefix
+        doc: https://www.php.net/manual/en/function.array-column.php
+        */
+        $query = self::execute(
+            "SELECT *
+            FROM v_items_status AS v  
+            WHERE v.id IN (
+                SELECT bids.item                
+                FROM bids
+                WHERE bids.owner = :user_id
+            )
+            AND v.end_at > :now
+            ORDER BY v.end_at ASC",
+            [
+                "user_id" => $this->id,
+                "now" => AppTime::get_current_datetime()
+            ]
+        );
 
-        $member = self::get_member_by_email($email);
-        if ($member) {
-            if (!self::check_password($password, $member->password))
-                $errors[] = "Le mot de passe est incorrect. Essayez encore une fois.";
-        } else {
-            $errors[] = "Un utilisateur avec cet email '$email' n'existe pas. Veuillez vous inscrire.";
+        $data = $query->fetchAll();
+
+        $owner = Member::get_members(array_column($data, 'owner'));
+        $items = [];
+        $my_bidded_items = [];
+
+        foreach ($data as $row) {
+            $item = new Item(
+                $row['id'],
+                $row['title'],
+                $owner[$row['owner']],
+                $row['created_at'],
+                $row['duration_days'],
+                [],
+                $row['description'] ?? "",
+                $row['buy_now_price'],
+                $row['starting_bid']
+            );
+
+            $items[$row['id']] = $item;  //ça marche bien
+
+            $my_bidded_items[$row['id']] = new ItemStatus(
+                $item,
+                $row['end_at'],
+                $row['bid_count'],
+                $row['max_bid'],
+                $row['is_direct_sale'] === 1,
+                $row['is_auction'] === 1,
+                $row['has_buy_now'] === 1,
+                $row['has_bids'] === 1,
+                $row['buy_now_reached'] === 1,
+                $row['not_purchased_direct_sale'] === 1
+            );
         }
 
-        return $errors;
+        $items_pictures = ItemPicture::get_items_picture($items);
+        foreach ($items as $item) {
+            $item->set_pictures($items_pictures[$item->get_id()]);
+        }
+
+        return $my_bidded_items;
     }
+
+    public static function get_members(array $users_id): array {
+        /*
+        doc: https://stackoverflow.com/questions/907806/passing-an-array-to-a-query-using-a-where-clause
+        doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
+        doc A: https://www.codestudy.net/blog/default-array-values-if-key-doesn-t-exist/#method-4-null-coalescing-assignment-
+        */
+        $placeholders = [];
+        $params = [];
+        foreach ($users_id as $i => $u) {
+            $placeholders[] = ":u$i";
+            $params[":u$i"] = $u;
+        }
+
+        $query = self::execute(
+            "SELECT *
+            FROM users  
+            WHERE users.id IN ("
+                . implode(',', $placeholders) .
+                ")",
+            $params
+        );
+
+        $data = $query->fetchAll();
+
+        $users = [];
+        foreach ($data as $row) {
+            //see 'doc A' for '??='
+            //it assigns a value if there are none already
+            $users[$row['id']] ??= new Member(
+                $row['id'],
+                $row['full_name'],
+                $row['email'],
+                $row['pseudo'],
+                $row['password'],
+                Role::from($row['role']),
+                $row['picture_path'],
+                $row['iban']
+            );
+        }
+
+        return $users;
+    }
+
+    /*public function get_my_bids() : array {
+        $query = self::execute(
+            "SELECT *
+            FROM bids
+            WHERE bids.owner = :user_id",
+            [
+                "user_id" => $this->id,
+            ]
+        );
+
+        $data = $query->fetchAll();
+        $my_bids = [];
+    }*/
 }
