@@ -3,8 +3,10 @@
 doc: https://stackoverflow.com/questions/42623498/php-cast-to-my-class 
 */
 
-/** @var Item $item */
-/** @var ItemStatus $item_status */
+/** 
+ * @var Item $item
+ * @var ItemStatus $item_status 
+ */
 ?>
 
 <div class="card">
