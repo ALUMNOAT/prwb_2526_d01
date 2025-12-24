@@ -51,11 +51,14 @@ class ItemPicture extends Model {
         }
     }
 
-    public static function get_items_picture(array $items) {
+    public static function get_items_picture(array $items): array {
         /*
         doc: https://www.php.net/manual/en/function.array-keys.php
         doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
         */
+        if(empty($items))
+            return [];
+        
         $placeholders = [];
         $params = [];
         foreach ($items as $i => $u) {

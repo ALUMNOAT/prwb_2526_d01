@@ -7,7 +7,8 @@ doc:https://stackoverflow.com/questions/796087/make-a-div-into-a-link
 */
 
 /** 
- * @var Item $item 
+ * @var Member $user
+ * @var Item $item
  * @var ItemStatus $item_status
  * @var array $my_bidded_items
  * @var array $available_items
@@ -28,28 +29,29 @@ doc:https://stackoverflow.com/questions/796087/make-a-div-into-a-link
 
 <body>
     <div class="margin">
-        <div>
+
+        <?php if ($user->get_id() !== null): ?>
             <h1>My Bids</h1>
-        </div>
+            <div class="browse">
+                <?php foreach ($my_bidded_items as $item_status) {
+                    $item = $item_status->get_item();
+                    require 'item_card.php';
+                } ?>
+            </div>
+        <?php endif; ?>
 
-        <div class="browse">
-            <?php foreach ($my_bidded_items as $item_status) {
-                $item = $item_status->get_item();
-                require 'item_card.php';
-            } ?>
-        </div>
-
-        <div>
-            <h1>Available Items</h1>
-        </div>
-
+        <h1>Available Items</h1>
         <div class="browse">
             <?php foreach ($available_items as $item_status) {
                 $item = $item_status->get_item();
                 require 'item_card.php';
             } ?>
         </div>
+
+        <p><a href='placeholder/logout_user'>Logout</a>
     </div>
+
+
 
     <?php require 'menu.php' ?>
 
