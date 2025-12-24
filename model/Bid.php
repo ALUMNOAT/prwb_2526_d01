@@ -8,7 +8,7 @@ class Bid extends Model {
 
     public function __construct(
         private Member $owner,
-        private Item $item,
+        private ItemStatus $item_status,
         private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
         private float $amount,
         private bool $is_highest_bid
@@ -18,8 +18,8 @@ class Bid extends Model {
     public function get_owner(): Member {
         return $this->owner;
     }
-    public function get_item(): Item {
-        return $this->item;
+    public function get_item_status(): ItemStatus {
+        return $this->item_status;
     }
     public function get_created_at(): string {
         return $this->created_at;
@@ -34,8 +34,8 @@ class Bid extends Model {
     public function set_owner(Member $new_owner): void {
         $this->owner = $new_owner;
     }
-    public function set_item(Item $new_item): void {
-        $this->item = $new_item;
+    public function set_item_status(ItemStatus $new_item_status): void {
+        $this->item_status = $new_item_status;
     }
     public function set_created_at(string $new_created_at): void {
         $this->created_at = $new_created_at;

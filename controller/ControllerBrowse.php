@@ -15,15 +15,15 @@ class ControllerBrowse extends Controller {
              * @var Member $user
              */
             $user = $this->get_user_or_redirect();
-            $my_bidded_items = $user->get_my_bidded_items(); //returns '[]' for guests
+            $my_bids = $user->get_my_bids(); //returns '[]' for guests
             $available_items = Item::get_all_available_items();
 
             // set theory: 'A - B' on keys (here it's item id)
-            $my_available_items = array_diff_key($available_items, $my_bidded_items);
+            $my_available_items = array_diff_key($available_items, $my_bids);
 
             (new View("browse"))->show([
                 "user" => $user,
-                "my_bidded_items" => $my_bidded_items,
+                "my_bids" => $my_bids,
                 "available_items" => $my_available_items
             ]);
         } else

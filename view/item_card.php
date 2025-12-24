@@ -4,6 +4,7 @@ doc: https://stackoverflow.com/questions/42623498/php-cast-to-my-class
 */
 
 /** 
+ * @var Bid $bid
  * @var Item $item
  * @var ItemStatus $item_status 
  */
@@ -18,11 +19,30 @@ doc: https://stackoverflow.com/questions/42623498/php-cast-to-my-class
         <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar" style="width:100%">
 
         <div class="container-info">
-            <div class="bottom-left">Bottom Left</div>
+            <?php if (isset($bid)): ?>
+                <div class="top-left">
+                    <span class="material-symbols-outlined">
+                        <?= $bid->get_is_highest_bid()
+                            ? 'trophy'
+                            : 'gavel'
+                        ?>
+                    </span>
+                    <?= $bid->get_is_highest_bid()
+                        ? 'Highest Bidder'
+                        : 'Bidder'
+                    ?>
+                </div>
+            <?php endif; ?>
 
-            <div class="top-left">Auction</div>
+            <div class="top-right">
+                Auction
+            </div>
 
-            <div class="top-right">Auction</div>
+            <?php if (false): ?>
+                <div class="centered">
+                    Centered
+                </div>
+            <?php endif; ?>
 
             <?php if (count($item->get_pictures()) > 1): ?>
                 <div class="bottom-right">
@@ -30,7 +50,11 @@ doc: https://stackoverflow.com/questions/42623498/php-cast-to-my-class
                 </div>
             <?php endif; ?>
 
-            <div class="centered">Centered</div>
+            <?php if (false): ?>
+                <div class="bottom-left">
+                    Bottom Left
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 

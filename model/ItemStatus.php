@@ -92,17 +92,18 @@ class ItemStatus extends Model {
 
             $query = self::execute(
                 "SELECT * 
-                FROM v_items_status
-                WHERE item IN ("
+                FROM v_items_status AS v
+                WHERE v.id IN ("
                     . implode(',', $placeholders) .
                     ")",
                 $params
             );
 
             $data = $query->fetchAll();
+            
             foreach ($data as $row) {
                 $items_status[$row['id']] = new ItemStatus(
-                    $items[$row['item']],
+                    $items[$row['id']],
                     $row['end_at'],
                     $row['bid_count'],
                     $row['max_bid'],
