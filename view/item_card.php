@@ -21,16 +21,11 @@ doc: https://stackoverflow.com/questions/42623498/php-cast-to-my-class
         <div class="container-info">
             <?php if (isset($bid)): ?>
                 <div class="top-left">
-                    <span class="material-symbols-outlined">
-                        <?= $bid->get_is_highest_bid()
-                            ? 'trophy'
-                            : 'gavel'
-                        ?>
-                    </span>
-                    <?= $bid->get_is_highest_bid()
-                        ? 'Highest Bidder'
-                        : 'Bidder'
-                    ?>
+                    <?php if ($bid->get_is_highest_bid()): ?>
+                        <span class="material-symbols-outlined">trophy</span> Highest Bidder
+                    <?php else: ?>
+                        <span class="material-symbols-outlined">gavel</span> Bidder
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
 
@@ -46,7 +41,8 @@ doc: https://stackoverflow.com/questions/42623498/php-cast-to-my-class
 
             <?php if (count($item->get_pictures()) > 1): ?>
                 <div class="bottom-right">
-                    <i class="material-icons md-18">collections</i><?= count($item->get_pictures()) ?> images
+                    <span class="material-symbols-outlined">filter</span>
+                    <?= count($item->get_pictures()) ?> images
                 </div>
             <?php endif; ?>
 

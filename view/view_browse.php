@@ -5,6 +5,10 @@ doc: https: //www.w3schools.com/icons/tryit.asp?filename=tryicons_google-collect
 doc: https: //www.w3docs.com/snippets/css/how-to-make-a-div-a-clickable-link.html
 doc: https://stackoverflow.com/questions/796087/make-a-div-into-a-link
 doc: https://developers.google.com/fonts/docs/material_symbols#getting_material_symbols
+
+problem not fixed: https://github.com/google/material-design-icons/issues/1834
+
+ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
 */
 
 /** 
@@ -24,9 +28,13 @@ doc: https://developers.google.com/fonts/docs/material_symbols#getting_material_
     <meta charset="UTF-8">
     <title>Browse</title>
     <base href="<?= $web_root ?>">
+    <!--
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
-    <link rel="stykesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=gavel,trophy,filter&display=block">
+    <link rel="stykesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=filter,gavel,trophy&display=block">
+    <link rel="stykesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=home,palette,settings&display=block">
+    -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=filter,gavel,trophy" />
     <link rel="stylesheet" href="css/browse.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
