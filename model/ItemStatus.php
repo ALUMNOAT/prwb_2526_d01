@@ -100,7 +100,7 @@ class ItemStatus extends Model {
             );
 
             $data = $query->fetchAll();
-            
+
             foreach ($data as $row) {
                 $items_status[$row['id']] = new ItemStatus(
                     $items[$row['id']],
@@ -155,29 +155,33 @@ class ItemStatus extends Model {
 
         $now = new DateTime(AppTime::get_current_datetime());
         $ago = new DateTime($this->end_at);
-        $diff = $ago->diff($now);
 
-        $time_scale = array(
-            'y' => $diff->y,
-            'm' => $diff->m,
-            'w' => floor($diff->d / 7), //I think it's python which has '/' and '//' hehe :)
-            'd' => $diff->d % 7,
-            'h' => $diff->h,
-            'min' => $diff->i,
-            's' => $diff->s,
-        );
+        if ($now > $ago)
+            return "ended";
+        else {
+            $diff = $ago->diff($now);
+            $time_scale = array(
+                'y' => $diff->y,
+                'm' => $diff->m,
+                'w' => floor($diff->d / 7), //I think it's python which has '/' and '//' hehe :)
+                'd' => $diff->d % 7,
+                'h' => $diff->h,
+                'min' => $diff->i,
+                's' => $diff->s,
+            );
 
-        //doc: https://www.php.net/manual/en/function.array-filter.php
-        $test = array_filter($time_scale); //removes values equals to 0 (amazing !)
-        $test = array_slice($test, 0, $precision); //takes at most the first 2 elements (or precision)
-        $ends_in = "";
+            //doc: https://www.php.net/manual/en/function.array-filter.php
+            $test = array_filter($time_scale); //removes values equals to 0 (amazing !)
+            $test = array_slice($test, 0, $precision); //takes at most the first 2 elements (or precision)
+            $ends_in = "";
 
-        foreach ($test as $k => $v) {
-            $ends_in = $ends_in . $v . $k . " ";
+            foreach ($test as $k => $v) {
+                $ends_in = $ends_in . $v . $k . " ";
+            }
+
+            return $ends_in === ""
+                ? "now"
+                : $ends_in . "left";
         }
-
-        return $ends_in === ""
-            ? "now"
-            : $ends_in . "left";
     }
 }

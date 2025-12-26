@@ -450,13 +450,17 @@ class Member extends Model {
             JOIN v_items_status AS v    
                 ON v.id = b.item
             WHERE b.ranked_order = 1
-            ORDER BY v.end_at ASC;",   
-            ["user_id" => $this->id]
+            AND v.end_at > :now
+            ORDER BY v.end_at ASC;",
+            [
+                "user_id" => $this->id,
+                "now" => AppTime::get_current_datetime()
+            ]
         );
 
         $my_bids = [];
 
-        if($query->rowCount() > 0) {
+        if ($query->rowCount() > 0) {
             $data = $query->fetchAll();
 
             $items_id = array_column($data, 'item');
@@ -467,7 +471,7 @@ class Member extends Model {
             $owners_id = array_column($data, 'owner');
             $owners = Member::get_members($owners_id);
 
-            foreach($data as $row) {
+            foreach ($data as $row) {
                 $highest_bid = $row['global_max'];
                 $owner = $owners[$row['owner']];
                 $item_status = $items_status[$row['item']];

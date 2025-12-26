@@ -22,16 +22,22 @@ h1 {
 }
 
 h4 {
-    color: white
+    color: white;
+    margin: 0;
+}
+
+p {
+    margin: 0;
 }
 
 img {
+    object-fit: contain;
     border-radius: 0.5em 0.5em 0 0;
     width: 100%;
 }
 
 .green {
-    color: rgb(0, 200, 130);
+    color: springgreen;
 }
 
 .material-symbols-outlined {
@@ -87,20 +93,34 @@ img {
 }
 
 .container-text {
-    padding: 1em;
-
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    margin-block-start: 0;
-    margin-block-end: 0;
 
+    padding: 15px;
+    gap: 5px;
 }
 
 .container-prices {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
+    padding: 10px 0px;
+}
+
+.buy-now-price {
+    color: cornflowerblue;
+    font-size: 2em;
+}
+
+.starting-bid-price {
+    color:orange;
+    font-size: 2em;
+}
+
+.current-bid-price {
+    color:springgreen;
+    margin-left: auto;
 }
 
 /* Container holding the image and the text */
@@ -165,7 +185,7 @@ img {
 .buy-now {
     padding: 0.5em;
     border-radius: 1em;
-    background-color:cornflowerblue;
+    background-color: cornflowerblue;
 }
 
 .image-count {

@@ -49,12 +49,20 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
     <!-- TEXT -->
     <div class="container-text">
         <!-- TITLE & OWNER -->
-        <h4><b><?= $item->get_title() ?></b></h4>
+        <h4><b><?= $item->get_title() . $item_status->get_end_at() ?></b></h4>
         <p class="attribution">by <?= $item->get_owner()->get_full_name() ?></p>
 
         <!-- PRICES -->
         <div class="container-prices">
-            
+            <?php if ($item_status->get_has_buy_now()): ?>
+                <div class="buy-now-price">
+                    € <?= number_format($item->get_buy_now_price(), 2,",", ".") ?>
+                </div>
+            <?php else: ?>
+                <div class="starting-bid-price">
+                    € <?= number_format($item->get_starting_bid(), 2,",", ".") ?>
+                </div>
+            <?php endif; ?>
         </div>
 
         <!-- TIME LEFT -->

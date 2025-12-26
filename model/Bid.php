@@ -24,7 +24,7 @@ class Bid extends Model {
     public function get_created_at(): string {
         return $this->created_at;
     }
-    public function get_amount(): int {
+    public function get_amount(): float {
         return $this->amount;
     }
     public function get_highest_bid(): float {
@@ -43,7 +43,7 @@ class Bid extends Model {
     public function set_created_at(string $new_created_at): void {
         $this->created_at = $new_created_at;
     }
-    public function set_amount(int $new_amount): void {
+    public function set_amount(float $new_amount): void {
         $this->amount = $new_amount;
     }
     public function set_highest_bid(float $highest_bid): void {
