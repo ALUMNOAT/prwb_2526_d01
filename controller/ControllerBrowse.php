@@ -11,9 +11,7 @@ class ControllerBrowse extends Controller {
         doc: https://www.php.net/manual/en/function.array-diff.php
         */
         if ($this->user_logged()) {
-            /**
-             * @var Member $user
-             */
+            /** @var Member $user */
             $user = $this->get_user_or_redirect();
             $my_bids = $user->get_my_bids(); //returns '[]' for guests
             $available_items = Item::get_all_available_items();

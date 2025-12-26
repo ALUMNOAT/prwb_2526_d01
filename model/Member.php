@@ -468,7 +468,7 @@ class Member extends Model {
             $owners = Member::get_members($owners_id);
 
             foreach($data as $row) {
-                $is_highest_bid = $row['amount'] == $row['global_max'];
+                $highest_bid = $row['global_max'];
                 $owner = $owners[$row['owner']];
                 $item_status = $items_status[$row['item']];
 
@@ -477,7 +477,7 @@ class Member extends Model {
                     $item_status,
                     $row['created_at'],
                     $row['amount'],
-                    $is_highest_bid
+                    $highest_bid
                 );
             }
 

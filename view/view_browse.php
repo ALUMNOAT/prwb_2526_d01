@@ -34,7 +34,7 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
     <link rel="stykesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=filter,gavel,trophy&display=block">
     <link rel="stykesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=home,palette,settings&display=block">
     -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=filter,gavel,trophy" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=filter,gavel,schedule,shopping_bag,trophy" />
     <link rel="stylesheet" href="css/browse.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -48,7 +48,7 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
                 <?php foreach ($my_bids as $bid) {
                     $item_status = $bid->get_item_status();
                     $item = $item_status->get_item();
-                    require 'item_card.php';
+                    require 'item_card_my_bid.php';
                 } ?>
             </div>
         <?php endif; ?>
@@ -58,7 +58,7 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
             <?php foreach ($available_items as $item_status) {
                 $item = $item_status->get_item();
                 unset($bid); //necessary otherwise the last bid will show in available items (weird !)
-                require 'item_card.php';
+                require 'item_card_available.php';
             } ?>
         </div>
 
