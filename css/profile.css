@@ -155,12 +155,13 @@ body {
 button.row {
     all: unset;           /* supprime le style bouton */
     display: block;
-    width: 100%;
     cursor: pointer;
 }
 
 button.row.logout {
     border: 1px solid #7f1d1d;
     background-color: #1f2933;
-
+    /* Luca: I inadvertendly read yet another AI answer for this solution and I hate that this works... 
+    doc: https://www.w3schools.com/css/css3_box-sizing.asp */
+    box-sizing: border-box;
 }
