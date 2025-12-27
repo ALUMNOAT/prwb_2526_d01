@@ -44,17 +44,17 @@
         <div class="section">
             <h3>Account Settings</h3>
 
-            <a href="member/edit_profile" class="row">
+            <a href="profile/edit_profile" class="row">
                 <div class="row-title">Edit profile</div>
                 <div class="row-desc">Update your personal information</div>
             </a>
 
-            <a href="member/change_password" class="row">
+            <a href="profile/change_password" class="row">
                 <div class="row-title">Change Password</div>
                 <div class="row-desc">Change your account security</div>
             </a>
 
-            <a href="member/profile_picture" class="row">
+            <a href="profile/profile_picture" class="row">
                 <div class="row-title">Profile Picture</div>
                 <div class="row-desc">Upload or change your profile picture</div>
             </a>

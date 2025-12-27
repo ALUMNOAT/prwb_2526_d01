@@ -26,7 +26,7 @@
             </div>
         </div>
 
-    <form method="POST" action='member/profile_picture' class="form-box" enctype="multipart/form-data">
+    <form method="POST" action='profile/profile_picture' class="form-box" enctype="multipart/form-data">
 
         <div class="section">
             <h3>Upload New Picture</h3>

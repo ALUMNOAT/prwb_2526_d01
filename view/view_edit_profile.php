@@ -11,7 +11,7 @@
 <div class="container">
     <h2 class="page-title">Edit profile</h2>
 
-    <form method="POST" action='member/edit_profile' class="form-box">
+    <form method="POST" action='profile/edit_profile' class="form-box">
 
         <div class="section">
             <h3>Personal Information</h3>

@@ -5,7 +5,7 @@ require_once 'framework/View.php';
 require_once 'framework/Controller.php';
 require_once 'utils/Image.php';
 
-class ControllerMember extends Controller {
+class ControllerProfile extends Controller {
 
     // page d'accueil (à adapter)
     public function index() : void {
@@ -42,7 +42,7 @@ class ControllerMember extends Controller {
                 $member->persist();
 
                 // Redirect après POST (principe PRG)
-                $this->redirect("member", "change_password", "ok");
+                $this->redirect("profile", "change_password", "ok");
                 return; // on stoppe le reste du code
             }
         }
@@ -114,7 +114,7 @@ class ControllerMember extends Controller {
                 $member->persist();
 
                 // Redirect après POST (principe PRG)
-                $this->redirect("member", "edit_profile", "ok");
+                $this->redirect("profile", "edit_profile", "ok");
                 return; // on stoppe le reste du code
             }
         }
@@ -225,7 +225,7 @@ class ControllerMember extends Controller {
          */
 
         if (!empty($_POST) && empty($errors)) {
-            $this->redirect("member", "profile_picture", "ok");
+            $this->redirect("profile", "profile_picture", "ok");
         }
 
         /**
