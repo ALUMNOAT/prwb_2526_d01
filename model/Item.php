@@ -116,7 +116,7 @@ class Item extends Model {
                 $row['pseudo'],
                 $row['password'],
                 Role::from($row['role']),
-                $row['item_picture'],
+                $row['user_picture'],
                 $row['iban']
             );
             //ITEM

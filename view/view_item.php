@@ -10,36 +10,49 @@
 </head>
 
 <body>
-<div class="margin">
-    <p>
-        <?php if (isset($member)): ?>
-            <a href="login/logout">Logout</a>
-        <?php else: ?>
-            <a href="login">Login</a>
-        <?php endif; ?>
-    </p>
-</div>
-
-<?php require 'menu.php'; ?>
 
 <div class="item-detail">
+    <h2 class="page-title">Item open</h2>
+    <p>
+        <?php
+        $pictures = $item->get_pictures();
+        if (!empty($pictures)):
+            $firstPic = $pictures[0]; // get the first picture
+            ?>
+            <img src="<?= htmlspecialchars($firstPic->get_picture_path()) ?>" alt="Item picture">
+        <?php endif; ?>
+    </p>
+
     <h1><?= htmlspecialchars($item->get_title()) ?></h1>
     <p><strong>Owner:</strong> <?= htmlspecialchars($item->get_owner()->get_pseudo()) ?></p>
-    <p><strong>Description:</strong> <?= htmlspecialchars($item->get_description() ?? "No description") ?></p>
-    <p><strong>Created At:</strong> <?= htmlspecialchars($item->get_created_at()) ?></p>
-    <p><strong>Duration:</strong> <?= $item->get_duration_days() ?> days</p>
-
-    <?php if (!empty($item->get_pictures())): ?>
-        <div class="item-pictures">
-            <?php foreach ($item->get_pictures() as $pic): ?>
-                <img src="<?= htmlspecialchars($pic->get_picture_path()) ?>" alt="Item picture">
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-
-    <p><strong>Buy Now Price:</strong> <?= $item->get_buy_now_price() ?? "N/A" ?></p>
-    <p><strong>Starting Bid:</strong> <?= $item->get_starting_bid() ?? "N/A" ?></p>
+    <p class="desc"><strong>Description:</strong> <?= htmlspecialchars($item->get_description() ?? "No description") ?></p>
+    <p class="desc"><strong>Start:</strong> <?= htmlspecialchars($item->get_created_at()) ?></p>
+    <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
 </div>
+
+<div class="price-container">
+    <h3 class="desc">Pricing</h3>
+    <?php
+    $buyNowPrice = $item->get_buy_now_price() ?? 0;
+    $currentBid = $currentBid ?? 0;
+    ?>
+    <label class="label"><strong>Current Bid:</strong> <?= $currentBid > 0 ? "€ " . number_format($currentBid, 2, ",", ".") : "N/A" ?></label>
+    <label class="label"><strong>Buy Now:</strong> <?= $buyNowPrice > 0 ? "€ " . number_format($buyNowPrice, 2, ",", ".") : "N/A" ?></label>
+</div>
+
+<div class="seller-container">
+    <h3 class="desc">Seller Information</h3>
+    <?php if (!$item->get_owner()->get_picture_path()): ?>
+        <p>You have no picture.</p>
+        <p>Set it up <a href="member/profile_picture">here</a></p>
+    <?php else: ?>
+        <img src="<?= $item->get_owner()->get_picture_path() ?>" width="100" alt="<?= $member->get_pseudo() ?>&apos;s photo!">
+    <?php endif; ?>
+    <label class="label"><?= $item->get_owner()->get_pseudo() ?></label>
+    <p class="desc">Member</p>
+
+</div>
+
 
 </body>
 </html>
