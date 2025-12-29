@@ -29,6 +29,19 @@
     <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
 </div>
 
+<div class="images">
+    <?php
+    $pictures = $item->get_pictures();
+    if (!empty($pictures)):
+        foreach ($pictures as $pic):
+            ?>
+            <img src="<?= htmlspecialchars($pic->get_picture_path()) ?>" alt="Item picture">
+        <?php
+        endforeach;
+    endif;
+    ?>
+</div>
+
 <div class="price-container">
     <h3 class="desc">Pricing</h3>
     <?php
