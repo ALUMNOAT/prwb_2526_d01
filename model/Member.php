@@ -1,5 +1,6 @@
 <?php
 require_once "framework/Model.php";
+require_once "model/Bid.php";
 require_once "utils/Role.php";
 
 
@@ -117,7 +118,7 @@ class Member extends Model {
 
     public static function get_member_by_email(string $email): Member|false {
         $query = self::execute(
-            "SELECT * FROM users WHERE email = :email", 
+            "SELECT * FROM users WHERE email = :email",
             [":email" => $email]
         );
 
@@ -133,7 +134,7 @@ class Member extends Model {
 
     public static function get_member_by_full_name(string $full_name): Member|false {
         $query = self::execute(
-            "SELECT * FROM users WHERE full_name = :full_name", 
+            "SELECT * FROM users WHERE full_name = :full_name",
             [":full_name" => $full_name]
         );
 
@@ -244,11 +245,11 @@ class Member extends Model {
 
         if (strlen($this->full_name) === 0)
             $errors[] = "Un nom est requis.";
-        else if (strlen($this->full_name) < Configuration::get("full_name_min_length", 3)) 
+        else if (strlen($this->full_name) < Configuration::get("full_name_min_length", 3))
             $errors[] = "Le nom doit avoir au minimum 3 caractères.";
-        else if (strlen($this->full_name) > Configuration::get("full_name_max_length", 255)) 
+        else if (strlen($this->full_name) > Configuration::get("full_name_max_length", 255))
             $errors[] = "Le nom ne doit pas dépasser 255 charactère.";
-        
+
         return $errors;
     }
 
@@ -313,7 +314,7 @@ class Member extends Model {
         */
 
         //GUEST
-        if($this->id === null)
+        if ($this->id === null)
             return [];
 
         $query = self::execute(
@@ -381,7 +382,7 @@ class Member extends Model {
         doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
         doc A: https://www.codestudy.net/blog/default-array-values-if-key-doesn-t-exist/#method-4-null-coalescing-assignment-
         */
-        if(empty($users_id)) 
+        if (empty($users_id))
             return [];
 
         $placeholders = [];
@@ -421,17 +422,77 @@ class Member extends Model {
         return $users;
     }
 
-    /*public function get_my_bids() : array {
+    public function get_my_bids(): array {
+        /*
+        doc: https://www.interviewquery.com/p/sql-max-case-when
+        doc: https://sentry.io/answers/in-sql-how-do-i-select-only-rows-with-max-value-on-a-column/ --> see topchef's answer
+        doc: https://stackoverflow.com/questions/38549/what-is-the-difference-between-inner-join-and-outer-join
+        doc: https://stackoverflow.com/questions/15486131/select-distinct-and-max-in-the-same-query
+        doc: https://stackoverflow.com/questions/4282413/sort-array-of-objects-by-one-property
+        doc: https://stackoverflow.com/questions/45420576/syntax-error-column-isnt-in-group-by-sql-laravel
+        doc: https://stackoverflow.com/questions/41571271/group-by-not-working-laravel
+        doc: https://dev.mysql.com/doc/refman/5.7/en/group-by-handling.html
+        */
         $query = self::execute(
-            "SELECT *
-            FROM bids
-            WHERE bids.owner = :user_id",
+            "SELECT b.owner, b.item, b.created_at, b.amount, global_max
+            FROM (
+                SELECT bids.owner, bids.item, bids.created_at, bids.amount,
+                ROW_NUMBER() OVER (PARTITION BY bids.item ORDER BY bids.amount DESC) ranked_order
+                FROM bids
+                WHERE bids.owner = :user_id
+            ) AS b
+            LEFT JOIN (
+                SELECT bids.item, MAX(bids.amount) AS global_max
+                FROM bids
+                GROUP BY bids.item
+            ) AS max_bids
+                ON (max_bids.item) = (b.item)
+            JOIN v_items_status AS v    
+                ON v.id = b.item
+            WHERE b.ranked_order = 1
+            AND v.end_at > :now
+            ORDER BY v.end_at ASC;",
             [
                 "user_id" => $this->id,
+                "now" => AppTime::get_current_datetime()
             ]
         );
 
-        $data = $query->fetchAll();
         $my_bids = [];
-    }*/
+
+        if ($query->rowCount() > 0) {
+            $data = $query->fetchAll();
+
+            $items_id = array_column($data, 'item');
+            $items = Item::get_items($items_id);
+
+            $items_status = ItemStatus::get_items_status($items);
+
+            $owners_id = array_column($data, 'owner');
+            $owners = Member::get_members($owners_id);
+
+            foreach ($data as $row) {
+                $highest_bid = $row['global_max'];
+                $owner = $owners[$row['owner']];
+                $item_status = $items_status[$row['item']];
+
+                $my_bids[$row['item']] = new Bid(
+                    $owner,
+                    $item_status,
+                    $row['created_at'],
+                    $row['amount'],
+                    $highest_bid
+                );
+            }
+
+            /*
+            //If needs be to sort in PHP, I could use usort with an anonymous function :)
+            usort($my_bids, function ($a, $b) {
+                return 
+            })
+                */
+        }
+
+        return $my_bids;
+    }
 }
