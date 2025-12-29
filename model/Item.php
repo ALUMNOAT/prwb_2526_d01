@@ -88,53 +88,64 @@ class Item extends Model {
         doc 'C' : https://www.php.net/manual/en/backedenum.from.php
         */
         $query = self::execute(
-            "SELECT * FROM items
-            JOIN item_pictures ON items.id = item_pictures.item   
-            JOIN users ON items.owner = users.id
-            WHERE items.id = :id",
+            "SELECT items.id AS item_id, items.title, items.created_at, items.duration_days, items.description,
+            items.buy_now_price, items.starting_bid,
+            users.id AS user_id, users.full_name, users.email, users.pseudo, users.password, users.role, users.picture_path AS user_picture, users.iban,
+            item_pictures.priority, item_pictures.picture_path AS item_picture
+                FROM items
+                LEFT JOIN item_pictures ON items.id = item_pictures.item
+                JOIN users ON items.owner = users.id
+                WHERE items.id = :id",
             ["id" => $id]
         );
+
 
         if ($query->rowCount() == 0)
             return false;
         else {
             $data = $query->fetchAll();
 
-            //PICTURES
-            $item_pictures = [];
-            foreach ($data as $row) {
-                $item_pictures[] = new ItemPicture(
-                    Item::get_item($row['item']),
-                    $row['priority'],
-                    $row['picture_path']
-                );
-            }
-
-            $row = array_pop($data);    # 'B', we care about efficiency here !
+            // On prend la première ligne pour construire l'Item (les données sont les mêmes pour l'item)
+            $row = $data[0];
 
             //OWNER
             $owner = new Member(
+                $row['user_id'],
                 $row['full_name'],
                 $row['email'],
                 $row['pseudo'],
                 $row['password'],
                 Role::from($row['role']),
-                $row['users.id'],
-                $row['picture_path'],
+                $row['item_picture'],
                 $row['iban']
             );
             //ITEM
             $item = new Item(
-                $row['items.id'],
+                $row['item_id'],
                 $row['title'],
                 $owner,
                 $row['created_at'],
                 $row['duration_days'],
-                $item_pictures,
+                [],
                 $row['description'],
                 $row['buy_now_price'],
                 $row['starting_bid']
             );
+
+            // Maintenant on peut créer les images en passant l'objet $item
+            $item_pictures = [];
+            foreach ($data as $row) {
+                if ($row['item_picture'] !== null) {
+                    $item_pictures[] = new ItemPicture(
+                        $item,
+                        $row['priority'],
+                        $row['item_picture']
+                    );
+                }
+            }
+
+            // On attache les images à l'item
+            $item->set_pictures($item_pictures);
 
             return $item;
         }

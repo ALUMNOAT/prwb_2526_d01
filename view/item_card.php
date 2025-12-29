@@ -10,7 +10,7 @@ doc: https://stackoverflow.com/questions/42623498/php-cast-to-my-class
 ?>
 
 <div class="card">
-    <a href="item/<?= $item->get_id() ?>">
+    <a href="item/show/<?= $item->get_id() ?>">
         <span class="link-card"></span>
     </a>
 
