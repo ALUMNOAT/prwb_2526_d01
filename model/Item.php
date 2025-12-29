@@ -158,6 +158,50 @@ class Item extends Model {
         return $this->pictures[$first]->get_picture_path();
     }
 
+    public static function get_items(array $ids): array {
+        $items = [];
+
+        if(!empty($ids)) {
+            $placeholders = [];
+            $params = [];
+            foreach ($ids as $id) {
+                $placeholders[] = ":u$id";
+                $params[":u$id"] = $id;
+            }
+
+            $query = self::execute(
+                "SELECT * 
+                FROM items
+                WHERE items.id IN ("
+                    .implode(',', $placeholders).
+                ")",
+                $params
+            );
+            
+            $data = $query->fetchAll();
+            $owners_id = array_column($data, 'owner');
+            $owners = Member::get_members($owners_id);
+
+            foreach($data as $row) {
+                $items[$row['id']] = new Item(
+                    $row['id'], 
+                    $row['title'],
+                    $owners[$row['owner']],
+                    $row['created_at'],
+                    $row['duration_days'],
+                    [],
+                    $row['description'],
+                    $row['buy_now_price'],
+                    $row['starting_bid']
+                );
+            }
+
+            Item::set_items_pictures($items);
+        }
+
+        return $items;
+    }
+
     public static function get_all_available_items(): array {
         $query = self::execute(
             "SELECT *
@@ -234,7 +278,6 @@ class Item extends Model {
         );
 
         $data = $query->fetchAll();
-        $items_pictures = [];
         foreach($data as $row) {
             $picture = new ItemPicture(
                 $items[$row['item']],
@@ -244,8 +287,6 @@ class Item extends Model {
 
             $items[$row['item']]->add_picture($picture);
         }
-
-        
     }
 }
 
