@@ -21,6 +21,13 @@ class ControllerTest extends Controller {
 
     // gestion de la connection d'un utilisateur
     public function login(): void {
+
+        // Déja connecté -> redirection
+        if ($this->get_user_or_false() !== false) {
+            $this->redirect();
+            return;
+        }
+
         $email = "";
         $password = "";
         $errors = [];
@@ -41,6 +48,13 @@ class ControllerTest extends Controller {
     }
 
     public function signup(): void {
+
+        // Déja connecté -> redirection
+        if ($this->get_user_or_false() !== false) {
+            $this->redirect();
+            return;
+        }
+
         $email = "";
         $full_name = "";
         $pseudo = "";
@@ -56,7 +70,7 @@ class ControllerTest extends Controller {
             $password_confirm = $_POST["password_confirm"];
 
             $member = new Member(null, $full_name, $email, $pseudo, password_hash($password, PASSWORD_BCRYPT), Role::USER);
-            // On vérifie que le pseudo et email sont uniques
+            // On vérifie que le pseudo, email et full_name sont uniques
             $errors = Member::validate_unicity($pseudo, $email, $full_name);
             // On vérifie les règles métiers du full_name
             $errors = array_merge($errors, $member->validate_full_name());
@@ -81,7 +95,7 @@ class ControllerTest extends Controller {
     public function login_as(): void {
         if (!isset($_GET['email'])) {
             // pas d'email fourni, on peut rediriger ou afficher une erreur
-            header("Location: index.php?controller=test&action=index");
+            header("Location: index");
             exit;
         }
 
@@ -91,13 +105,20 @@ class ControllerTest extends Controller {
             $this->log_user($member);
         }
 
-        header("Location: index.php?controller=test&action=index");
+        header("Location: index");
         exit;
     }
 
-    public function logout_user(): void {
-        $this->logout();
+    // Il faut override la methode parente sinon on peut logout avec un GET
+    public function logout(): void
+    {
+        // On peut faire ca meme si profile est dans le ControllerMember
+        // car le form et button est [form action="test/logout"]
+        // du coup le controlleur connait le bouton
+        if (!isset($_POST["logout"])) {
+            echo "Logout must be done via POST.";
+            return;
+        }
+        parent::logout();
     }
-
-
 }

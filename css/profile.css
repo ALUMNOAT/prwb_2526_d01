@@ -1,0 +1,167 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* PAGE BACKGROUND */
+body {
+    background: linear-gradient(180deg, #0f172a, #020617);
+    color: #e5e7eb;
+    min-height: 100vh;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 16px;
+}
+
+/* PAGE TITLE */
+.page-title {
+    text-align: center;
+    color: #60a5fa;
+    margin-bottom: 24px;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+/* CARD / SECTION */
+.section {
+    background-color: #1f2933;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+/* PROFILE SECTION */
+.section:first-of-type {
+    text-align: center;
+}
+
+.section img {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 12px;
+    border: 2px solid #60a5fa;
+}
+
+.section p {
+    margin: 6px 0;
+    color: #cbd5e1;
+}
+
+.section p:nth-child(4) {
+    font-weight: 600;
+    font-size: 18px;
+    color: #ffffff;
+}
+
+/* SECTION TITLES */
+.section h3 {
+    font-size: 16px;
+    color: #cbd5e1;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 8px;
+}
+
+/* ROW STYLE (single clickable item) */
+.row {
+    display: block;
+    width: 100%;
+    padding: 14px 16px;
+    margin-top: 10px;
+    background-color: #111827;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+/* TITLE */
+.row-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+/* DESCRIPTION */
+.row-desc {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* HOVER EFFECT */
+.row:hover {
+    background-color: #1e293b;
+    border-color: #60a5fa;
+}
+
+.row:hover .row-title {
+    color: #60a5fa;
+}
+
+/* LOGOUT ROW */
+.row.logout {
+    display: block;
+    width: 100%;
+    padding: 14px 16px;
+    margin-top: 10px;
+    border-color: #7f1d1d;
+    background-color: #1f2933;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.row.logout .row-title {
+    color: #f87171;
+}
+
+.row.logout:hover {
+    background-color: #7f1d1d;
+}
+
+.row.logout:hover .row-title,
+.row.logout:hover .row-desc {
+    color: #ffffff;
+}
+
+/* FORM RESET */
+.logout-form {
+    width: 100%;
+}
+
+.logout-title {
+    color: red;
+}
+
+.logout-desc {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+button.row {
+    all: unset;           /* supprime le style bouton */
+    display: block;
+    cursor: pointer;
+}
+
+button.row.logout {
+    border: 1px solid #7f1d1d;
+    background-color: #1f2933;
+    /* Luca: I inadvertendly read yet another AI answer for this solution and I hate that this works... 
+    doc: https://www.w3schools.com/css/css3_box-sizing.asp */
+    box-sizing: border-box;
+}
