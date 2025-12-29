@@ -34,7 +34,7 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
 </head>
 
 <body>
-    <div class="margin">
+    <div class="content">
         <!-- MY BIDS -->
         <?php if ($user->get_id() !== null && !empty($my_bids)): ?>
             <h1>My Bids</h1>
@@ -63,8 +63,6 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
         <?php else: ?>
             <p>Nothing here but chickens !</p>
         <?php endif; ?>
-
-        <p><a href='placeholder/logout_user'>Logout</a>
     </div>
 
     <!-- NAVBAR MENU -->

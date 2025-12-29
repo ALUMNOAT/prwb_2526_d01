@@ -1,3 +1,9 @@
+<?php
+/**
+ * @var User $user
+ */
+?>
+
 <ul class="menu">
     <?php if (isset($user) && $user->get_id() !== null): ?>
         <li><a href="browse"><span class="material-symbols-outlined">travel_explore</span> Browse</a></li>

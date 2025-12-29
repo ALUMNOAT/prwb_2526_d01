@@ -8,6 +8,8 @@ doc: https://stackoverflow.com/questions/55395192/resizing-google-material-icons
 doc: https://www.w3schools.com/csS/css3_flexbox_container.asp
 doc: https://blog.webdevsimplified.com/2023-12/margin-trim/#:~:text=The%20margin%2Dtrim%20property%20is%20a%20very%20simple%2C%20but%20incredibly,the%20children%20of%20an%20element.
 doc: https://www.w3schools.com/cssref/pr_grid-template-areas.php
+
+doc 'grid wrapping': https://stackoverflow.com/questions/43129360/css-grid-wrapping <-- interesting !
 */
 
 /* GENERAL TAG */
@@ -50,8 +52,10 @@ img {
         'opsz' 24
 }
 
-.margin {
+.content {
+    width: 100%-1em;
     margin: 1em;
+    justify-content: center;
 }
 
 .attribution {
@@ -60,16 +64,11 @@ img {
 
 .browse {
     display: grid;
-    /*grid: auto auto / auto auto auto auto;*/
-    grid: auto auto / auto auto auto auto;
-    justify-content: start;
-    grid-auto-flow: row;
+    grid-template-columns: repeat(auto-fit, minmax(16em, auto)); /* <-- doc 'grid wrapping' */
     grid-gap: 1em;
 }
 
 .card {
-    max-width: 20em;
-    min-width: 10em;
     max-height: 30em;
     min-height: 20em;
     background-color: rgb(45, 40, 40);

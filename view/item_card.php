@@ -67,7 +67,7 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
     <!-- TEXT -->
     <div class="container-text">
         <!-- TITLE & OWNER -->
-        <h4><b><?= $item->get_title() . $item_status->get_end_at() ?></b></h4>
+        <h4><b><?= $item->get_title() ?></b></h4>
         <p class="attribution">by <?= $item->get_owner()->get_full_name() ?></p>
 
         <!-- PRICES -->
