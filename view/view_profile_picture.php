@@ -1,3 +1,15 @@
+<?php
+/* 
+doc
+*/
+
+/** 
+ * @var Member $user
+ * @var array $errors
+ * @var string $success
+ */
+?>
+
 <!DOCTYPE html>
 <html>
 <head>

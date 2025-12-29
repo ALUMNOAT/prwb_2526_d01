@@ -18,7 +18,7 @@ class ControllerProfile extends Controller {
         if (isset($_GET["param1"]) && $_GET["param1"] !== "") {
             $member = Member::get_member_by_pseudo($_GET["param1"]);
         }
-        (new View("profile"))->show(["member" => $member]);
+        (new View("profile"))->show(["user" => $member]);
     }
 
     public function change_password() : void {
@@ -52,7 +52,7 @@ class ControllerProfile extends Controller {
             $success = "Password updated successfully!";
         }
 
-        (new View("change_password"))->show(["member" => $member, "errors" => $errors, "success" => $success]);
+        (new View("change_password"))->show(["user" => $member, "errors" => $errors, "success" => $success]);
     }
 
     public function edit_profile() : void {
@@ -124,7 +124,7 @@ class ControllerProfile extends Controller {
             $success = "Profile updated successfully!";
         }
 
-        (new View("edit_profile"))->show(["member" => $member, "errors" => $errors, "success" => $success]);
+        (new View("edit_profile"))->show(["user" => $member, "errors" => $errors, "success" => $success]);
     }
 
     /**
@@ -236,7 +236,7 @@ class ControllerProfile extends Controller {
             $success = "Your profile has been successfully updated.";
         }
 
-        (new View("profile_picture"))->show(["member" => $member, "errors" => $errors, "success" => $success]);
+        (new View("profile_picture"))->show(["user" => $member, "errors" => $errors, "success" => $success]);
 
     }
 }

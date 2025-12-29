@@ -30,6 +30,7 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
     <base href="<?= $web_root ?>">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,celebration,filter,gavel,home,schedule,settings,shopping_bag,travel_explore,trophy" />
     <link rel="stylesheet" href="css/browse.css">
+    <link rel="stylesheet" href="css/menu.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
@@ -46,7 +47,7 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
                 } ?>
             </div>
         <?php endif; ?>
-        
+
         <!-- AVAILABLE ITEMS -->
         <?php if (!empty($available_items)): ?>
             <h1>Available Items</h1>
@@ -59,7 +60,7 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
                 } ?>
             </div>
 
-        <!-- NO AVAILABLE ITEMS -->
+            <!-- NO AVAILABLE ITEMS -->
         <?php else: ?>
             <p>Nothing here but chickens !</p>
         <?php endif; ?>
