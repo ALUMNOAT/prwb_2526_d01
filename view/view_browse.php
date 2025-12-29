@@ -28,12 +28,6 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
     <meta charset="UTF-8">
     <title>Browse</title>
     <base href="<?= $web_root ?>">
-    <!--
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
-    <link rel="stykesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=filter,gavel,trophy&display=block">
-    <link rel="stykesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&icon_names=home,palette,settings&display=block">
-    -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=filter,gavel,schedule,shopping_bag,trophy" />
     <link rel="stylesheet" href="css/browse.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,32 +35,39 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
 
 <body>
     <div class="margin">
-
-        <?php if ($user->get_id() !== null): ?>
+        <!-- MY BIDS -->
+        <?php if ($user->get_id() !== null && !empty($my_bids)): ?>
             <h1>My Bids</h1>
             <div class="browse">
                 <?php foreach ($my_bids as $bid) {
                     $item_status = $bid->get_item_status();
                     $item = $item_status->get_item();
-                    require 'item_card_my_bid.php';
+                    require 'item_card.php';
                 } ?>
             </div>
         <?php endif; ?>
+        
+        <!-- AVAILABLE ITEMS -->
+        <?php if (!empty($available_items)): ?>
+            <h1>Available Items</h1>
+            <div class="browse">
+                <?php unset($bid); //necessary otherwise the last bid will show in available items (weird !) 
+                ?>
+                <?php foreach ($available_items as $item_status) {
+                    $item = $item_status->get_item();
+                    require 'item_card.php';
+                } ?>
+            </div>
 
-        <h1>Available Items</h1>
-        <div class="browse">
-            <?php foreach ($available_items as $item_status) {
-                $item = $item_status->get_item();
-                unset($bid); //necessary otherwise the last bid will show in available items (weird !)
-                require 'item_card_available.php';
-            } ?>
-        </div>
+        <!-- NO AVAILABLE ITEMS -->
+        <?php else: ?>
+            <p>Nothing here but chickens !</p>
+        <?php endif; ?>
 
         <p><a href='placeholder/logout_user'>Logout</a>
     </div>
 
-
-
+    <!-- NAVBAR MENU -->
     <?php require 'menu.php' ?>
 
 </body>
