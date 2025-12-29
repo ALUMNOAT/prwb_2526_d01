@@ -28,7 +28,7 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
     <meta charset="UTF-8">
     <title>Browse</title>
     <base href="<?= $web_root ?>">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=filter,gavel,schedule,shopping_bag,trophy" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,celebration,filter,gavel,home,schedule,settings,shopping_bag,travel_explore,trophy" />
     <link rel="stylesheet" href="css/browse.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
