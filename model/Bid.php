@@ -2,6 +2,7 @@
 require_once "framework/Model.php";
 require_once "model/Member.php";
 require_once "model/Item.php";
+require_once "model/ItemStatus.php";
 
 
 class Bid extends Model {
@@ -30,7 +31,7 @@ class Bid extends Model {
     public function get_highest_bid(): float {
         return $this->highest_bid;
     }
-    public function get_is_highest_bid(): float {
+    public function get_is_highest_bid(): bool {
         return $this->highest_bid == $this->amount;
     }
 
@@ -49,4 +50,57 @@ class Bid extends Model {
     public function set_highest_bid(float $highest_bid): void {
         $this->highest_bid = $highest_bid;
     }
+
+    public static function get_bids_for_item(int $item_id): array {
+        $query = self::execute(
+            "SELECT 
+            b.amount,
+            b.created_at,
+            u.id AS user_id,
+            u.pseudo,
+            u.full_name,
+            u.email,
+            u.password,
+            u.role,
+            u.picture_path,
+            u.iban
+         FROM bids b
+         JOIN users u ON b.owner = u.id
+         WHERE b.item = :item_id
+         ORDER BY b.created_at DESC ",
+            ["item_id" => $item_id]
+        );
+
+        $rows = $query->fetchAll();
+
+        $item_status = ItemStatus::get_item_status($item_id);
+        $max_bid = $item_status ? $item_status->get_max_bid() : null;
+
+        $bids = [];
+        foreach ($rows as $row) {
+            $owner = new Member(
+                $row['user_id'],
+                $row['full_name'],
+                $row['email'],
+                $row['pseudo'],
+                $row['password'],
+                Role::from($row['role']),
+                $row['picture_path'],
+                $row['iban']
+            );
+
+            $bids[] = new Bid(
+                $owner,
+                $item_status,
+                $row['created_at'],
+                (float)$row['amount'],
+                $max_bid ?? 0
+            );
+        }
+
+        return $bids;
+    }
+
+
+
 }

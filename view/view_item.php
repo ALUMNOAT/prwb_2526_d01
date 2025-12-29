@@ -24,8 +24,7 @@
     </p>
 
     <h1><?= htmlspecialchars($item->get_title()) ?></h1>
-    <p><strong>Owner:</strong> <?= htmlspecialchars($item->get_owner()->get_pseudo()) ?></p>
-    <p class="desc"><strong>Description:</strong> <?= htmlspecialchars($item->get_description() ?? "No description") ?></p>
+    <p class="desc"><?= htmlspecialchars($item->get_description() ?? "No description") ?></p>
     <p class="desc"><strong>Start:</strong> <?= htmlspecialchars($item->get_created_at()) ?></p>
     <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
 </div>
@@ -37,6 +36,7 @@
     $currentBid = $currentBid ?? 0;
     ?>
     <label class="label"><strong>Current Bid:</strong> <?= $currentBid > 0 ? "€ " . number_format($currentBid, 2, ",", ".") : "N/A" ?></label>
+    <br>
     <label class="label"><strong>Buy Now:</strong> <?= $buyNowPrice > 0 ? "€ " . number_format($buyNowPrice, 2, ",", ".") : "N/A" ?></label>
 </div>
 
@@ -50,9 +50,36 @@
     <?php endif; ?>
     <label class="label"><?= $item->get_owner()->get_pseudo() ?></label>
     <p class="desc">Member</p>
-
 </div>
 
+<div class="bid-history">
+    <h3>Bid History</h3>
+
+    <?php if (empty($bids)): ?>
+        <p>No bids yet.</p>
+    <?php else: ?>
+        <table border="1">
+            <thead>
+            <tr>
+                <th>Bidder</th>
+                <th>Date</th>
+                <th>Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($bids as $bid): ?>
+                <tr <?= $bid->get_is_highest_bid() ? 'style="background-color:#dff0d8;"' : '' ?>>
+                    <td><?= htmlspecialchars($bid->get_owner()->get_pseudo()) ?></td>
+                    <td><?= htmlspecialchars($bid->get_created_at()) ?></td>
+                    <td>
+                        € <?= number_format($bid->get_amount(), 2, ",", ".") ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+</div>
 
 </body>
 </html>

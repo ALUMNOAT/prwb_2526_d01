@@ -2,6 +2,7 @@
 require_once "framework/Controller.php";
 require_once "model/Item.php";
 require_once "model/ItemStatus.php";
+require_once 'model/Bid.php';
 
 class ControllerItem extends Controller {
 
@@ -28,6 +29,9 @@ class ControllerItem extends Controller {
             $currentBid = $item->get_starting_bid();
         }
 
-        (new View("item"))->show(["member" => $member, "item" => $item_status->get_item(), "item_status" => $item_status, "currentBid" => $currentBid]);
+        $bids = Bid::get_bids_for_item($item->get_id());
+
+
+        (new View("item"))->show(["member" => $member, "item" => $item, "item_status" => $item_status, "currentBid" => $currentBid, "bids" => $bids]);
     }
 }
