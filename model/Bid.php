@@ -101,6 +101,53 @@ class Bid extends Model {
         return $bids;
     }
 
+    public static function validate_bid(Member $member, ItemStatus $item_status, ?float $amount): array {
+        $errors = [];
+
+        // Prevent bidding if Buy Now is reached
+        if ($item_status->get_buy_now_reached()) {
+            $errors[] = "Bidding is no longer allowed, the item has been bought via Buy Now.";
+            return $errors;
+        }
+
+        if (!$item_status->get_is_auction()) {
+            $errors[] = "This item is not open for bidding.";
+        }
+
+        if ($amount === null || !is_numeric($amount)) {
+            $errors[] = "Invalid bid amount.";
+        } else {
+            $currentMax = $item_status->get_max_bid() ?? $item_status->get_item()->get_starting_bid();
+            if ($amount <= $currentMax) {
+                $errors[] = "Your bid must be higher than the current bid (€$currentMax).";
+            }
+        }
+
+        return $errors;
+    }
+
+
+    public static function place_bid(Member $member, ItemStatus $item_status, float $amount): void {
+        $created_at = date("Y-m-d H:i:s"); // timestamp
+
+        try {
+            self::execute(
+                "INSERT INTO bids (owner, item, amount, created_at) VALUES (:owner, :item, :amount, :created_at)",
+                [
+                    "owner" => $member->get_id(),
+                    "item" => $item_status->get_item()->get_id(),
+                    "amount" => $amount,
+                    "created_at" => $created_at
+                ]
+            );
+        } catch (\PDOException $e) {
+            // optional: log the error instead of showing it
+            error_log("SQL error: " . $e->getMessage());
+            throw $e; // or handle it gracefully
+        }
+    }
+
+
 
 
 }
