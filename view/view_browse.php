@@ -23,6 +23,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
  * @var int $page
  * @var int $my_bids_pagination
  * @var int $available_items_pagination
+ * @var int $pagination
  */
 ?>
 
@@ -42,6 +43,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     <div class="content">
         <!-- MY BIDS -->
         <?php if ($user->get_id() !== null && !empty($my_bids)): ?>
+
             <h1>My Bids</h1>
             <div class="browse">
                 <?php foreach ($my_bids as $bid) {
@@ -54,31 +56,17 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
                 ?>
             </div>
 
-            <ul class="pagination">
-                <li>
-                    <a <?= min($page, $my_bids_pagination) <= 1 ? "class='disabled'" : "href='browse/page/" . ($page - 1) . "'" ?>>
-                        &laquo;
-                    </a>
-                </li>
+            <!-- PAGINATION -->
+            <?php
+            $pagination = $my_bids_pagination;
+            require 'item_pagination.php'
+            ?>
 
-                <?php for ($page_nb = 1; $page_nb <= $my_bids_pagination; $page_nb++): ?>
-                    <li>
-                        <a <?= $page_nb == min($page, $my_bids_pagination) ? "class='active'" : "" ?> href="browse/page/<?= $page_nb ?>">
-                            <?= $page_nb ?>
-                        </a>
-                    </li>
-                <?php endfor; ?>
-
-                <li>
-                    <a <?= $page >= $my_bids_pagination ? "class='disabled'" : "href='browse/page/" . ($page + 1) . "'" ?>>
-                        &raquo;
-                    </a>
-                </li>
-            </ul>
         <?php endif; ?>
 
         <!-- AVAILABLE ITEMS -->
         <?php if (!empty($available_items)): ?>
+
             <h1>Available Items</h1>
             <div class="browse">
                 <?php foreach ($available_items as $item_status) {
@@ -87,33 +75,21 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
                 } ?>
             </div>
 
-            <ul class="pagination">
-                <li>
-                    <a <?= min($page, $available_items_pagination) <= 1 ? "class='disabled'" : "href='browse/page/" . ($page - 1) . "'" ?>>
-                        &laquo;
-                    </a>
-                </li>
+            <!-- PAGINATION -->
+            <?php
+            $pagination = $available_items_pagination;
+            require 'item_pagination.php'
+            ?>
 
-                <?php for ($page_nb = 1; $page_nb <= $available_items_pagination; $page_nb++): ?>
-                    <li>
-                        <a <?= $page_nb == min($page, $available_items_pagination) ? "class='active'" : "" ?> href="browse/page/<?= $page_nb ?>">
-                            <?= $page_nb ?>
-                        </a>
-                    </li>
-                <?php endfor; ?>
-
-                <li>
-                    <a <?= $page >= $available_items_pagination ? "class='disabled'" : "href='browse/page/" . ($page + 1) . "'" ?>>
-                        &raquo;
-                    </a>
-                </li>
-            </ul>
-
-            <!-- NO AVAILABLE ITEMS -->
-        <?php else: ?>
-            <p>Nothing here but chickens !</p>
         <?php endif; ?>
     </div>
+
+    <!-- NO AVAILABLE ITEMS -->
+    <?php if (empty($my_bids) && empty($available_items)): ?>
+        <div>
+            <p>Nothing here but chickens !</p>
+        </div>
+    <?php endif; ?>
 
     <!-- NAVBAR MENU -->
     <?php require 'menu.php' ?>
