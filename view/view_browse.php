@@ -9,6 +9,8 @@ doc: https://developers.google.com/fonts/docs/material_symbols#getting_material_
 problem not fixed: https://github.com/google/material-design-icons/issues/1834
 
 ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
+
+doc: https://www.w3schools.com/css/css3_pagination.asp
 */
 
 /** 
@@ -18,6 +20,9 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
  * @var ItemStatus $item_status
  * @var array $my_bids
  * @var array $available_items
+ * @var int $page
+ * @var int $my_bids_pagination
+ * @var int $available_items_pagination
  */
 ?>
 
@@ -43,23 +48,68 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
                     $item_status = $bid->get_item_status();
                     $item = $item_status->get_item();
                     require 'item_card.php';
-                } ?>
+                }
+
+                unset($bid); //necessary otherwise the last bid will show in available items (weird !) 
+                ?>
             </div>
+
+            <ul class="pagination">
+                <li>
+                    <a <?= min($page, $my_bids_pagination) <= 1 ? "class='disabled'" : "href='browse/page/" . ($page - 1) . "'" ?>>
+                        &laquo;
+                    </a>
+                </li>
+
+                <?php for ($page_nb = 1; $page_nb <= $my_bids_pagination; $page_nb++): ?>
+                    <li>
+                        <a <?= $page_nb == min($page, $my_bids_pagination) ? "class='active'" : "" ?> href="browse/page/<?= $page_nb ?>">
+                            <?= $page_nb ?>
+                        </a>
+                    </li>
+                <?php endfor; ?>
+
+                <li>
+                    <a <?= $page >= $my_bids_pagination ? "class='disabled'" : "href='browse/page/" . ($page + 1) . "'" ?>>
+                        &raquo;
+                    </a>
+                </li>
+            </ul>
         <?php endif; ?>
-        
+
         <!-- AVAILABLE ITEMS -->
         <?php if (!empty($available_items)): ?>
             <h1>Available Items</h1>
             <div class="browse">
-                <?php unset($bid); //necessary otherwise the last bid will show in available items (weird !) 
-                ?>
                 <?php foreach ($available_items as $item_status) {
                     $item = $item_status->get_item();
                     require 'item_card.php';
                 } ?>
             </div>
 
-        <!-- NO AVAILABLE ITEMS -->
+            <ul class="pagination">
+                <li>
+                    <a <?= min($page, $available_items_pagination) <= 1 ? "class='disabled'" : "href='browse/page/" . ($page - 1) . "'" ?>>
+                        &laquo;
+                    </a>
+                </li>
+
+                <?php for ($page_nb = 1; $page_nb <= $available_items_pagination; $page_nb++): ?>
+                    <li>
+                        <a <?= $page_nb == min($page, $available_items_pagination) ? "class='active'" : "" ?> href="browse/page/<?= $page_nb ?>">
+                            <?= $page_nb ?>
+                        </a>
+                    </li>
+                <?php endfor; ?>
+
+                <li>
+                    <a <?= $page >= $available_items_pagination ? "class='disabled'" : "href='browse/page/" . ($page + 1) . "'" ?>>
+                        &raquo;
+                    </a>
+                </li>
+            </ul>
+
+            <!-- NO AVAILABLE ITEMS -->
         <?php else: ?>
             <p>Nothing here but chickens !</p>
         <?php endif; ?>
