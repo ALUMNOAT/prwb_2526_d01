@@ -13,7 +13,7 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
 
 <div class="card">
     <!-- CLICKABLE LINK -->
-    <a href="item/<?= $item->get_id() ?>">
+    <a href="item/show/<?= $item->get_id() ?>">
         <span class="link-card"></span>
     </a>
 
