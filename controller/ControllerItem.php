@@ -43,7 +43,8 @@ class ControllerItem extends Controller {
             $this->redirect('browse', 'page', '1'); //this will be changed to redirect towards my_items later on
         else {
             $item_id = NumberConverter::get_id_or_false($_GET['param1']);
-            (new View("manage_images"))->show();
+            $item = Item::get_item($item_id);
+            (new View("manage_images"))->show(["item" => $item]);
         }
     }
 }

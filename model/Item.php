@@ -77,6 +77,15 @@ class Item extends Model {
         $this->starting_bid = $new_starting_bid;
     }
 
+    public function get_picture_count(): int {
+        return count($this->pictures);
+    }
+    public function has_single_picture(): bool {
+        return $this->get_picture_count() === 1;
+    }
+    public function has_no_picture(): bool {
+        return $this->get_picture_count() === 0;
+    }
     public function add_picture(ItemPicture $picture) : void {
         $this->pictures[] = $picture;
     }
