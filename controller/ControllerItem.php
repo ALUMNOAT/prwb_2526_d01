@@ -2,6 +2,7 @@
 require_once "framework/Controller.php";
 require_once "model/Item.php";
 require_once "model/ItemStatus.php";
+require_once "utils/NumberConverter.php";
 
 class ControllerItem extends Controller {
 
@@ -22,7 +23,7 @@ class ControllerItem extends Controller {
 
         $item_status = ItemStatus::get_item_status((int)$id);
 
-        if(!$item_status) {
+        if (!$item_status) {
             $this->redirect("browse");
         }
 
@@ -30,6 +31,19 @@ class ControllerItem extends Controller {
     }
 
     public function manage_images(): void {
-        
+        if (!$this->user_logged())
+            $this->redirect('login');
+
+        /** @var Member $user */
+        $user = $this->get_user_or_redirect();
+
+        if($user->is_guest())
+            $this->redirect('browse');
+        elseif (!isset($_GET['param1']) || !NumberConverter::is_id($_GET['param1']))
+            $this->redirect('browse', 'page', '1'); //this will be changed to redirect towards my_items later on
+        else {
+            $item_id = NumberConverter::get_id_or_false($_GET['param1']);
+            (new View("manage_images"))->show();
+        }
     }
 }

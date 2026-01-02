@@ -9,3 +9,8 @@
     <link rel="stylesheet" href="css/manage_images.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+
+<body>
+
+<p>hello world</p>
+</body>

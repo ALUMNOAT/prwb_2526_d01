@@ -15,4 +15,16 @@ class NumberConverter {
     public static function is_page(mixed $page): bool {
         return is_int(self::get_page_or_false($page));
     }
+
+    public static function get_id_or_false(mixed $id): int|false {
+        return filter_var(
+            $id,
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1]]
+        );
+    }
+
+    public static function is_id(mixed $id): bool {
+        return is_int(self::get_id_or_false($id));
+    }
 }

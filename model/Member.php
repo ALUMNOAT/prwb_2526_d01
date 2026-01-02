@@ -97,6 +97,10 @@ class Member extends Model
         $this->iban = $new_iban;
     }
 
+    public function is_guest(): bool {
+        return $this->id === null;
+    } 
+
     public function persist(): Member
     {
         // Si l'ID existe (utilisateur existe), on update
