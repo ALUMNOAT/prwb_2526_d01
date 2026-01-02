@@ -1,0 +1,54 @@
+/*
+doc: https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/Nesting_selector
+doc: https://stackoverflow.com/questions/1014861/is-there-a-css-parent-selector/1014958#1014958
+
+
+*/
+
+.time {
+    display: flex;
+    list-style: none;
+    /* remove list bullets */
+    padding: 0px;
+
+    li {
+        display: block;
+        /* let links fill the list item */
+        padding: 8px 12px;
+        text-decoration: none;
+        border: 1px solid gray;
+        margin: 0 4px;
+        border-radius: 5px;
+        /* add rounded borders */
+    }
+}
+
+.time li {
+    display: block;
+    /* let links fill the list item */
+    padding: 8px 12px;
+    text-decoration: none;
+    border: 1px solid gray;
+    margin: 0 4px;
+    border-radius: 5px;
+    /* add rounded borders */
+}
+
+.time li:hover {
+    background-color: darkorange;
+    cursor: pointer;
+}
+
+.time li form {
+    color: orange;
+    justify-self: end;
+}
+
+.time li>p {
+    color: white;
+    justify-self: end;
+}
+
+.time li form button {
+    all: unset;
+}
