@@ -28,4 +28,8 @@ class ControllerItem extends Controller {
 
         (new View("item"))->show(["member" => $member, "item" => $item_status->get_item(), "item_status" => $item_status]);
     }
+
+    public function manage_images(): void {
+        
+    }
 }
