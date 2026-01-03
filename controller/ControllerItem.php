@@ -47,4 +47,16 @@ class ControllerItem extends Controller {
             (new View("manage_images"))->show(["item" => $item]);
         }
     }
+
+    public function remove_image(): void {
+        
+    }
+    
+    public function move_image_up(): void {
+        
+    }
+
+    public function remove_image_down(): void {
+        
+    }
 }
