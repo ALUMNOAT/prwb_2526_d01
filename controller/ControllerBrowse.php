@@ -9,7 +9,7 @@ class ControllerBrowse extends Controller {
     public function index(): void {
         if (!$this->user_logged())
             $this->redirect('login');
-        else 
+        else
             $this->redirect('browse', 'page', '1');
     }
 
@@ -47,7 +47,7 @@ class ControllerBrowse extends Controller {
             $bids_pages = count($my_bids);  //each chunk is a page, so 5 chunks = 5 pages
             $items_pages = count($my_available_items);
 
-            if($page > $bids_pages && $page > $items_pages) {   //user entered a big number ? go to last page
+            if ($page > $bids_pages && $page > $items_pages) {   //user entered a big number ? go to last page
                 $page = strval(max($bids_pages, $items_pages));
                 $this->redirect('browse', 'page', $page);
             }
@@ -55,8 +55,8 @@ class ControllerBrowse extends Controller {
             (new View("browse"))->show([
                 "page" => $page,
                 "user" => $user,
-                "my_bids" => $my_bids[min($page, $bids_pages) - 1], //-1 for computer
-                "available_items" => $my_available_items[min($page, $items_pages) - 1],
+                "my_bids" => $my_bids[min($page, $bids_pages) - 1] ?? [], //-1 for computer, if no items, empty array
+                "available_items" => $my_available_items[min($page, $items_pages) - 1] ?? [],
                 "my_bids_pagination" => $bids_pages,
                 "available_items_pagination" => $items_pages,
             ]);

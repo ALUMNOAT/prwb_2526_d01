@@ -20,7 +20,7 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
     <!-- IMAGE & LABEL -->
     <div class="container-image">
         <!-- IMAGE -->
-        <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar">
+        <img src="<?= $item->get_main_thumbnail_path() ?>" alt="Avatar">
 
         <!-- LABEL -->
         <div class="container-label">
