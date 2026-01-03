@@ -89,6 +89,30 @@ class Item extends Model {
     public function add_picture(ItemPicture $picture) : void {
         $this->pictures[] = $picture;
     }
+    public function is_owner(Member $user): bool {
+        return $this->owner->get_id() === $user->get_id();
+    }
+    public function get_picture(int $priority): ItemPicture|false{
+        return $this->pictures[$priority] ?? false;
+    }
+
+    private function get_main_picture(): ItemPicture|false {
+        if(empty($this->pictures))
+            return false;
+        $first = min(array_keys($this->pictures));
+        return $this->pictures[$first];
+    }
+
+
+    public function get_main_picture_path(): string|false {
+        $main_picture = $this->get_main_picture();
+        return $main_picture->get_picture_path() ?? false;
+    }
+
+    public function get_main_thumbnail_path(): string|false {
+        $main_thumbnail = $this->get_main_picture();
+        return $main_thumbnail->get_thumbnail_path() ?? false;
+    }
 
     public static function get_item(int $id): Item|false {
         /*
@@ -145,7 +169,7 @@ class Item extends Model {
             $item_pictures = [];
             foreach ($data as $row) {
                 if ($row['item_picture'] !== null) {
-                    $item_pictures[] = new ItemPicture(
+                    $item_pictures[$row['priority']] = new ItemPicture(
                         $item,
                         $row['priority'],
                         $row['item_picture']
@@ -158,23 +182,6 @@ class Item extends Model {
 
             return $item;
         }
-    }
-
-    private function get_main_picture(): ItemPicture|false {
-        if(empty($this->pictures))
-            return false;
-        $first = min(array_keys($this->pictures));
-        return $this->pictures[$first];
-    }
-
-    public function get_main_picture_path(): string|false {
-        $main_picture = $this->get_main_picture();
-        return $main_picture->get_picture_path() ?? false;
-    }
-
-    public function get_main_thumbnail_path(): string|false {
-        $main_thumbnail = $this->get_main_picture();
-        return $main_thumbnail->get_thumbnail_path() ?? false;
     }
 
     public static function get_items(array $ids): array {

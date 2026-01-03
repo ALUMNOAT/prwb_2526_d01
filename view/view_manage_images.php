@@ -42,13 +42,12 @@ doc: https://www.w3schools.com/tags/att_input_multiple.asp
             <?php foreach ($item->get_pictures() as $item_picture): ?>
                 <?php /** @var ItemPicture $item_picture */
                 $priority = $item_picture->get_priority() ?>
+
                 <img src="<?= $item_picture->get_thumbnail_path() ?>">
-                <input type="hidden" form="remove_image" name="priority" value="<?= $priority ?>">
-                <input type="hidden" name="item_id" form="move_image_up" value="<?= $priority ?>">
-                <input type="hidden" name="item_id" form="move_image_down" value="<?= $priority ?>">
-                <input type="submit" form="remove_image" value="X">
-                <input type="submit" form="move_image_up" value="<<">
-                <input type="submit" form="move_image_down" value=">>">
+
+                <button type="submit" name="priority" form="remove_image" value="<?= $priority ?>">X</button>
+                <button type="submit" name="priority" form="move_image_up" value="<?= $priority ?>"><<</button>
+                <button type="submit" name="priority" form="move_image_down" value="<?= $priority ?>">>></button>
             <?php endforeach; ?>
 
         </div>
