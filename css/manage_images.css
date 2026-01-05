@@ -1,0 +1,45 @@
+/*
+
+
+
+*/
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: rgb(15, 25, 38);
+}
+
+h1 {
+    color: dodgerblue;
+}
+
+.section {
+    background-color: #1f2933;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.section img {
+    width: 16em;
+    height: 9em;
+    background-color: white;
+    border-radius: 5px;
+    object-fit: contain;
+    margin-bottom: 12px;
+    border: 2px solid #60a5fa;
+}
+
+.images_container {
+    display: flex
+}
+
+/* SECTION TITLES */
+.section h2 {
+    color: #cbd5e1;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #334155;
+    padding-bottom: 8px;
+}

@@ -30,7 +30,8 @@ doc: https://stackoverflow.com/questions/4726809/send-both-post-and-get-in-a-for
 <body>
     <div>
         <h1>Manage Images for "<?= $item->get_title() ?>"</h1>
-        <div>
+
+        <div class="section">
             <h2>Add New Images</h2>
             <form method="POST" action="item/add_images">
                 <label for="images">Select Images</label><br>
@@ -39,21 +40,26 @@ doc: https://stackoverflow.com/questions/4726809/send-both-post-and-get-in-a-for
                 <input type="submit">
             </form>
         </div>
-        <div>
-            <?php //doc: https://github.com/bigskysoftware/htmx/issues/1541 ?>
+
+        <div class="section">
+            <?php //doc: https://github.com/bigskysoftware/htmx/issues/1541 
+            ?>
             <h2>Current Image<?= $item->has_single_picture() ? "" : "s" ?></h2>
             <form method="POST" id="remove_image" action="item/remove_image/<?= $item->get_id() ?>"></form>
             <form method="POST" id="move_image" action="item/move_image/<?= $item->get_id() ?>"></form>
             <?php $image_count = $item->get_picture_count(); ?>
-            <?php foreach ($item->get_pictures() as $item_picture): ?>
-                <?php /** @var ItemPicture $item_picture */
-                $priority = $item_picture->get_priority() ?>
-                
-                <img src="<?= $item_picture->get_thumbnail_path() ?>">
-                <button type="submit" name="priority" form="remove_image" value="<?= $priority ?>">X</button>
-                <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority-1) ?>" <?= $priority==1 ? "disabled" : "" ?>>&laquo;</button>
-                <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority+1) ?>" <?= $priority==$image_count ? "disabled" : "" ?>>&raquo;</button>
-            <?php endforeach; ?>
+            <div class="image_container">
+                <?php foreach ($item->get_pictures() as $item_picture): ?>
+                    <div>
+                        <?php /** @var ItemPicture $item_picture */
+                        $priority = $item_picture->get_priority() ?>
+                        <img src="<?= $item_picture->get_thumbnail_path() ?>">
+                        <button type="submit" name="priority" form="remove_image" value="<?= $priority ?>">X</button>
+                        <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority - 1) ?>" <?= $priority == 1 ? "disabled" : "" ?>>&laquo;</button>
+                        <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority + 1) ?>" <?= $priority == $image_count ? "disabled" : "" ?>>&raquo;</button>
+                    </div>
+                <?php endforeach; ?>
+            </div>
 
         </div>
     </div>
