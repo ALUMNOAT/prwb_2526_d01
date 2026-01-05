@@ -90,7 +90,7 @@ class Item extends Model {
         $this->pictures[] = $picture;
     }
     public function is_owner(Member $user): bool {
-        return $this->owner->get_id() === $user->get_id();
+        return $this->owner->get_id() == $user->get_id();
     }
     public function get_picture(int $priority): ItemPicture|false{
         return $this->pictures[$priority] ?? false;

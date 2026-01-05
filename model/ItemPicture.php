@@ -48,6 +48,10 @@ class ItemPicture extends Model {
         $this->picture_path = $new_picture_path;
     }
 
+    public function is_owner(Member $user): bool {
+        return $this->item->is_owner($user);
+    }
+
     public static function get_main_picture(Item $item): ItemPicture|false {
         $query = self::execute(
             "SELECT * FROM item_pictures
@@ -127,7 +131,7 @@ class ItemPicture extends Model {
         }
     }
 
-    public function delete(Member $instigator): bool {
+    public function delete(): void {
         /*
         doc: https://stackoverflow.com/questions/9407963/declaring-sql-variables-sql-server
         doc: https://stackoverflow.com/questions/17999360/sql-server-increment-int-column-using-variable
@@ -135,27 +139,57 @@ class ItemPicture extends Model {
         doc: https://stackoverflow.com/questions/9631096/mysql-incrementing-value
         doc: https://gist.github.com/irazasyed/4253470
         */
-        if ($this->item->is_owner($instigator))
-            return false;
-        else {
+        $query = self::execute(
+            "DELETE FROM item_pictures
+            WHERE item = :item_id
+            AND priority = :priority;
+
+            SET @p := 0;                #reset priority for each delete !
+            
+            UPDATE item_pictures
+            SET priority = @p := (@p + 1)
+            WHERE item = :item_id;",
+            [
+                "item_id" => $this->item->get_id(),
+                "priority" => $this->priority
+            ]
+        );
+        if (file_exists($this->picture_path))
+            unlink($this->picture_path);
+        if (file_exists($this->thumbnail_path))
+            unlink($this->thumbnail_path);
+    }
+
+    public function swap_priority(ItemPicture $other_pic): void {
+        /*
+        doc: https://stackoverflow.com/questions/3667439/setting-multiple-column-using-one-update
+        doc: https://stackoverflow.com/questions/11207574/how-to-swap-values-of-two-rows-in-mysql-without-violating-unique-constraint
+        */
+        if ($this->get_priority() != $other_pic->get_priority()) {
             $query = self::execute(
-                "DELETE FROM item_pictures
-                WHERE item = :item_id
-                AND priority = :priority;
-                SET @p := 0;                #reset priority for each delete !
+                "UPDATE item_pictures 
+                SET priority = -priority
+                WHERE (item, priority) = (:item_id, :pic_priority);
+
+                UPDATE item_pictures 
+                SET priority = :pic_priority
+                WHERE (item, priority) = (:item_id, :other_pic_priority);
+
+                UPDATE item_pictures 
+                SET priority = :other_pic_priority
+                WHERE (item, priority) = (:item_id, -:pic_priority);
+
+                SET @p := 0;
+                
                 UPDATE item_pictures
                 SET priority = @p := (@p + 1)
                 WHERE item = :item_id;",
                 [
                     "item_id" => $this->item->get_id(),
-                    "priority" => $this->priority
+                    "pic_priority" => $this->priority,
+                    "other_pic_priority" => $other_pic->get_priority()
                 ]
             );
-            if (file_exists($this->picture_path))
-                unlink($this->picture_path);
-            if (file_exists($this->thumbnail_path))
-                unlink($this->thumbnail_path);
-            return true;
         }
     }
 }

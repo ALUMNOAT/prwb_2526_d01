@@ -2,6 +2,11 @@
 /*
 doc: https://stackoverflow.com/questions/3828554/how-to-allow-input-type-file-to-accept-only-image-files
 doc: https://www.w3schools.com/tags/att_input_multiple.asp
+doc: https://github.com/bigskysoftware/htmx/issues/1541
+doc: https://www.w3.org/wiki/Common_HTML_entities_used_for_typography
+doc: https://stackoverflow.com/questions/43267778/how-to-submit-multiple-values-in-a-single-html-form
+doc: https://stackoverflow.com/questions/10652617/change-form-action-target-without-javascript
+doc: https://stackoverflow.com/questions/4726809/send-both-post-and-get-in-a-form
 */
 
 /**
@@ -35,19 +40,19 @@ doc: https://www.w3schools.com/tags/att_input_multiple.asp
             </form>
         </div>
         <div>
+            <?php //doc: https://github.com/bigskysoftware/htmx/issues/1541 ?>
             <h2>Current Image<?= $item->has_single_picture() ? "" : "s" ?></h2>
             <form method="POST" id="remove_image" action="item/remove_image/<?= $item->get_id() ?>"></form>
-            <form method="POST" id="move_image_up" action="item/move_image_up/<?= $item->get_id() ?>"></form>
-            <form method="POST" id="move_image_down" action="item/move_image_down/<?= $item->get_id() ?>"></form>
+            <form method="POST" id="move_image" action="item/move_image/<?= $item->get_id() ?>"></form>
+            <?php $image_count = $item->get_picture_count(); ?>
             <?php foreach ($item->get_pictures() as $item_picture): ?>
                 <?php /** @var ItemPicture $item_picture */
                 $priority = $item_picture->get_priority() ?>
-
+                
                 <img src="<?= $item_picture->get_thumbnail_path() ?>">
-
                 <button type="submit" name="priority" form="remove_image" value="<?= $priority ?>">X</button>
-                <button type="submit" name="priority" form="move_image_up" value="<?= $priority ?>"><<</button>
-                <button type="submit" name="priority" form="move_image_down" value="<?= $priority ?>">>></button>
+                <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority-1) ?>" <?= $priority==1 ? "disabled" : "" ?>>&laquo;</button>
+                <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority+1) ?>" <?= $priority==$image_count ? "disabled" : "" ?>>&raquo;</button>
             <?php endforeach; ?>
 
         </div>
