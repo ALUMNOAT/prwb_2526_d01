@@ -7,7 +7,7 @@ body {
 }
 
 .material-symbols-outlined {
-    font-size: 1em;
+    font-size: 1.8em;
     /* Preferred icon size */
     font-variation-settings:
         'FILL' 0,
@@ -27,7 +27,7 @@ body {
         justify-content: center;
         align-content: center;
         height: 100%;
-        width: 3em;
+        width: 2.5em;
         background-color: grey;
     }
 }
