@@ -5,54 +5,48 @@ require_once "model/Member.php";
 
 
 class ControllerSignup extends Controller {
-    //Luca: if we have a __construct() we can check if a user is logged before anything else
-    /*
-    public function __construct() {
-        //before anything, check first if a user is already logged in
-        if ($this->user_logged())
-            $this->redirect("testy");
-    }
-    */
-
     public function index(): void {
-        if ($this->user_logged())
-            $this->redirect("placeholder");
-        else {
-            $email = "";
-            $full_name = "";
-            $pseudo = "";
-            $password = "";
-            $password_confirm = "";
-            $errors = [];
+        if ($this->user_logged()) {
+            $user = $this->get_user_or_false();
+            if ($user && $user->get_id() != null)
+                $this->redirect("placeholder");
+            else {
+                $email = "";
+                $full_name = "";
+                $pseudo = "";
+                $password = "";
+                $password_confirm = "";
+                $errors = [];
 
-            if (isset($_POST["email"]) && isset($_POST["full_name"]) && isset($_POST["pseudo"]) && isset($_POST["password"]) && isset($_POST["password_confirm"])) {
-                $email = trim($_POST["email"]);
-                $full_name = trim($_POST["full_name"]);
-                $pseudo = trim($_POST["pseudo"]);
-                $password = $_POST["password"];
-                $password_confirm = $_POST["password_confirm"];
+                if (isset($_POST["email"]) && isset($_POST["full_name"]) && isset($_POST["pseudo"]) && isset($_POST["password"]) && isset($_POST["password_confirm"])) {
+                    $email = trim($_POST["email"]);
+                    $full_name = trim($_POST["full_name"]);
+                    $pseudo = trim($_POST["pseudo"]);
+                    $password = $_POST["password"];
+                    $password_confirm = $_POST["password_confirm"];
 
-                $member = new Member(null, $full_name, $email, $pseudo, password_hash($password, PASSWORD_BCRYPT), Role::USER);
-                // On vérifie que le pseudo et email sont uniques
-                $errors = Member::validate_unicity($pseudo, $email, $full_name);
-                // On vérifie les règles métiers du full_name
-                $errors = array_merge($errors, $member->validate_full_name());
-                // On vérifie les règles métiers du pseudo
-                $errors = array_merge($errors, $member->validate_pseudo());
-                // On vérifie les règles métiers du email
-                $errors = array_merge($errors, $member->validate_email());
-                // On vérifie d'abord les règles metiers du mot de passe récursivement (validate_passwords() appelle validate_password())
-                // Puis, on vérifie si les 2 mots de passe sont identiques
-                $errors = array_merge($errors, Member::validate_passwords($password, $password_confirm));
+                    $member = new Member(null, $full_name, $email, $pseudo, password_hash($password, PASSWORD_BCRYPT), Role::USER);
+                    // On vérifie que le pseudo et email sont uniques
+                    $errors = Member::validate_unicity($pseudo, $email, $full_name);
+                    // On vérifie les règles métiers du full_name
+                    $errors = array_merge($errors, $member->validate_full_name());
+                    // On vérifie les règles métiers du pseudo
+                    $errors = array_merge($errors, $member->validate_pseudo());
+                    // On vérifie les règles métiers du email
+                    $errors = array_merge($errors, $member->validate_email());
+                    // On vérifie d'abord les règles metiers du mot de passe récursivement (validate_passwords() appelle validate_password())
+                    // Puis, on vérifie si les 2 mots de passe sont identiques
+                    $errors = array_merge($errors, Member::validate_passwords($password, $password_confirm));
 
-                if (count($errors) == 0) {
-                    // update la base de données
-                    $member->persist();
-                    // login
-                    $this->log_user($member, "placeholder");
+                    if (count($errors) == 0) {
+                        // update la base de données
+                        $member->persist();
+                        // login
+                        $this->log_user($member, "placeholder");
+                    }
                 }
+                (new View("signup"))->show(["email" => $email, "full_name" => $full_name, "pseudo" => $pseudo, "password" => $password, "password_confirm" => $password_confirm, "errors" => $errors]);
             }
-            (new View("signup"))->show(["email" => $email, "full_name" => $full_name, "pseudo" => $pseudo, "password" => $password, "password_confirm" => $password_confirm, "errors" => $errors]);
         }
     }
 }

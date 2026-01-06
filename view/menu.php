@@ -45,7 +45,7 @@
             </a>
         </li>
         <li>
-            <a href="myitems">
+            <a href="signup">
                 <span class="material-symbols-outlined">celebration</span>
                 <br>Join us
             </a>
