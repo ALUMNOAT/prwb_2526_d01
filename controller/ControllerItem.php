@@ -35,7 +35,7 @@ class ControllerItem extends Controller {
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $item = $this->get_item_or_redirect($item_id, $user);
 
-        (new View("manage_images"))->show(["item" => $item]);
+        (new View("manage_images"))->show(["user" => $user, "item" => $item]);
     }
 
     public function remove_image(): void {

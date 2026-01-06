@@ -13,6 +13,8 @@ doc: https://stackoverflow.com/questions/4726809/send-both-post-and-get-in-a-for
  * @var Item $item
  * @var ItemPicture $item_picture
  */
+
+$icons = "arrow_left_alt,arrow_right_alt,close_small";
 ?>
 
 <!DOCTYPE html>
@@ -22,22 +24,25 @@ doc: https://stackoverflow.com/questions/4726809/send-both-post-and-get-in-a-for
     <meta charset="UTF-8">
     <title>Browse</title>
     <base href="<?= $web_root ?>">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,celebration,filter,gavel,home,schedule,settings,shopping_bag,travel_explore,trophy" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=<?= $icons ?>" />
     <link rel="stylesheet" href="css/manage_images.css">
+    <link rel="stylesheet" href="css/menu.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
-    <div>
+    <div class="content">
         <h1>Manage Images for "<?= $item->get_title() ?>"</h1>
 
         <div class="section">
             <h2>Add New Images</h2>
             <form method="POST" action="item/add_images">
-                <label for="images">Select Images</label><br>
-                <input type="file" placeholder="Choose Files" id="images" name="images" multiple>
-                <p>You can select multiple images (JPG, PNG, GIF, WebP). Images will be added to the end of the current list.</p>
-                <input type="submit">
+                <h3><b>Select Images</b></h3>
+                <input class="like_button" type="file" placeholder="Choose Files" id="images" name="images" multiple>
+                <br>
+                <label class="test" for="images">You can select multiple images (JPG, PNG, GIF, WebP). Images will be added to the end of the current list.</label>
+                <br>
+                <button class="upload" type="submit">Upload Images</button>
             </form>
         </div>
 
@@ -48,19 +53,28 @@ doc: https://stackoverflow.com/questions/4726809/send-both-post-and-get-in-a-for
             <form method="POST" id="remove_image" action="item/remove_image/<?= $item->get_id() ?>"></form>
             <form method="POST" id="move_image" action="item/move_image/<?= $item->get_id() ?>"></form>
             <?php $image_count = $item->get_picture_count(); ?>
-            <div class="image_container">
+            <div class="images_container">
                 <?php foreach ($item->get_pictures() as $item_picture): ?>
                     <div>
                         <?php /** @var ItemPicture $item_picture */
                         $priority = $item_picture->get_priority() ?>
                         <img src="<?= $item_picture->get_thumbnail_path() ?>">
-                        <button type="submit" name="priority" form="remove_image" value="<?= $priority ?>">X</button>
-                        <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority - 1) ?>" <?= $priority == 1 ? "disabled" : "" ?>>&laquo;</button>
-                        <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority + 1) ?>" <?= $priority == $image_count ? "disabled" : "" ?>>&raquo;</button>
+                        <br>
+                        <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority - 1) ?>" <?= $priority == 1 ? "disabled" : "" ?>>
+                            <span class="material-symbols-outlined">arrow_left_alt</span>
+                        </button>
+                        <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority + 1) ?>" <?= $priority == $image_count ? "disabled" : "" ?>>
+                            <span class="material-symbols-outlined">arrow_right_alt</span>
+                        </button>
+                        <button class="delete" type="submit" name="priority" form="remove_image" value="<?= $priority ?>">
+                            <span class="material-symbols-outlined">close_small</span>
+                        </button>
                     </div>
                 <?php endforeach; ?>
             </div>
-
         </div>
     </div>
+
+    <!-- NAVBAR MENU -->
+    <?php require 'menu.php' ?>
 </body>

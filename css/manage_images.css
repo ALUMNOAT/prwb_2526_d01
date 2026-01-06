@@ -1,6 +1,7 @@
 /*
-
-
+doc: https://www.youtube.com/watch?v=fkaOSA2H4Tg
+doc: https://stackoverflow.com/questions/76853866/icon-and-text-are-not-aligned
+doc: https://www.reddit.com/r/css/comments/wj5mcp/how_do_i_put_the_text_that_is_right_next_to_the/
 
 */
 
@@ -14,11 +15,72 @@ h1 {
     color: dodgerblue;
 }
 
+h2 {
+    color: white;
+    margin: 0em;
+}
+
+h3 {
+    color: white;
+}
+
+label {
+    color: grey
+}
+
+.material-symbols-outlined {
+    font-size: 1.5em;
+    /* Preferred icon size */
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+}
+
+.like_button {
+    border: 1px solid grey;
+    width: 100%;
+    border-radius: 5px;
+    color: white;
+    font-size: medium;
+    margin-bottom: 0.2em;
+}
+
+.like_button::file-selector-button {
+    padding: 0.8em; /* this is so ugly */
+    margin-right: 0.8em;
+    font-size: medium;
+    background-color:grey;
+    color: white;
+    border: unset;
+    border-right: 1px solid grey;
+    border-width: 1px;
+    cursor: pointer;
+}
+
+.upload {
+    all: unset;
+    padding: 0.8em;
+    margin-top: 0.8em;
+    font-size: medium;
+    border: 1px solid white;
+    color: white;
+    background-color: dodgerblue;
+    border-radius: 5px;
+}
+
+.content {
+    width: 100%-1em;
+    margin: 1em;
+    justify-content: center;
+}
+
 .section {
     background-color: #1f2933;
     border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 1em;
+    margin-bottom: 1em;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
@@ -29,16 +91,49 @@ h1 {
     border-radius: 5px;
     object-fit: contain;
     margin-bottom: 12px;
-    border: 2px solid #60a5fa;
 }
 
 .images_container {
-    display: flex
+    display: flex;
+    gap: 1em;
+
+    div {
+        text-align: center;
+
+        button {
+            all: unset;
+            width: 2em;
+            height: 2em;
+            border: 1px solid grey;
+            border-radius: 5px;
+
+            span {
+                vertical-align: middle;
+                color: grey;
+            }
+        }
+
+        button:disabled {
+            border-color: black;
+
+            span {
+                color: black;
+            }
+        }
+
+        button.delete {
+            border: 1px solid red;
+            background-color: red;
+
+            span {
+                color: white;
+            }
+        }
+    }
 }
 
 /* SECTION TITLES */
 .section h2 {
-    color: #cbd5e1;
     margin-bottom: 12px;
     border-bottom: 1px solid #334155;
     padding-bottom: 8px;
