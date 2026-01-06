@@ -7,6 +7,7 @@ body {
 }
 
 .material-symbols-outlined {
+    align-self: center;
     font-size: 1.8em;
     /* Preferred icon size */
     font-variation-settings:
