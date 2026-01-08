@@ -24,7 +24,6 @@ class ControllerLogin extends Controller {
             $errors = [];
 
             if (isset($_POST["email"]) && isset($_POST["password"])) {
-                //Luca: do we need Tools::sanitize() here ?
                 $email = $_POST["email"];
                 $password = $_POST["password"];
 
