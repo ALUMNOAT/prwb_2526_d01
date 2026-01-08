@@ -1,4 +1,8 @@
 <?php
+/*
+doc: https://www.php.net/substr_replace
+
+*/
 require_once "framework/Model.php";
 require_once "model/Item.php";
 
@@ -20,6 +24,15 @@ class ItemPicture extends Model {
     }
     public function get_picture_path(): string {
         return $this->picture_path;
+    }
+    public function get_thumbnail_path(): string {
+        /*
+        doc: https://stackoverflow.com/questions/4636166/only-variables-should-be-passed-by-reference
+        */
+        $decomposed_path = explode(".", $this->picture_path);
+        $extension_size = strlen(end($decomposed_path))+1;
+        $thumbnail = substr_replace($this->picture_path, "_thumbnail", -$extension_size, -$extension_size);
+        return $thumbnail;
     }
 
     public function set_item(Item $new_item): void {
