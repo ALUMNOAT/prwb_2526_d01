@@ -24,7 +24,7 @@ doc
 </head>
 
 <body>
-    <form name="profile" method="POST" action='profile/edit_profile'></form>
+    <form id="profile" name="profile" method="POST" action='profile/edit_profile'></form>
 
     <div class="profile-navbar">
         <a href="profile">

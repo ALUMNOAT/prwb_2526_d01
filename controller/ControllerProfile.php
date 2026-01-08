@@ -114,7 +114,7 @@ class ControllerProfile extends Controller {
                 $member->persist();
 
                 // Redirect après POST (principe PRG)
-                $this->redirect("profile", "edit_profile", "ok");
+                $this->redirect("profile");
                 return; // on stoppe le reste du code
             }
         }
