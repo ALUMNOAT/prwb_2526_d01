@@ -7,7 +7,7 @@
 
 <ul class="menu">
     <!-- USER -->
-    <?php if (isset($user) && $user->is_guest()): ?>
+    <?php if (isset($user) && !$user->is_guest()): ?>
         <li>
             <a href="browse">
                 <span class="material-symbols-outlined">travel_explore</span>

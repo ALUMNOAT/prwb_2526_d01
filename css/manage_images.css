@@ -12,7 +12,7 @@ body {
 }
 
 h1 {
-    color: dodgerblue;
+    color: white;
 }
 
 h2 {
@@ -26,6 +26,42 @@ h3 {
 
 label {
     color: grey
+}
+
+/* MENU LINK */
+.profile-navbar {
+    width: 100%;
+    background-color: #333333;
+    color: dodgerblue;
+    display: flex;
+    align-items: center;
+    padding-right: 3em;
+    box-sizing: border-box;
+
+    h2 {
+        max-height: fit-content;
+        margin: 0px;
+        margin-left: auto;
+        margin-right: auto;
+        color: dodgerblue;
+    }
+
+    button {
+        all: unset;
+        width: 3em;
+        height: 3em;
+        text-align: center;
+        color: dodgerblue;
+
+        span {
+            vertical-align: middle;
+        }
+
+        :hover {
+            color: white;
+            cursor: pointer;
+        }
+    }
 }
 
 .material-symbols-outlined {
@@ -68,6 +104,11 @@ label {
     color: white;
     background-color: dodgerblue;
     border-radius: 5px;
+    cursor: pointer;
+}
+
+.upload:hover {
+    background-color:cornflowerblue;
 }
 
 .content {
@@ -113,9 +154,13 @@ label {
             }
         }
 
+        button:hover {
+            cursor: pointer;
+        }
+
         button:disabled {
             border-color: black;
-
+            cursor:default;
             span {
                 color: black;
             }

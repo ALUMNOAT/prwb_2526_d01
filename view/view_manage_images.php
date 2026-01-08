@@ -14,7 +14,7 @@ doc: https://stackoverflow.com/questions/4726809/send-both-post-and-get-in-a-for
  * @var ItemPicture $item_picture
  */
 
-$icons = "add,arrow_left_alt,arrow_right_alt,celebration,close_small,filter,home,schedule,settings,shopping_bag,travel_explore,trophy";
+$icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,filter,home,schedule,settings,shopping_bag,travel_explore,trophy";
 ?>
 
 <!DOCTYPE html>
@@ -31,6 +31,18 @@ $icons = "add,arrow_left_alt,arrow_right_alt,celebration,close_small,filter,home
 </head>
 
 <body>
+    <div class="profile-navbar">
+        <a href="profile">
+            <button>
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+        </a>
+
+        <h2 class="page-title">
+            Manage Images
+        </h2>
+    </div>
+
     <div class="content">
         <h1>Manage Images for "<?= $item->get_title() ?>"</h1>
 
