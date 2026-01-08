@@ -92,6 +92,7 @@ body {
 }
 
 .input {
+    box-sizing: border-box; /* <-- I didn't need to look it up ^^ ! */
     width: 100%;
     padding: 10px;
     border-radius: 8px;
