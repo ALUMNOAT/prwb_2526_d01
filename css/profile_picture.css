@@ -6,9 +6,44 @@ body {
     color: #e2e8f0;
 }
 
+/* MENU LINK */
+.profile-navbar {
+    width: 100%;
+    background-color: #333333;
+    color: dodgerblue;
+    display: flex;
+    align-items: center;
+    padding-right: 3em;
+    box-sizing: border-box;
+
+    h2 {
+        max-height: fit-content;
+        margin: 0px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+.profile-navbar button {
+    all: unset;
+    width: 3em;
+    height: 3em;
+    text-align: center;
+    color: dodgerblue;
+
+    span {
+        vertical-align: middle;
+    }
+
+    :hover {
+        color: white;
+        cursor: pointer;
+    }
+}
+
 .container {
     width: 70%;
-    margin: 40px auto;
+    margin: 0px auto;
 }
 
 .page-title {
@@ -70,6 +105,7 @@ body {
 }
 
 .input {
+    box-sizing: border-box;
     width: 100%;
     padding: 10px;
     border-radius: 8px;
