@@ -8,12 +8,12 @@ require_once 'utils/Image.php';
 class ControllerProfile extends Controller {
 
     // page d'accueil (à adapter)
-    public function index() : void {
+    public function index(): void {
         $this->profile();
     }
 
     // profil de l'utilisateur connecté ou donné (à adapter)
-    public function profile() : void {
+    public function profile(): void {
         $member = $this->get_user_or_redirect();
         if (isset($_GET["param1"]) && $_GET["param1"] !== "") {
             $member = Member::get_member_by_pseudo($_GET["param1"]);
@@ -21,13 +21,15 @@ class ControllerProfile extends Controller {
         (new View("profile"))->show(["user" => $member]);
     }
 
-    public function change_password() : void {
+    public function change_password(): void {
         $member = $this->get_user_or_redirect();
         $errors = [];
         $success = "";
 
-        if (isset($_POST["current_password"], $_POST["new_password"], $_POST["confirm_password"])
-            && $_POST["current_password"] !== "" && $_POST["new_password"] !== "" && $_POST["confirm_password"] !== "") {
+        if (
+            isset($_POST["current_password"], $_POST["new_password"], $_POST["confirm_password"])
+            && $_POST["current_password"] !== "" && $_POST["new_password"] !== "" && $_POST["confirm_password"] !== ""
+        ) {
 
             $current_password = $_POST["current_password"];
             $new_password = $_POST["new_password"];
@@ -37,7 +39,7 @@ class ControllerProfile extends Controller {
             $errors = array_merge($errors, Member::validate_login($member->get_email(), $current_password));
             $errors = array_merge($errors, Member::validate_passwords($new_password, $confirm_password));
 
-            if (count($errors) == 0){
+            if (count($errors) == 0) {
                 $member->set_password(password_hash($new_password, PASSWORD_BCRYPT));
                 $member->persist();
 
@@ -55,62 +57,50 @@ class ControllerProfile extends Controller {
         (new View("change_password"))->show(["user" => $member, "errors" => $errors, "success" => $success]);
     }
 
-    public function edit_profile() : void {
+    public function edit_profile(): void {
+        /** @var Member $member */
         $member = $this->get_user_or_redirect();
         $errors = [];
         $success = "";
 
-        if (isset($_POST["full_name"], $_POST["pseudo"], $_POST["email"])
-            && $_POST["full_name"] !== "" && $_POST["pseudo"] !== "" && $_POST["email"] !== "") {
-
+        if (isset($_POST["full_name"], $_POST["pseudo"], $_POST["email"])) {
             $full_name = $_POST["full_name"];
             $pseudo = $_POST["pseudo"];
             $email = $_POST["email"];
-            $iban = $_POST["iban"] ?? null;
-            // Pour avoir NULL dans la BD (On économise 8x plus d'espace memoire, 0,125 octet = NULL)
-            if ($iban === ""){
-                $iban = null;
-            }
+            $iban = $_POST["iban"] === "" ? null : $_POST["iban"];
+
+            $member->set_full_name($full_name);
+            $member->set_pseudo($pseudo);
+            $member->set_email($email);
+            $member->set_iban($iban);
 
             /** On vérifie que le pseudo, email et full_name sont uniques ainsi que les règles métier
-             *
              * On ne veut rien vérifier si on ne change rien (données formulaire = données de la Session)
-             *
              * Explication: On change un champ, on lance les vérifs
-             *
              * validate_unicity() ne valide pas l'unicité si l'ID qu'il trouve dans la DB match notre ID
-             *
              * Explication: Je suis Emilian, je change pas mon nom mais mon iban, je veux pas avoir "Emilian" est pris, mon adresse email est prise, ... alors que je suis moi
              */
-
-            if($pseudo !== $member->get_pseudo() || $email !== $member->get_email() ||
-                $full_name !== $member->get_full_name() || $iban !== $member->get_iban()) {
-
-                // On vérifie que le pseudo, email et full_name sont uniques
-                $errors = Member::validate_unicity($pseudo, $email, $full_name, $member->get_id());
-                // On vérifie les règles métiers du full_name
-                $errors = array_merge($errors, $member->validate_full_name());
-                // On vérifie les règles métiers du pseudo
-                $errors = array_merge($errors, $member->validate_pseudo());
-                // On vérifie les règles métiers du email
-                $errors = array_merge($errors, $member->validate_email());
-                // On vérifie la validité de l'IBAN (s'il existe)
-                if ($iban !== null) {
-                    $errors = array_merge($errors, $member->validate_iban($iban));
-                }
+            
+            // On vérifie que le pseudo, email et full_name sont uniques
+            $errors = Member::validate_unicity($pseudo, $email, $full_name, $member->get_id());
+            // On vérifie les règles métiers du full_name
+            $errors = array_merge($errors, $member->validate_full_name());
+            // On vérifie les règles métiers du pseudo
+            $errors = array_merge($errors, $member->validate_pseudo());
+            // On vérifie les règles métiers du email
+            $errors = array_merge($errors, $member->validate_email());
+            // On vérifie la validité de l'IBAN (s'il existe)
+            if ($iban !== null) {
+                $errors = array_merge($errors, $member->validate_iban($iban));
             }
 
-            if (count($errors) == 0){
-                $member->set_full_name($full_name);
-                $member->set_pseudo($pseudo);
-                $member->set_email($email);
+            if (count($errors) == 0) {
                 // On enlève les espaces de la bd (un espace = 1 octet de mémoire = 8 bits)
                 // 8 bits * 3 espaces = 24 bits pour un seul IBAN en bd (OPTIMISATION)
                 // Je fais comme ca pour que PHP ne rale pas (str_replace n'aime pas gerer les "null")
                 if ($iban !== null) {
                     $iban = str_replace(" ", "", $iban);
                 }
-                $member->set_iban($iban);
                 $member->persist();
 
                 // Redirect après POST (principe PRG)
@@ -130,7 +120,7 @@ class ControllerProfile extends Controller {
     /**
      * @throws Exception
      */
-    public function profile_picture() : void {
+    public function profile_picture(): void {
         $member = $this->get_user_or_redirect();
         $errors = [];
         $success = "";
@@ -237,6 +227,5 @@ class ControllerProfile extends Controller {
         }
 
         (new View("profile_picture"))->show(["user" => $member, "errors" => $errors, "success" => $success]);
-
     }
 }
