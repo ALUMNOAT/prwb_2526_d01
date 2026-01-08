@@ -1,0 +1,46 @@
+/* ICONS */
+ul .material-symbols-outlined {
+    font-size: 2em;
+    /* Preferred icon size */
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+}
+
+body {
+    margin-bottom: 100px;
+}
+/* MENU LINK */
+ul.menu {
+    z-index: 1;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333333;
+    display: flex;
+}
+
+ul.menu li {
+    display: inline-block;
+    float: none;
+    flex-grow: 1;
+    /* float: left; */
+}
+
+ul.menu li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+ul.menu li a:hover {
+    background-color: #111111;
+}

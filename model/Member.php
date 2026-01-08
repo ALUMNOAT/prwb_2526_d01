@@ -245,7 +245,7 @@ class Member extends Model
 
         if (strlen($this->pseudo) === 0)
             $errors[] = "Un pseudo est requis.";
-        else if (!(strlen($this->pseudo) >= Configuration::get("pseudo_min_length", 3) && strlen($this->pseudo) <= Configuration::get("pseudo_max_length", 30)))
+        else if (strlen($this->pseudo) < Configuration::get("pseudo_min_length", 3) || strlen($this->pseudo) >= Configuration::get("pseudo_max_length", 30))
             $errors[] = "Le pseudo doit contenir entre 3 et 30 caractères.";
         /*
         else if (!strlen($this->pseudo) >= Configuration::get("pseudo_min_length", 3))
