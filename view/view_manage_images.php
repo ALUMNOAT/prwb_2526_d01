@@ -14,7 +14,7 @@ doc: https://stackoverflow.com/questions/4726809/send-both-post-and-get-in-a-for
  * @var ItemPicture $item_picture
  */
 
-$icons = "arrow_left_alt,arrow_right_alt,close_small";
+$icons = "add,arrow_left_alt,arrow_right_alt,celebration,close_small,filter,home,schedule,settings,shopping_bag,travel_explore,trophy";
 ?>
 
 <!DOCTYPE html>

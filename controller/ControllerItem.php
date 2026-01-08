@@ -45,7 +45,8 @@ class ControllerItem extends Controller {
         $item = $this->get_item_or_redirect($item_id, $user);
         $item_picture = $this->get_item_picture_or_redirect($item, $picture_priority);
 
-        $item_picture->delete($user);
+        if($item_picture->is_owner($user))
+            $item_picture->delete();
         $this->redirect("item", "manage_images", strval($item_id));
     }
 
