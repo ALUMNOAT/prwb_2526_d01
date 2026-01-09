@@ -56,42 +56,59 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
         <div class="section">
             <h2>Add New Images</h2>
+
             <form method="POST" action="item/add_images/<?= $item->get_id() ?>" enctype="multipart/form-data">
-                <h3><b>Select Images</b></h3>
-                <input class="like_button" type="file" id="images" name="images" placeholder="Choose Files" accept="image/jpg, image/jpeg, image/x-png, image/gif, image/webp" multiple>
-                <br>
+                <h3>
+                    <b>Select Images</b>
+                </h3>
+
+                <input class="like_button" type="file" id="images" name="images[]" placeholder="Choose Files" accept="image/jpg, image/jpeg, image/x-png, image/gif, image/webp" multiple>
+
                 <label class="test" for="images">You can select multiple images (JPG, PNG, GIF, WebP). Images will be added to the end of the current list.</label>
+
                 <br>
+
                 <button class="upload" id="upload" name="upload" type="submit">Upload Images</button>
             </form>
+            
         </div>
 
         <div class="section">
-            <?php //doc: https://github.com/bigskysoftware/htmx/issues/1541 
-            ?>
+            <?php //doc: https://github.com/bigskysoftware/htmx/issues/1541 ?>
+
             <h2>Current Image<?= $item->has_single_picture() ? "" : "s" ?></h2>
+
             <form method="POST" id="remove_image" action="item/remove_image/<?= $item->get_id() ?>"></form>
+
             <form method="POST" id="move_image" action="item/move_image/<?= $item->get_id() ?>"></form>
+
             <?php $image_count = $item->get_picture_count(); ?>
+
             <div class="images_container">
                 <?php foreach ($item->get_pictures() as $item_picture): ?>
                     <div>
-                        <?php /** @var ItemPicture $item_picture */
-                        $priority = $item_picture->get_priority() ?>
+                        <?php /** @var ItemPicture $item_picture */ ?>
+                        <?php $priority = $item_picture->get_priority() ?>
+
                         <img src="<?= $item_picture->get_thumbnail_path() ?>">
+
                         <br>
+                        
                         <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority - 1) ?>" <?= $priority == 1 ? "disabled" : "" ?>>
                             <span class="material-symbols-outlined">arrow_left_alt</span>
                         </button>
+
                         <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority + 1) ?>" <?= $priority == $image_count ? "disabled" : "" ?>>
                             <span class="material-symbols-outlined">arrow_right_alt</span>
                         </button>
+
                         <button class="delete" type="submit" name="priority" form="remove_image" value="<?= $priority ?>">
                             <span class="material-symbols-outlined">close_small</span>
                         </button>
                     </div>
                 <?php endforeach; ?>
             </div>
+
         </div>
     </div>
 

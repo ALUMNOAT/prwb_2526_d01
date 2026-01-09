@@ -41,16 +41,24 @@ class ControllerItem extends Controller {
     public function add_images(): void {
         /* 
         doc: https://www.w3schools.com/TAGs/att_form_enctype.asp <-- important !
+        doc: https://www.php.net/manual/en/features.file-upload.post-method.php <-- important !
         */
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $item = $this->get_item_or_redirect($item_id, $user);
+        $errors = [];
 
         if (isset($_POST['upload']) && isset($_FILES['images']) && $_FILES['images']['error'] === UPLOAD_ERR_OK) {
-            $this->redirect("placeholder");
-            $errors = Member::validate_photo($_FILES['image']);
-            if (empty($errors)) {
+            foreach($_FILES['images'] as $image) {
+                $file_name = $_FILES['userfile']['name'];
 
+                $errors[] = ItemPicture::validate_image($image);
+
+            }
+            var_dump($errors);
+            $this->redirect("placeholder");
+
+            if (empty($errors)) {
                 // Ancien chemin avant modification
                 $oldPath = $user->get_picture_path();
 

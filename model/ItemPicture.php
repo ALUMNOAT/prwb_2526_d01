@@ -197,12 +197,12 @@ class ItemPicture extends Model {
         $errors = [];
 
         if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
-            $errors[] = "Une erreur est survenue lors de l'upload.";
+            $errors["critical error"] = "Une erreur est survenue lors de l'upload.";
             return $errors;
         }
 
         if ($file['size'] > Configuration::get("MAX_UPLOAD_SIZE")) {
-            $errors[] = "Le fichier dépasse la taille maximale autorisée (5MB).";
+            $errors["file size"] = "Le fichier dépasse la taille maximale autorisée (5MB).";
         }
 
         $mime = mime_content_type($file['tmp_name']);
@@ -215,7 +215,7 @@ class ItemPicture extends Model {
 
         // Si j'envoye un fichier .mp3, ceci s'affiche
         if (!in_array($mime, $valid_types, true)) {
-            $errors[] = "Format d'image non supporté.";
+            $errors["unsupported"] = "Format d'image non supporté.";
         }
 
         return $errors;
