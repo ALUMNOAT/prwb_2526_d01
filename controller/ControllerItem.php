@@ -38,6 +38,60 @@ class ControllerItem extends Controller {
         (new View("manage_images"))->show(["user" => $user, "item" => $item]);
     }
 
+    public function add_images(): void {
+        /* 
+        doc: https://www.w3schools.com/TAGs/att_form_enctype.asp <-- important !
+        */
+        $user = $this->get_user_or_redirect_guess();
+        $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $item = $this->get_item_or_redirect($item_id, $user);
+
+        if (isset($_POST['upload']) && isset($_FILES['images']) && $_FILES['images']['error'] === UPLOAD_ERR_OK) {
+            $this->redirect("placeholder");
+            $errors = Member::validate_photo($_FILES['image']);
+            if (empty($errors)) {
+
+                // Ancien chemin avant modification
+                $oldPath = $user->get_picture_path();
+
+                // Suppression de l'ancienne image et du thumbnail
+                if ($oldPath && file_exists($oldPath)) {
+                    unlink($oldPath);
+                    $oldThumb = str_replace('.jpg', '_thumbnail.jpg', $oldPath);
+                    if (file_exists($oldThumb)) {
+                        unlink($oldThumb);
+                    }
+                }
+
+                // Dossier utilisateur
+                $userDir = "uploads/users/" . $user->get_id();
+                // si il n'y a pas de dossier, on le crée
+                if (!is_dir($userDir)) {
+                    // Permission : owner peut r-w-x, group peut r-x, reste peut r-x
+                    mkdir($userDir, 0755, true);
+                }
+
+                //pour avoir le nom originel du fichier (ne pas utiliser)
+                //$originalName = pathinfo($_FILES['image']['name'], PATHINFO_FILENAME);
+
+                $basePath = $userDir . "/profile";
+                // Image principale
+                $mainPath = $basePath . ".jpg";
+                // Thumbnail
+                $thumbPath = $basePath . "_thumbnail.jpg";
+
+                // Création images
+                Image::resizeToJpeg($_FILES['image']['tmp_name'], $mainPath, Configuration::get("IMAGE_MAX_WIDTH"), Configuration::get("IMAGE_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
+                Image::resizeToJpeg($_FILES['image']['tmp_name'], $thumbPath, Configuration::get("THUMB_MAX_WIDTH"), Configuration::get("THUMB_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
+
+                // Sauvegarde DB (image principale uniquement)
+                $user->set_picture_path($mainPath);
+                $user->persist();
+                $success = "Profile picture uploaded successfully!";
+            }
+        }
+    }
+
     public function remove_image(): void {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
@@ -45,7 +99,7 @@ class ControllerItem extends Controller {
         $item = $this->get_item_or_redirect($item_id, $user);
         $item_picture = $this->get_item_picture_or_redirect($item, $picture_priority);
 
-        if($item_picture->is_owner($user))
+        if ($item_picture->is_owner($user))
             $item_picture->delete();
         $this->redirect("item", "manage_images", strval($item_id));
     }

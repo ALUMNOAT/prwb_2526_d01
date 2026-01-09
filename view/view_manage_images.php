@@ -7,6 +7,7 @@ doc: https://www.w3.org/wiki/Common_HTML_entities_used_for_typography
 doc: https://stackoverflow.com/questions/43267778/how-to-submit-multiple-values-in-a-single-html-form
 doc: https://stackoverflow.com/questions/10652617/change-form-action-target-without-javascript
 doc: https://stackoverflow.com/questions/4726809/send-both-post-and-get-in-a-form
+doc: https://www.w3schools.com/TAGs/att_form_enctype.asp
 */
 
 /**
@@ -46,15 +47,22 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
     <div class="content">
         <h1>Manage Images for "<?= $item->get_title() ?>"</h1>
 
+        <form method="POST" action='profile/profile_picture' class="form-box" enctype="multipart/form-data">
+            <label class="label"><strong>Select Image *</strong></label>
+            <input type="file" id="file" name="image" class="input" placeholder="No file chosen" accept="image/jpg, image/jpeg, image/x-png, image/gif, image/webp">
+            <button type="submit" name="upload" class="btn">Upload Picture</button>
+            <button type="submit" name="delete" class="btn-delete">Delete Picture</button>
+        </form>
+
         <div class="section">
             <h2>Add New Images</h2>
-            <form method="POST" action="item/add_images">
+            <form method="POST" action="item/add_images/<?= $item->get_id() ?>" enctype="multipart/form-data">
                 <h3><b>Select Images</b></h3>
-                <input class="like_button" type="file" placeholder="Choose Files" id="images" name="images" multiple>
+                <input class="like_button" type="file" id="images" name="images" placeholder="Choose Files" accept="image/jpg, image/jpeg, image/x-png, image/gif, image/webp" multiple>
                 <br>
                 <label class="test" for="images">You can select multiple images (JPG, PNG, GIF, WebP). Images will be added to the end of the current list.</label>
                 <br>
-                <button class="upload" type="submit">Upload Images</button>
+                <button class="upload" id="upload" name="upload" type="submit">Upload Images</button>
             </form>
         </div>
 
