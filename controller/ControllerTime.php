@@ -2,6 +2,7 @@
 
 require_once "framework/Controller.php";
 require_once "utils/AppTime.php";
+require_once "model/Member.php";
 
 class ControllerTime extends Controller {
 
