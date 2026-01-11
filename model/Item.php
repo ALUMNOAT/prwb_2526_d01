@@ -98,7 +98,7 @@ class Item extends Model {
     public function get_next_priority(): int {
         return empty($this->pictures) 
         ? 1 
-        : max(array_keys($this->pictures));
+        : (max(array_keys($this->pictures))+1);
     }
 
     private function get_main_picture(): ItemPicture|false {
