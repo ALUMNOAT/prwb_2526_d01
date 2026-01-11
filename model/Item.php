@@ -95,6 +95,11 @@ class Item extends Model {
     public function get_picture(int $priority): ItemPicture|false{
         return $this->pictures[$priority] ?? false;
     }
+    public function get_next_priority(): int {
+        return empty($this->pictures) 
+        ? 1 
+        : max(array_keys($this->pictures));
+    }
 
     private function get_main_picture(): ItemPicture|false {
         if(empty($this->pictures))

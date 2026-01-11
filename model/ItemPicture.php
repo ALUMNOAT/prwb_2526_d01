@@ -130,6 +130,18 @@ class ItemPicture extends Model {
         }
     }
 
+    public function persist(): void {
+        self::execute(
+            "INSERT INTO item_pictures(item,priority,picture_path) 
+            VALUES(:item_id, :priority, :picture_path)",
+            [
+                "item_id" => $this->item->get_id(),
+                "priority" => $this->priority,
+                "picture_path" => $this->picture_path
+            ]
+        );
+    }
+
     public function delete(): void {
         /*
         doc: https://stackoverflow.com/questions/9407963/declaring-sql-variables-sql-server
@@ -222,7 +234,7 @@ class ItemPicture extends Model {
         $errors = [];
 
         foreach ($file["error"] as $key => $error_code) {
-            if($error_code !== UPLOAD_ERR_OK)
+            if ($error_code !== UPLOAD_ERR_OK)
                 $errors[$key] = self::$phpFileUploadErrors[$error_code];
 
             if ($file['size'][$key] > Configuration::get("MAX_UPLOAD_SIZE"))
