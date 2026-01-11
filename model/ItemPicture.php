@@ -8,7 +8,6 @@ require_once "model/Item.php";
 
 
 class ItemPicture extends Model {
-
     public function __construct(
         private Item $item,
         private int $priority,
@@ -193,29 +192,46 @@ class ItemPicture extends Model {
         }
     }
 
-    public static function validate_image(array $file): array {
+    private static $phpFileUploadErrors = array(
+        /* 
+        doc: https://www.php.net/manual/en/features.file-upload.errors.php <-- see @Viktor's note
+        */
+        0 => 'There is no error, the file uploaded with success',
+        1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
+        2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
+        3 => 'The uploaded file was only partially uploaded',
+        4 => 'No file was uploaded',
+        6 => 'Missing a temporary folder',
+        7 => 'Failed to write file to disk.',
+        8 => 'A PHP extension stopped the file upload.',
+    );
+
+    private static $valid_types = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp'
+    ];
+
+    public static function validate_images(array $file): array {
+        /*
+        doc: https://stackoverflow.com/questions/1957629/how-to-access-a-private-member-inside-a-static-function-in-php
+        explanation: Files uploaded to PHP do not follow OOP, but instead is a list where each data is in its own array. 
+        Therefore, the error_code of each file is in a single list, the name of each file is in another list, etc... weird but ok
+        */
         $errors = [];
 
-        if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
-            $errors["critical error"] = "Une erreur est survenue lors de l'upload.";
-            return $errors;
-        }
+        foreach ($file["error"] as $key => $error_code) {
+            if($error_code !== UPLOAD_ERR_OK)
+                $errors[$key] = self::$phpFileUploadErrors[$error_code];
 
-        if ($file['size'] > Configuration::get("MAX_UPLOAD_SIZE")) {
-            $errors["file size"] = "Le fichier dépasse la taille maximale autorisée (5MB).";
-        }
+            if ($file['size'][$key] > Configuration::get("MAX_UPLOAD_SIZE"))
+                $errors[$key][] = "Le fichier dépasse la taille maximale autorisée (5MB).";
 
-        $mime = mime_content_type($file['tmp_name']);
-        $valid_types = [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp'
-        ];
+            $mime = mime_content_type($file['tmp_name'][$key]);
 
-        // Si j'envoye un fichier .mp3, ceci s'affiche
-        if (!in_array($mime, $valid_types, true)) {
-            $errors["unsupported"] = "Format d'image non supporté.";
+            if (!in_array($mime, self::$valid_types, true))
+                $errors[$key][] = "Format d'image non supporté.";
         }
 
         return $errors;
