@@ -71,7 +71,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
         <!-- ERRORS -->
         <?php if (isset($errors) && !empty($errors)): ?>
             <div class='errors'>
-                <p>The following files are causing issues:</p>
+                <p>The following files cannot be uploaded:</p>
                 <ul>
                     <?php foreach ($errors as $name_key => $errors_details): ?>
                         <li><?= $name_key ?> :

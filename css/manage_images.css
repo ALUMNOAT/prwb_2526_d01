@@ -184,3 +184,13 @@ label {
     border-bottom: 1px solid #334155;
     padding-bottom: 8px;
 }
+
+/* Erreur */
+.errors {
+    background-color: #f87171;
+    color: #fff;
+    padding: 1em;
+    border-radius: 10px;
+    margin: 1em 0px;
+    text-align: left;
+}

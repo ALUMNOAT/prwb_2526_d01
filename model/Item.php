@@ -38,7 +38,7 @@ class Item extends Model {
     }
     public function get_pictures(): array {
         return $this->pictures;
-    } 
+    }
     public function get_description(): ?string {
         return $this->description;
     }
@@ -66,7 +66,7 @@ class Item extends Model {
     }
     public function set_pictures(array $pictures): void {
         $this->pictures = $pictures;
-    } 
+    }
     public function set_description(?string $new_description): void {
         $this->description = $new_description;
     }
@@ -86,23 +86,23 @@ class Item extends Model {
     public function has_no_picture(): bool {
         return $this->get_picture_count() === 0;
     }
-    public function add_picture(ItemPicture $picture) : void {
+    public function add_picture(ItemPicture $picture): void {
         $this->pictures[] = $picture;
     }
     public function is_owner(Member $user): bool {
         return $this->owner->get_id() == $user->get_id();
     }
-    public function get_picture(int $priority): ItemPicture|false{
+    public function get_picture(int $priority): ItemPicture|false {
         return $this->pictures[$priority] ?? false;
     }
     public function get_next_priority(): int {
-        return empty($this->pictures) 
-        ? 1 
-        : (max(array_keys($this->pictures))+1);
+        return empty($this->pictures)
+            ? 1
+            : (max(array_keys($this->pictures)) + 1);
     }
 
     private function get_main_picture(): ItemPicture|false {
-        if(empty($this->pictures))
+        if (empty($this->pictures))
             return false;
         $first = min(array_keys($this->pictures));
         return $this->pictures[$first];
@@ -189,10 +189,31 @@ class Item extends Model {
         }
     }
 
+    public function persist_item_pictures(): void {
+        /*
+        doc: https://stackoverflow.com/questions/36766162/sql-query-insert-but-only-if-record-doesnt-already-exist
+        */
+        $params = ['item' => $this->id];
+        $placeholders = [];
+
+        foreach ($this->pictures as $priority => $pic) {
+            /** @var ItemPicture $pic */
+            $placeholders[] = "(:item, :priority$priority, :pic_path$priority)";
+            $params["priority$priority"] = $priority;
+            $params["pic_path$priority"] = $pic->get_picture_path();
+        }
+
+        self::execute(
+            "INSERT IGNORE INTO item_pictures(item, priority, picture_path) 
+            VALUES " . implode(',', $placeholders) . ";",
+            $params
+        );
+    }
+
     public static function get_items(array $ids): array {
         $items = [];
 
-        if(!empty($ids)) {
+        if (!empty($ids)) {
             $placeholders = [];
             $params = [];
             foreach ($ids as $id) {
@@ -204,18 +225,18 @@ class Item extends Model {
                 "SELECT * 
                 FROM items
                 WHERE items.id IN ("
-                    .implode(',', $placeholders).
-                ")",
+                    . implode(',', $placeholders) .
+                    ")",
                 $params
             );
-            
+
             $data = $query->fetchAll();
             $owners_id = array_column($data, 'owner');
             $owners = Member::get_members($owners_id);
 
-            foreach($data as $row) {
+            foreach ($data as $row) {
                 $items[$row['id']] = new Item(
-                    $row['id'], 
+                    $row['id'],
                     $row['title'],
                     $owners[$row['owner']],
                     $row['created_at'],
@@ -287,7 +308,7 @@ class Item extends Model {
         return $available_items;
     }
 
-    private static function set_items_pictures(array $items) : void {
+    private static function set_items_pictures(array $items): void {
         /*
         doc: https://www.php.net/manual/en/function.array-keys.php
         doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
@@ -303,13 +324,13 @@ class Item extends Model {
             "SELECT * 
             FROM item_pictures
             WHERE item IN ("
-                .implode(',', $placeholders).
-            ")",
+                . implode(',', $placeholders) .
+                ")",
             $params
         );
 
         $data = $query->fetchAll();
-        foreach($data as $row) {
+        foreach ($data as $row) {
             $picture = new ItemPicture(
                 $items[$row['item']],
                 $row['priority'],
@@ -320,4 +341,3 @@ class Item extends Model {
         }
     }
 }
-

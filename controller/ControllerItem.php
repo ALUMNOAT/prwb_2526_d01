@@ -65,8 +65,9 @@ class ControllerItem extends Controller {
                     mkdir($items_dir, 0755, true);
 
                 $priority = $item->get_next_priority();
+                $images = [];
 
-                foreach ($files['tmp_name'] as $key => $tmp_name) {
+                foreach ($files['tmp_name'] as $tmp_name) {
                     //IMAGE
                     $image_filename = pathinfo($tmp_name, PATHINFO_FILENAME);
                     $final_image_path = $items_dir . "/" . $image_filename . ".jpg"; // "dir1/dir2" . "/" . "img.jpg"
@@ -78,10 +79,13 @@ class ControllerItem extends Controller {
                     Image::resizeToJpeg($tmp_name, $final_image_path, Configuration::get("IMAGE_MAX_WIDTH"), Configuration::get("IMAGE_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
                     Image::resizeToJpeg($tmp_name, $final_thumb_path, Configuration::get("THUMB_MAX_WIDTH"), Configuration::get("THUMB_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
 
-                    (new ItemPicture($item, $priority, $final_image_path))->persist();
+                    $pic = new ItemPicture($item, $priority, $final_image_path);
+                    $item->add_picture($pic);
+
                     $priority++;
                 }
 
+                $item->persist_item_pictures();
                 $this->redirect('item', 'manage_images', strval($item_id));
             }
         }
