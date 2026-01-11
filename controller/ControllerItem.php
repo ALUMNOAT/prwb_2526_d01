@@ -42,55 +42,37 @@ class ControllerItem extends Controller {
         /* 
         doc: https://www.w3schools.com/TAGs/att_form_enctype.asp <-- important !
         doc: https://www.php.net/manual/en/features.file-upload.post-method.php <-- important !
+        doc: https://www.php.net/manual/en/features.file-upload.errors.php
+        doc: https://www.php.net/manual/en/function.pathinfo.php
+        doc: https://www.php.net/manual/en/function.file-exists.php
         */
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $item = $this->get_item_or_redirect($item_id, $user);
         $errors = [];
 
-        if (isset($_POST['upload']) && isset($_FILES['images']) && $_FILES['images']['error'] === UPLOAD_ERR_OK) {
-            foreach($_FILES['images'] as $image) {
-                $file_name = $_FILES['userfile']['name'];
+        if (isset($_POST['upload']) && isset($_FILES['images'])) {
+            $files = $_FILES['images'];
+            $errors = ItemPicture::validate_images($files);
 
-                $errors[] = ItemPicture::validate_image($image);
-
-            }
-            var_dump($errors);
-            $this->redirect("placeholder");
+            // var_dump($errors);
+            // (new View("test"))->show();
 
             if (empty($errors)) {
-                // Ancien chemin avant modification
-                $oldPath = $user->get_picture_path();
-
-                // Suppression de l'ancienne image et du thumbnail
-                if ($oldPath && file_exists($oldPath)) {
-                    unlink($oldPath);
-                    $oldThumb = str_replace('.jpg', '_thumbnail.jpg', $oldPath);
-                    if (file_exists($oldThumb)) {
-                        unlink($oldThumb);
-                    }
-                }
-
-                // Dossier utilisateur
-                $userDir = "uploads/users/" . $user->get_id();
-                // si il n'y a pas de dossier, on le crée
-                if (!is_dir($userDir)) {
+                $items_dir = "uploads/items/" . $item->get_id();
+                if (!is_dir($items_dir))
                     // Permission : owner peut r-w-x, group peut r-x, reste peut r-x
-                    mkdir($userDir, 0755, true);
+                    mkdir($items_dir, 0755, true);
+
+                foreach ($files['error'] as $key => $error) {
+                    $pathinfo = pathinfo($files['name'][$key]);
+
+                    $final_image_path = $items_dir . $pathinfo['basename']; // dir1/dir2/img.jpg -> img.jpg
+                    $final_thumb_path = $items_dir . $pathinfo['filename'] . "_thumbnail." . $pathinfo['extension']; // dir1/dir2/img.jpg -> img.jpg
+                    $temp_image_path = $files['tmp_name'][$key];
+                    Image::resizeToJpeg($temp_image_path, $final_image_path, Configuration::get("IMAGE_MAX_WIDTH"), Configuration::get("IMAGE_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
+                    Image::resizeToJpeg($temp_image_path, $final_thumb_path, Configuration::get("THUMB_MAX_WIDTH"), Configuration::get("THUMB_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
                 }
-
-                //pour avoir le nom originel du fichier (ne pas utiliser)
-                //$originalName = pathinfo($_FILES['image']['name'], PATHINFO_FILENAME);
-
-                $basePath = $userDir . "/profile";
-                // Image principale
-                $mainPath = $basePath . ".jpg";
-                // Thumbnail
-                $thumbPath = $basePath . "_thumbnail.jpg";
-
-                // Création images
-                Image::resizeToJpeg($_FILES['image']['tmp_name'], $mainPath, Configuration::get("IMAGE_MAX_WIDTH"), Configuration::get("IMAGE_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
-                Image::resizeToJpeg($_FILES['image']['tmp_name'], $thumbPath, Configuration::get("THUMB_MAX_WIDTH"), Configuration::get("THUMB_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
 
                 // Sauvegarde DB (image principale uniquement)
                 $user->set_picture_path($mainPath);
