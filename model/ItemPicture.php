@@ -219,10 +219,10 @@ class ItemPicture extends Model {
     );
 
     private static $valid_types = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp'
+        'jpg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp',
     ];
 
     public static function validate_images(array $file): array {
@@ -230,20 +230,23 @@ class ItemPicture extends Model {
         doc: https://stackoverflow.com/questions/1957629/how-to-access-a-private-member-inside-a-static-function-in-php
         explanation: Files uploaded to PHP do not follow OOP, but instead is a list where each data is in its own array. 
         Therefore, the error_code of each file is in a single list, the name of each file is in another list, etc... weird but ok
+
+        doc: https://www.php.net/manual/en/function.mime-content-type.php
         */
         $errors = [];
 
         foreach ($file["error"] as $key => $error_code) {
+            $name = $file["name"][$key];
             if ($error_code !== UPLOAD_ERR_OK)
-                $errors[$key] = self::$phpFileUploadErrors[$error_code];
+                $errors[$name][] = self::$phpFileUploadErrors[$error_code];
 
             if ($file['size'][$key] > Configuration::get("MAX_UPLOAD_SIZE"))
-                $errors[$key][] = "Le fichier dépasse la taille maximale autorisée (5MB).";
+                $errors[$name][] = "Le fichier dépasse la taille maximale autorisée (5MB).";
 
             $mime = mime_content_type($file['tmp_name'][$key]);
 
-            if (!in_array($mime, self::$valid_types, true))
-                $errors[$key][] = "Format d'image non supporté.";
+            if(!in_array($mime, self::$valid_types, true))
+                $errors[$name][] = "Format d'image non supporté.";
         }
 
         return $errors;

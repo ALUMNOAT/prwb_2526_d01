@@ -13,6 +13,7 @@ doc: https://www.w3schools.com/TAGs/att_form_enctype.asp
 /**
  * @var Item $item
  * @var ItemPicture $item_picture
+ * @var array $errors
  */
 
 $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,filter,home,schedule,settings,shopping_bag,travel_explore,trophy";
@@ -47,13 +48,6 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
     <div class="content">
         <h1>Manage Images for "<?= $item->get_title() ?>"</h1>
 
-        <form method="POST" action='profile/profile_picture' class="form-box" enctype="multipart/form-data">
-            <label class="label"><strong>Select Image *</strong></label>
-            <input type="file" id="file" name="image" class="input" placeholder="No file chosen" accept="image/jpg, image/jpeg, image/x-png, image/gif, image/webp">
-            <button type="submit" name="upload" class="btn">Upload Picture</button>
-            <button type="submit" name="delete" class="btn-delete">Delete Picture</button>
-        </form>
-
         <div class="section">
             <h2>Add New Images</h2>
 
@@ -70,11 +64,32 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
                 <button class="upload" id="upload" name="upload" type="submit">Upload Images</button>
             </form>
-            
+
         </div>
 
+
+        <!-- ERRORS -->
+        <?php if (isset($errors) && !empty($errors)): ?>
+            <div class='errors'>
+                <p>The following files are causing issues:</p>
+                <ul>
+                    <?php foreach ($errors as $name_key => $errors_details): ?>
+                        <li><?= $name_key ?> :
+                            <ul>
+                                <?php foreach ($errors_details as $error): ?>
+                                    <li><?= $error ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+
         <div class="section">
-            <?php //doc: https://github.com/bigskysoftware/htmx/issues/1541 ?>
+            <?php //doc: https://github.com/bigskysoftware/htmx/issues/1541 
+            ?>
 
             <h2>Current Image<?= $item->has_single_picture() ? "" : "s" ?></h2>
 
@@ -93,7 +108,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                         <img src="<?= $item_picture->get_thumbnail_path() ?>">
 
                         <br>
-                        
+
                         <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority - 1) ?>" <?= $priority == 1 ? "disabled" : "" ?>>
                             <span class="material-symbols-outlined">arrow_left_alt</span>
                         </button>

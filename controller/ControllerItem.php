@@ -47,6 +47,7 @@ class ControllerItem extends Controller {
         doc: https://www.php.net/manual/en/features.file-upload.errors.php
         doc: https://www.php.net/manual/en/function.pathinfo.php
         doc: https://www.php.net/manual/en/function.file-exists.php
+        doc: https://www.php.net/manual/en/features.file-upload.php <-- see Jan's explanation for images too large !!!
         */
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
@@ -65,16 +66,17 @@ class ControllerItem extends Controller {
 
                 $priority = $item->get_next_priority();
 
-                foreach ($files['error'] as $key => $error) {
-                    $pathinfo = pathinfo($files['name'][$key]);
-                    $final_image_path = $items_dir . "/" . $pathinfo['basename']; // "dir1/dir2" . "/" . "img.jpg"
-                    $final_thumb_path = $final_image_path; //we add "_thumbnail" in the function that follows:
+                foreach ($files['tmp_name'] as $key => $tmp_name) {
+                    //IMAGE
+                    $image_filename = pathinfo($tmp_name, PATHINFO_FILENAME);
+                    $final_image_path = $items_dir . "/" . $image_filename . ".jpg"; // "dir1/dir2" . "/" . "img.jpg"
                     $this->append_count_if_it_already_exist($final_image_path);
-                    $this->append_count_if_it_already_exist($final_thumb_path, "_thumbnail");
+                    //THUMBNAIL
+                    $thumb_filename = pathinfo($final_image_path, PATHINFO_FILENAME);
+                    $final_thumb_path = $items_dir . "/" . $thumb_filename . "_thumbnail.jpg";
 
-                    $temp_image_path = $files['tmp_name'][$key];
-                    Image::resizeToJpeg($temp_image_path, $final_image_path, Configuration::get("IMAGE_MAX_WIDTH"), Configuration::get("IMAGE_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
-                    Image::resizeToJpeg($temp_image_path, $final_thumb_path, Configuration::get("THUMB_MAX_WIDTH"), Configuration::get("THUMB_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
+                    Image::resizeToJpeg($tmp_name, $final_image_path, Configuration::get("IMAGE_MAX_WIDTH"), Configuration::get("IMAGE_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
+                    Image::resizeToJpeg($tmp_name, $final_thumb_path, Configuration::get("THUMB_MAX_WIDTH"), Configuration::get("THUMB_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
 
                     (new ItemPicture($item, $priority, $final_image_path))->persist();
                     $priority++;
@@ -83,7 +85,6 @@ class ControllerItem extends Controller {
                 $this->redirect('item', 'manage_images', strval($item_id));
             }
         }
-
         (new View('manage_images'))->show(["user" => $user, "item" => $item, "errors" => $errors]);
     }
 
@@ -148,21 +149,18 @@ class ControllerItem extends Controller {
         return $pic;
     }
 
-    private function append_count_if_it_already_exist(string &$path, string $append = ""): void {
+    private function append_count_if_it_already_exist(string &$path): void {
         $pathinfo = pathinfo($path);
+        $temp_path = $pathinfo['dirname'] . "/" . $pathinfo['filename'] . ".jpg";
 
-        if ($append != "")
-            $path = $pathinfo['filename'] . $append . $pathinfo['extension'];
-
-        if (file_exists($path)) {
-            $temp_path = $path;
+        if (file_exists($temp_path)) {
             $i = 1;
             do {
-                $temp_path = $pathinfo['dirname'] . $pathinfo['filename'] . "_" . $i . $append . "." . $pathinfo['extension'];
+                $temp_path = $pathinfo['dirname'] . "/" . $pathinfo['filename'] . "_" . $i . ".jpg";
                 $i++;
             } while (file_exists($temp_path));
-
-            $path = $temp_path;
         }
+
+        $path = $temp_path;
     }
 }

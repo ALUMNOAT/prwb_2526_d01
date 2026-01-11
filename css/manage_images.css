@@ -136,6 +136,7 @@ label {
 
 .images_container {
     display: flex;
+    flex-wrap: wrap;
     gap: 1em;
 
     div {

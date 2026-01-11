@@ -33,7 +33,7 @@ $icons = "account_circle,add,arrow_back,celebration,home,logout,manage_accounts,
         <div class="section">
             <?php if (!$user->get_picture_path()): ?>
                 <p>You have no picture.</p>
-                <p>Set it up <a href="member/profile_picture">here</a></p>
+                <p>Set it up <a href="profile/profile_picture">here</a></p>
             <?php else: ?>
                 <img src="<?= $user->get_picture_path() ?>" width="100" alt="<?= $user->get_pseudo() ?>&apos;s photo!">
             <?php endif; ?>
