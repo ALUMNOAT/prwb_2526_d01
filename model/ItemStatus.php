@@ -184,4 +184,18 @@ class ItemStatus extends Model {
                 : $ends_in . "left";
         }
     }
+
+    public function has_ended(): bool {
+        $now = new DateTime(AppTime::get_current_datetime());
+        $end_at = new DateTime($this->end_at);
+        return $now > $end_at;
+    }
+
+    public function has_sold(): bool {
+        return $this->has_ended() && $this->has_bids || $this->buy_now_reached;
+    }
+
+    public function has_not_sold(): bool {
+        return $this->has_ended() && !$this->has_bids && !$this->buy_now_reached;
+    }
 }

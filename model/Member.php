@@ -382,7 +382,6 @@ class Member extends Model {
         return $errors;
     }
 
-
     public static function get_member(int $id): Member|false {
         $query = self::execute(
             "SELECT *
@@ -595,11 +594,63 @@ class Member extends Model {
             /*
             //If needs be to sort in PHP, I could use usort with an anonymous function :)
             usort($my_bids, function ($a, $b) {
-                return 
+                return [bool]
             })
                 */
         }
 
         return $my_bids;
+    }
+
+    public function get_my_items(): array {
+        $query = self::execute(
+            "SELECT *
+            FROM v_items_status
+            WHERE owner = :user_id
+            ORDER BY v.end_at ASC;",
+            ["user_id" => $this->id]
+        );
+
+        $my_items_status = [];
+
+        if ($query->rowCount() > 0) {
+            $data = $query->fetchAll();
+
+            foreach ($data as $row) {
+                $item = new Item(
+                    $row['id'],
+                    $row['title'],
+                    $this,
+                    $row['created_at'],
+                    $row['duration_days'],
+                    [],
+                    $row['description'],
+                    $row['buy_now_price'],
+                    $row['starting_bid']
+                );
+
+                $item_status = new ItemStatus(
+                    $item,
+                    $row['end_at'],
+                    $row['bid_count'],
+                    $row['max_bid'],
+                    $row['is_direct_sale'] == '1',
+                    $row['is_auction'] == '1',
+                    $row['has_buy_now'] == '1',
+                    $row['has_bids'] == '1',
+                    $row['buy_now_reached'] == '1',
+                    $row['not_purchased_direct_sale'] == '1',
+                );
+
+                if ($item_status->has_sold())
+                    $my_items_status['sold_items'][$item->get_id()] = $item_status;
+                else if ($item_status->has_not_sold())
+                    $my_items_status['not_sold_items'][$item->get_id()] = $item_status;
+                else
+                    $my_items_status['active_items'][$item->get_id()] = $item_status;
+            }
+        }
+
+        return $my_items_status;
     }
 }
