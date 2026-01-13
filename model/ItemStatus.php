@@ -156,7 +156,7 @@ class ItemStatus extends Model {
         $now = new DateTime(AppTime::get_current_datetime());
         $ago = new DateTime($this->end_at);
 
-        if ($now > $ago)
+        if ($this->has_ended() || $this->has_sold() || $this->has_not_sold())
             return "ended";
         else {
             $diff = $ago->diff($now);

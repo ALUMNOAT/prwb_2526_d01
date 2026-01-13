@@ -15,15 +15,11 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
 
 /** 
  * @var Member $user
- * @var Bid $bid
  * @var Item $item
  * @var ItemStatus $item_status
- * @var array $my_bids
- * @var array $available_items
- * @var int $page
- * @var int $my_bids_pagination
- * @var int $available_items_pagination
- * @var int $pagination
+ * @var array $active_items
+ * @var array $closed_unsold_items
+ * @var array $closed_sold_items
  */
 ?>
 
@@ -42,11 +38,47 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
 </head>
 
 <body>
-    <p>Test</p>
+    <div class='content'>
+        <!-- ACTIVE ITEMS -->
+        <?php if (!empty($active_items)): ?>
+            <h1>Active Items</h1>
+            <div class="browse">
+                <?php foreach ($active_items as $item_status) {
+                    $item = $item_status->get_item();
+                    require 'item_card.php';
+                }
+                ?>
+            </div>
+        <?php endif; ?>
 
-    <?php if(Configuration::is_dev()): ?>
-    <!-- TIME MANAGEMENT DEV -->
-    <?php require 'time.php' ?>
+        <!-- CLOSED UNSOLD ITEMS -->
+        <?php if (!empty($closed_unsold_items)): ?>
+            <h1>Unsold Items</h1>
+            <div class="browse">
+                <?php foreach ($closed_unsold_items as $item_status) {
+                    $item = $item_status->get_item();
+                    require 'item_card.php';
+                }
+                ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- CLOSED SOLD ITEMS -->
+        <?php if (!empty($closed_sold_items)): ?>
+            <h1>Sold Items</h1>
+            <div class="browse">
+                <?php foreach ($closed_sold_items as $item_status) {
+                    $item = $item_status->get_item();
+                    require 'item_card.php';
+                }
+                ?>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <?php if (Configuration::is_dev()): ?>
+        <!-- TIME MANAGEMENT DEV -->
+        <?php require 'time.php' ?>
     <?php endif; ?>
 
     <!-- NAVBAR MENU -->

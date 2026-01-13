@@ -605,13 +605,14 @@ class Member extends Model {
     public function get_my_items(): array {
         $query = self::execute(
             "SELECT *
-            FROM v_items_status
+            FROM v_items_status AS v
             WHERE owner = :user_id
             ORDER BY v.end_at ASC;",
             ["user_id" => $this->id]
         );
 
         $my_items_status = [];
+        $items = [];
 
         if ($query->rowCount() > 0) {
             $data = $query->fetchAll();
@@ -628,6 +629,7 @@ class Member extends Model {
                     $row['buy_now_price'],
                     $row['starting_bid']
                 );
+                $items[$row['id']] = $item;
 
                 $item_status = new ItemStatus(
                     $item,
@@ -643,11 +645,18 @@ class Member extends Model {
                 );
 
                 if ($item_status->has_sold())
-                    $my_items_status['sold_items'][$item->get_id()] = $item_status;
+                    $my_items_status['closed_sold_items'][$item->get_id()] = $item_status;
                 else if ($item_status->has_not_sold())
-                    $my_items_status['not_sold_items'][$item->get_id()] = $item_status;
+                    $my_items_status['closed_unsold_items'][$item->get_id()] = $item_status;
                 else
                     $my_items_status['active_items'][$item->get_id()] = $item_status;
+            }
+
+            $items_pictures = ItemPicture::get_items_picture($items);
+            foreach($items as $item) {
+                /** @var Item $item */
+                $item_id = $item->get_id();
+                $item->set_pictures($items_pictures[$item_id] ?? []);
             }
         }
 

@@ -99,7 +99,7 @@ class ItemPicture extends Model {
         $data = $query->fetchAll();
         $items_pictures = [];
         foreach ($data as $row) {
-            $items_pictures[$row['item']][] = new ItemPicture(
+            $items_pictures[$row['item']][$row['priority']] = new ItemPicture(
                 $items[$row['item']],
                 $row['priority'],
                 $row['picture_path']

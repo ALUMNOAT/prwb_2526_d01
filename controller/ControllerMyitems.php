@@ -6,9 +6,16 @@ require_once "utils/NumberConverter.php";
 
 
 class ControllerMyitems extends Controller {
+    /*
+    doc: https://php.watch/versions/8.1/spread-operator-string-array-keys
+    */
     public function index(): void {
         $user = $this->get_user_or_redirect_guess();
-        (new View('my_items'))->show(['user' => $user]);
+        $my_items = $user->get_my_items();
+        (new View('my_items'))->show(array_merge(
+            ['user' => $user],
+            $my_items
+        ));
     }
 
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {
@@ -39,5 +46,4 @@ class ControllerMyitems extends Controller {
             $this->redirect("item", "manage_images", strval($item->get_id()));
         return $pic;
     }
-
 }
