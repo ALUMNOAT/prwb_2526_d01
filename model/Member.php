@@ -4,8 +4,7 @@ require_once "model/Bid.php";
 require_once "utils/Role.php";
 
 
-class Member extends Model
-{
+class Member extends Model {
 
     /**
      * ID nullable :
@@ -33,34 +32,29 @@ class Member extends Model
         return $this->id;
     }
 
-    public function get_full_name(): string
-    {
+    public function get_full_name(): string {
         return $this->full_name;
     }
     public function get_email(): ?string {
         return $this->email;
     }
 
-    public function get_pseudo(): string
-    {
+    public function get_pseudo(): string {
         return $this->pseudo;
     }
     public function get_password(): ?string {
         return $this->password;
     }
 
-    public function get_role(): Role
-    {
+    public function get_role(): Role {
         return $this->role;
     }
 
-    public function get_picture_path(): ?string
-    {
+    public function get_picture_path(): ?string {
         return $this->picture_path;
     }
 
-    public function get_iban(): ?string
-    {
+    public function get_iban(): ?string {
         return $this->iban;
     }
 
@@ -71,23 +65,19 @@ class Member extends Model
         $this->full_name = $new_full_name;
     }
 
-    public function set_email(string $new_email): void
-    {
+    public function set_email(string $new_email): void {
         $this->email = $new_email;
     }
 
-    public function set_pseudo(string $new_pseudo): void
-    {
+    public function set_pseudo(string $new_pseudo): void {
         $this->pseudo = $new_pseudo;
     }
 
-    public function set_password(string $new_password): void
-    {
+    public function set_password(string $new_password): void {
         $this->password = $new_password;
     }
 
-    public function set_role(Role $new_role): void
-    {
+    public function set_role(Role $new_role): void {
         $this->role = $new_role;
     }
     public function set_picture_path(?string $new_picture_path): void {
@@ -97,8 +87,11 @@ class Member extends Model
         $this->iban = $new_iban;
     }
 
-    public function persist(): Member
-    {
+    public function is_guest(): bool {
+        return $this->id === null;
+    }
+
+    public function persist(): Member {
         // Si l'ID existe (utilisateur existe), on update
         if ($this->id !== null) {
             // On met à jour l'utilisateur existant (un ID attribué déjà)
@@ -176,8 +169,7 @@ class Member extends Model
      * Doit contenir un chiffre, une Maj, une min, un symbole
      */
 
-    private static function validate_password(string $password): array
-    {
+    private static function validate_password(string $password): array {
         $errors = [];
 
         // 8 charactères minimum
@@ -322,8 +314,7 @@ class Member extends Model
      * • Compute remainder:        3214282912345698765432161182    mod 97 = 1
      *
      */
-    public static function validate_iban(string $iban): array
-    {
+    public static function validate_iban(string $iban): array {
         $errors = [];
         // Pour ne pas avoir 3 retours dans la fonction, on va créer un booléen
         $isvalid = true;
@@ -363,8 +354,7 @@ class Member extends Model
         return $errors;
     }
 
-    public static function validate_photo(array $file): array
-    {
+    public static function validate_photo(array $file): array {
         $errors = [];
 
         if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
