@@ -16,7 +16,7 @@
     <div class="profile-navbar">
         <a href="profile">
             <button>
-                <span class="material-symbols-outlined">arrow_back</span>
+                <span class="material-symbols-outlined size-40">arrow_back</span>
             </button>
         </a>
 
@@ -25,7 +25,7 @@
         </h2>
 
         <button type="submit" form="profile">
-            <span class="material-symbols-outlined">save</span>
+            <span class="material-symbols-outlined size-40">save</span>
         </button>
     </div>
 
