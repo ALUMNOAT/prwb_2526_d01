@@ -18,6 +18,12 @@ class ControllerMyitems extends Controller {
         ));
     }
 
+    public function sales(): void {
+        $user = $this->get_user_or_redirect_guess();
+        $my_sales = $user->get_my_items()['closed_sold_items'];
+        (new View('sales'))->show(['user' => $user, 'sales' => $my_sales]);
+    }
+
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {
         /** @var Member $user */
         $user = $this->get_user_or_redirect();
