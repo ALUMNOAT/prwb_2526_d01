@@ -28,15 +28,49 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     <meta charset="UTF-8">
     <title>Browse</title>
     <base href="<?= $web_root ?>">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,celebration,filter,gavel,home,schedule,settings,shopping_bag,travel_explore,trophy" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,arrow_back,celebration,filter,gavel,home,schedule,settings,shopping_bag,shopping_cart,travel_explore,trophy" />
     <link rel="stylesheet" href="css/sales.css">
+    <link rel="stylesheet" href="css/top_navbar.css">
+    <link rel="stylesheet" href="css/icons.css">
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/time.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
+    <div class="top-navbar">
+        <a href='my_items'>
+            <button>
+                <span class="material-symbols-outlined size-40">arrow_back</span>
+            </button>
+        </a>
+
+        <h2 class="page-title">
+            Sales <span class="material-symbols-outlined">shopping_cart</span>
+        </h2>
+    </div>
+
     <div class='content'>
+        <!-- TITLE -->
+        <div class="data">
+            <div>
+                test
+            </div>
+            
+            <div>
+                test
+            </div>
+
+            <div>
+                test
+            </div>
+        </div>
+
+        <!-- DATA -->
+        <div>
+
+        </div>
+
         <!-- SALES -->
         <?php if (!empty($sales)): ?>
             <h1>Sales</h1>

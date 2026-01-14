@@ -28,20 +28,21 @@ img {
     color: springgreen;
 }
 
-.material-symbols-outlined {
-    font-size: 1em;
-    /* Preferred icon size */
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24
-}
-
 .content {
     width: 100%-1em;
     margin: 1em;
     justify-content: center;
+}
+
+.data {
+    display: flex;
+    gap: 1em;
+    div {
+        height: 10em;
+        flex-grow: 1;
+        background-color: red;
+        color: white;
+    }
 }
 
 .attribution {
