@@ -6,17 +6,6 @@ body {
     color: #fff;
 }
 
-.material-symbols-outlined {
-    align-self: center;
-    font-size: 1.8em;
-    /* Preferred icon size */
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24
-}
-
 .row {
     display: flex;
     border: 1px solid grey;
