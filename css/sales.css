@@ -39,6 +39,7 @@ img {
 
 .data {
     display: flex;
+    flex-wrap: wrap;
     gap: 1em;
     div {
         padding: 1em;
