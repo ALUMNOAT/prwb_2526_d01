@@ -37,18 +37,24 @@ class ControllerMyitems extends Controller {
             $user = $bid->get_owner();
             $user_id = $user->get_id();
 
-            if(!isset($bidders['users'][$user_id])) {
+            if (!isset($bidders['users'][$user_id])) {
                 $bidders['users'][$user_id] = $user;
                 $bidders['counts'][$user_id] = 0;
             } else
                 $bidders['counts'][$user_id]++;
         }
 
-        if($sales_count > 0)
-            $average = $total / $sales_count;
+        $average = $sales_count > 0
+            ? $total / $sales_count
+            : 0;
 
-        $loyals_id = array_keys($bidders['counts'], max($bidders['counts']));
-        $loyals = array_intersect_key($bidders['users'], array_flip($loyals_id));
+        $loyals_id = $sales_count > 0
+            ? array_keys($bidders['counts'], max($bidders['counts']))
+            : [];
+
+        $loyals = $sales_count > 0 
+            ? array_intersect_key($bidders['users'], array_flip($loyals_id))
+            : [];
 
         (new View('sales'))->show([
             'user' => $user,
