@@ -5,6 +5,7 @@ doc: https: //www.w3schools.com/icons/tryit.asp?filename=tryicons_google-collect
 doc: https: //www.w3docs.com/snippets/css/how-to-make-a-div-a-clickable-link.html
 doc: https://stackoverflow.com/questions/796087/make-a-div-into-a-link
 doc: https://developers.google.com/fonts/docs/material_symbols#getting_material_symbols
+doc: https://stackoverflow.com/questions/45941415/left-align-one-element-and-center-another-element-in-div
 
 problem not fixed: https://github.com/google/material-design-icons/issues/1834
 
@@ -57,7 +58,11 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     </div>
 
     <div class='content'>
-        <!-- TITLE -->
+        <div>
+            <h1>Completed Sales</h1>
+            <p class='attribution'>A snapshot of the deals you've wrapped up.</p>
+        </div>
+
         <div class="data">
             <div>
                 <h3>TOTAL REVENUE</h3>
@@ -80,6 +85,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
                         <?= $loyal->get_pseudo() ?>
                     <?php endforeach; ?>
                 </h2>
+
                 <p>most recurring winning buyer</p>
             </div>
         </div>
@@ -91,7 +97,6 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
 
         <!-- SALES -->
         <?php if (!empty($sales)): ?>
-            <h1>Sales</h1>
             <div class="browse">
                 <?php foreach ($sales as $a_bid):
                     /** @var Bid $a_bid */

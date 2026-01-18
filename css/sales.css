@@ -4,7 +4,7 @@ body {
     background-color: rgb(15, 25, 38);
 }
 h1, h2, h3, h4 {
-    margin: 0px
+    margin: 0px;
 }
 
 h1 {
@@ -20,6 +20,10 @@ p {
     margin: 0;
 }
 
+.attribution {
+    color: grey;
+}
+
 img {
     object-fit:contain;
     border-radius: 0.5em 0.5em 0 0;
@@ -32,15 +36,14 @@ img {
 }
 
 .content {
-    width: 100%-1em;
     margin: 1em;
-    justify-content: center;
 }
 
 .data {
     display: flex;
     flex-wrap: wrap;
     gap: 1em;
+    margin: 1em 0px;
     div {
         padding: 1em;
         flex-grow: 1;
