@@ -3,6 +3,9 @@ body {
     font-family: Arial, sans-serif;
     background-color: rgb(15, 25, 38);
 }
+h1, h2, h3, h4 {
+    margin: 0px
+}
 
 h1 {
     color: dodgerblue;
@@ -38,11 +41,17 @@ img {
     display: flex;
     gap: 1em;
     div {
-        height: 10em;
+        padding: 1em;
         flex-grow: 1;
-        background-color: red;
+        background-color: #333333;
         color: white;
+        border-radius: 5px;
     }
+}
+
+.anecdote {
+    padding: 1em;
+    color: grey
 }
 
 .attribution {

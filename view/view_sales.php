@@ -15,9 +15,15 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
 
 /** 
  * @var Member $user
+ * @var Member $loyal
  * @var Item $item
  * @var ItemStatus $item_status
+ * @var Bid $bid
  * @var array $sales
+ * @var array $loyals
+ * @var float $total
+ * @var float $average
+ * @var int $sales_count
  */
 ?>
 
@@ -54,15 +60,27 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
         <!-- TITLE -->
         <div class="data">
             <div>
-                test
-            </div>
-            
-            <div>
-                test
+                <h3>TOTAL REVENUE</h3>
+                <h2>€ <?= $total ?></h2>
+                <p>Across <?= $sales_count ?> sales</p>
             </div>
 
             <div>
-                test
+                <h3>AVERAGE TICKET</h3>
+                <h2>€ <?= $average ?></h2>
+                <p>Median buyer appetite indicator</p>
+            </div>
+
+            <div>
+                <h3>LOYAL BIDDER</h3>
+                <h2>
+                    <?php foreach ($loyals as $loyal):
+                        /** @var Member $loyal */
+                    ?>
+                        <?= $loyal->get_pseudo() ?>
+                    <?php endforeach; ?>
+                </h2>
+                <p>most recurring winning buyer</p>
             </div>
         </div>
 
@@ -75,11 +93,24 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
         <?php if (!empty($sales)): ?>
             <h1>Sales</h1>
             <div class="browse">
-                <?php foreach ($sales as $item_status) {
+                <?php foreach ($sales as $a_bid):
+                    /** @var Bid $a_bid */
+                    $item_status = $a_bid->get_item_status();
                     $item = $item_status->get_item();
-                    require 'item_card.php';
-                }
                 ?>
+                    <div>
+                        <?php require 'item_card.php';
+                        /** 
+                         * @var Bid $a_bid 
+                         * @var ItemStatus $item_status */
+                        ?>
+                        <div class='anecdote'>
+                            <p>Final price <?= $a_bid->get_amount() ?></p>
+                            <p><?= $a_bid->get_owner()->get_pseudo() ?></p>
+                            <p>Closed on <?= $item_status->get_buy_now_reached() ? $a_bid->get_created_at() : $item_status->get_end_at() ?></p>
+                        </div>
+                    </div>
+                <?php endforeach ?>
             </div>
         <?php endif; ?>
     </div>

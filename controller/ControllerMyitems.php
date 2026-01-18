@@ -19,9 +19,45 @@ class ControllerMyitems extends Controller {
     }
 
     public function sales(): void {
+        /*
+        doc: https://stackoverflow.com/questions/30626785/php-most-frequent-value-in-array
+        doc: https://stackoverflow.com/questions/1461348/return-index-of-highest-value-in-an-array
+        */
         $user = $this->get_user_or_redirect_guess();
-        $my_sales = $user->get_my_items()['closed_sold_items'];
-        (new View('sales'))->show(['user' => $user, 'sales' => $my_sales]);
+        $my_sales = $user->get_my_sales();
+        $total = 0;
+        $average = 0;
+        $sales_count = count($my_sales);
+        $bidders = ['counts' => [], 'users' => []];
+
+        foreach ($my_sales as $bid) {
+            /** @var Bid $bid */
+            $total += $bid->get_amount();
+
+            $user = $bid->get_owner();
+            $user_id = $user->get_id();
+
+            if(!isset($bidders['users'][$user_id])) {
+                $bidders['users'][$user_id] = $user;
+                $bidders['counts'][$user_id] = 0;
+            } else
+                $bidders['counts'][$user_id]++;
+        }
+
+        if($sales_count > 0)
+            $average = $total / $sales_count;
+
+        $loyals_id = array_keys($bidders['counts'], max($bidders['counts']));
+        $loyals = array_intersect_key($bidders['users'], array_flip($loyals_id));
+
+        (new View('sales'))->show([
+            'user' => $user,
+            'sales' => $my_sales,
+            'total' => $total,
+            'average' => $average,
+            'sales_count' => $sales_count,
+            'loyals' => $loyals
+        ]);
     }
 
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {
