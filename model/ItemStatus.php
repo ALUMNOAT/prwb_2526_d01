@@ -184,4 +184,34 @@ class ItemStatus extends Model {
                 : $ends_in . "left";
         }
     }
+
+    public static function has_bids(int $item_id): bool {
+        $query = self::execute(
+            "SELECT has_bids
+         FROM v_items_status
+         WHERE id = :id",
+            ["id" => $item_id]
+        );
+
+        if ($query->rowCount() === 0) {
+            return false;
+        }
+
+        return (bool)$query->fetch()['has_bids'];
+    }
+
+    public static function is_direct_sale(int $item_id): bool {
+        $query = self::execute(
+            "SELECT is_direct_sale
+            FROM v_items_status
+            WHERE id = :id",
+            ["id" => $item_id]
+        );
+        if ($query->rowCount() === 0) {
+            return false;
+        }
+
+        return (bool)$query->fetch()['is_direct_sale'];
+    }
+
 }

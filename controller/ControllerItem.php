@@ -86,4 +86,48 @@ class ControllerItem extends Controller {
         ]);
     }
 
+    public function add_edit_item(): void {
+        $member = $this->get_user_or_redirect();
+
+        $id = (int)($_GET['param1'] ?? 0);
+        $item = Item::get_item($id);
+        if (!$item || $item->get_owner()->get_id() !== $member->get_id() || ItemStatus::has_bids($item->get_id())) {
+            $this->redirect("browse");
+        }
+
+        $errors = [];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $title = trim($_POST['title'] ?? '');
+            $description = trim($_POST['description'] ?? '');
+            $days = (int)($_POST['days'] ?? 7);
+            $startingBid = (float)($_POST['starting_bid'] ?? 0);
+            $buyNowPrice = $_POST['buy_now_price'] !== '' ? (float)$_POST['buy_now_price'] : null;
+
+            // Set properties first
+            $item->set_title($title);
+            $item->set_description($description);
+            $item->set_duration_days($days);
+            $item->set_starting_bid($startingBid);
+            $item->set_buy_now_price($buyNowPrice);
+
+            // Validation
+            $errors = array_merge($errors, $item->validate_title());
+            $errors = array_merge($errors, $item->validate_ipp());
+            $errors = array_merge($errors, $item->validate_bid());
+
+            if (empty($errors)) {
+                $item->update($title, $description, $days, $startingBid, $buyNowPrice);
+                $this->redirect("item", "show", $item->get_id());
+            }
+        }
+
+        (new View("add_edit_item"))->show([
+            "member" => $member,
+            "item" => $item,
+            "errors" => $errors
+        ]);
+    }
+
+
+
 }

@@ -288,5 +288,108 @@ class Item extends Model {
             $items[$row['item']]->add_picture($picture);
         }
     }
+
+    public static function create(
+        Member $owner,
+        string $title,
+        string $description,
+        int $duration_days,
+        float $starting_bid,
+        ?float $buy_now_price
+    ): Item {
+
+        self::execute(
+            "INSERT INTO items (title, owner, created_at, duration_days, description, starting_bid, buy_now_price)
+         VALUES (:title, :owner, :created_at, :duration_days, :description, :starting_bid, :buy_now_price)",
+            [
+                "title" => $title,
+                "owner" => $owner->get_id(),
+                "created_at" => AppTime::get_current_datetime(),
+                "duration_days" => $duration_days,
+                "description" => $description,
+                "starting_bid" => $starting_bid,
+                "buy_now_price" => $buy_now_price
+            ]
+        );
+
+        $id = self::lastInsertId();
+
+        return self::get_item($id);
+    }
+
+    public function update(
+        string $title,
+        string $description,
+        int $duration_days,
+        float $starting_bid,
+        ?float $buy_now_price
+    ): void {
+
+        self::execute(
+            "UPDATE items
+         SET title = :title,
+             description = :description,
+             duration_days = :duration_days,
+             starting_bid = :starting_bid,
+             buy_now_price = :buy_now_price
+         WHERE id = :id",
+            [
+                "title" => $title,
+                "description" => $description,
+                "duration_days" => $duration_days,
+                "starting_bid" => $starting_bid,
+                "buy_now_price" => $buy_now_price,
+                "id" => $this->id
+            ]
+        );
+
+        // Sync object
+        $this->title = $title;
+        $this->description = $description;
+        $this->duration_days = $duration_days;
+        $this->starting_bid = $starting_bid;
+        $this->buy_now_price = $buy_now_price;
+    }
+
+    public function validate_title(): array {
+        $errors = [];
+
+        if (strlen($this->title) === 0)
+            $errors[] = "Un titre est requis.";
+        else if (strlen($this->title) < Configuration::get("full_name_min_length", 3))
+            $errors[] = "Le titre doit avoir au minimum 3 caractères.";
+        else if (strlen($this->title) > Configuration::get("full_name_max_length", 255))
+            $errors[] = "Le titre ne doit pas dépasser 255 charactères.";
+
+        return $errors;
+    }
+
+    public function validate_ipp(): array {
+        $errors = [];
+
+        if ($this->buy_now_price !== null && $this->starting_bid !== null) {
+            if ($this->buy_now_price < $this->starting_bid) {
+                $errors[] = "Buy now price must be greater than the starting bid.";
+            }
+            if ($this->buy_now_price < 0) {
+                $errors[] = "Buy now price must be greater than 0.";
+            }
+        }
+
+        return $errors;
+    }
+
+    public function validate_bid(): array {
+        $errors = [];
+        if ($this->starting_bid !== null && $this->starting_bid < 0) {
+            $errors[] = "Starting bid must be positive.";
+        }
+        return $errors;
+    }
+
+
+    // TODO: a faire validate_description
+
+
 }
 

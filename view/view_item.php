@@ -153,7 +153,7 @@ donc pas de hidden
 <?php if ($member->get_id() === $item->get_owner()->get_id()): ?>
     <div class="manage-item">
         <h3>Manage Your Item</h3>
-        <a href="item/add_edit_item" class="row">
+        <a href="item/add_edit_item/<?= $item->get_id()?>" class="row">
             <div class="row-title">Edit Item Details</div>
         </a>
         <a href="item/manage_images" class="row">
