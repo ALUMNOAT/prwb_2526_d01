@@ -23,8 +23,17 @@ doc:
 </head>
 
 <body>
-    <div>
-       <p>test</p>
+    <div class='content'>
+       <div class='card'>
+            <h1 class='warning'>Are you sure ?</h1>
+            <br>
+            <p>Do you really want to delete item <b>"<?= $item->get_title() ?>"</b> by <?= $user->get_full_name() ?> and all of its dependencies ?</p>
+            <p>This process cannot be undone.</p>
+            <form action='my_items/delete/<?= $item->get_id() ?>' method='POST' id='delete' name='delete'>
+                <a href='my_items'>Cancel</a>
+                <button id='confirm' name='confirm' form='delete' type='submit' value='<?= $item->get_id() ?>'>Delete</button>
+            </form>
+       </div>
     </div>
 
     <?php if (Configuration::is_dev()): ?>
