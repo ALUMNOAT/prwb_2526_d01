@@ -49,7 +49,7 @@ $icons = "account_circle,add,arrow_back,celebration,home,logout,manage_accounts,
             <h3>My Activities</h3>
             
             <!-- SALES -->
-            <a href="?" class="row">
+            <a href="my_items/sales" class="row">
                 <span class="material-symbols-outlined size-40">receipt_long</span>
                 <div>
                     <div class="row-title">Sales</div>
@@ -58,7 +58,7 @@ $icons = "account_circle,add,arrow_back,celebration,home,logout,manage_accounts,
             </a>
 
             <!-- PURCHASES -->
-            <a href="?" class="row">
+            <a href="my_items/purchases" class="row">
                 <span class="material-symbols-outlined size-40">shopping_cart</span>
                 <div>
                     <div class="row-title">Purchases</div>

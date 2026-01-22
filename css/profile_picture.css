@@ -22,22 +22,22 @@ body {
         margin-left: auto;
         margin-right: auto;
     }
-}
 
-.profile-navbar button {
-    all: unset;
-    width: 3em;
-    height: 3em;
-    text-align: center;
-    color: dodgerblue;
+    button {
+        all: unset;
+        width: 3em;
+        height: 3em;
+        text-align: center;
+        color: dodgerblue;
 
-    span {
-        vertical-align: middle;
-    }
+        span {
+            vertical-align: middle;
+        }
 
-    :hover {
-        color: white;
-        cursor: pointer;
+        :hover {
+            color: white;
+            cursor: pointer;
+        }
     }
 }
 
@@ -56,7 +56,7 @@ body {
     background: #1e293b;
     padding: 25px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.4);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
 .section {

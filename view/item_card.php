@@ -20,8 +20,11 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
     <!-- IMAGE & LABEL -->
     <div class="container-image">
         <!-- IMAGE -->
-        <img src="<?= $item->get_main_thumbnail_path() ?>" alt="Avatar">
-
+        <?php if ($item->has_no_picture()): ?>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Question_mark_alternate.png"/>
+        <?php else: ?>
+            <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar">
+        <?php endif; ?>
         <!-- LABEL -->
         <div class="container-label">
             <!-- BIDDER & HIGHEST BIDDER -->
@@ -36,8 +39,7 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
-            
-            
+
             <div class="container-label-general-info">
                 <!-- AUCTION -->
                 <?php if ($item_status->get_is_auction()): ?>
@@ -75,19 +77,20 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
             <!-- BUY NOW & STARTING BID -->
             <?php if ($item_status->get_has_buy_now()): ?>
                 <div class="buy-now-price">
-                    € <?= number_format($item->get_buy_now_price(), 2,",", ".") ?>
+                    € <?= number_format($item->get_buy_now_price(), 2, ",", ".") ?>
                 </div>
-            <?php elseif($item_status->get_is_auction()): //not necessary, but perhaps it's better practice ?>
+            <?php elseif ($item_status->get_is_auction()): //not necessary, but perhaps it's better practice 
+            ?>
                 <div class="starting-bid-price">
-                    € <?= number_format($item->get_starting_bid(), 2,",", ".") ?>
+                    € <?= number_format($item->get_starting_bid(), 2, ",", ".") ?>
                 </div>
             <?php endif; ?>
-            
+
             <!-- MY BID -->
             <?php if (isset($bid)): ?>
                 <div class="current-bid-price">
                     <p class="attribution">Current bid</p>
-                    € <?= number_format($bid->get_amount(), 2,",", ".") ?>
+                    € <?= number_format($bid->get_amount(), 2, ",", ".") ?>
                 </div>
             <?php endif; ?>
         </div>
