@@ -35,7 +35,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     <meta charset="UTF-8">
     <title>Browse</title>
     <base href="<?= $web_root ?>">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,arrow_back,celebration,filter,gavel,home,schedule,settings,shopping_bag,shopping_cart,travel_explore,trophy" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,arrow_back,attach_money,celebration,filter,gavel,home,schedule,settings,shopping_bag,shopping_cart,travel_explore,trophy" />
     <link rel="stylesheet" href="css/sales.css">
     <link rel="stylesheet" href="css/top_navbar.css">
     <link rel="stylesheet" href="css/icons.css">
@@ -46,7 +46,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
 
 <body>
     <div class="top-navbar">
-        <a href='my_items'>
+        <a href='profile'>
             <button>
                 <span class="material-symbols-outlined size-40">arrow_back</span>
             </button>
@@ -64,24 +64,26 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
                 <p class='attribution'>A snapshot of the deals you've wrapped up.</p>
             </div>
 
-            <div><p class='count'><?= $sales_count ?> sales</p></div>
+            <div>
+                <p class='count'><?= $sales_count ?> sales</p>
+            </div>
         </div>
 
         <div class="data">
             <div>
                 <h3>TOTAL REVENUE</h3>
                 <h2>€ <?= $total ?></h2>
-                <p>Across <?= $sales_count ?> sales</p>
+                <p class="attribution">Across <?= $sales_count ?> sales</p>
             </div>
 
             <div>
                 <h3>AVERAGE TICKET</h3>
                 <h2>€ <?= $average ?></h2>
-                <p>Median buyer appetite indicator</p>
+                <p class="attribution">Median buyer appetite indicator</p>
             </div>
 
             <div>
-                <h3>LOYAL BIDDER</h3>
+                <h3>LOYAL BIDDER(s)</h3>
                 <h2>
                     <?php foreach ($loyals as $loyal):
                         /** @var Member $loyal */
@@ -90,7 +92,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
                     <?php endforeach; ?>
                 </h2>
 
-                <p>most recurring winning buyer</p>
+                <p class="attribution">most recurring winning buyer(s)</p>
             </div>
         </div>
 
@@ -113,11 +115,24 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
                          * @var Bid $a_bid 
                          * @var ItemStatus $item_status */
                         ?>
+
                         <div class='anecdote'>
-                            <p>Final price <?= $a_bid->get_amount() ?></p>
-                            <p><?= $a_bid->get_owner()->get_pseudo() ?></p>
-                            <p>Closed on <?= $item_status->get_buy_now_reached() ? $a_bid->get_created_at() : $item_status->get_end_at() ?></p>
+                            <p>
+                                <span class='material-symbols-outlined'>attach_money</span>
+                                Final price € <?= NumberConverter::money_format($a_bid->get_amount()) ?>
+                            </p>
+
+                            <p>
+                                <span class='material-symbols-outlined'>trophy</span>
+                                <?= $a_bid->get_owner()->get_pseudo() ?>
+                            </p>
+
+                            <p>
+                                <span class='material-symbols-outlined'>schedule</span>
+                                Closed on <?= $item_status->get_buy_now_reached() ? $a_bid->get_created_at() : $item_status->get_end_at() ?>
+                            </p>
                         </div>
+
                     </div>
                 <?php endforeach ?>
             </div>

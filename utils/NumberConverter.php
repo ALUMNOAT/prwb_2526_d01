@@ -27,4 +27,8 @@ class NumberConverter {
     public static function is_id(mixed $id): bool {
         return is_int(self::get_id_or_false($id));
     }
+
+    public static function money_format(float|int $price): string {
+        return number_format($price, 2, ",", ".");
+    }
 }

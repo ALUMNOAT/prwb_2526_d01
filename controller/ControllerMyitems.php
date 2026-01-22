@@ -46,7 +46,7 @@ class ControllerMyitems extends Controller {
 
         $average = $sales_count > 0
             ? $total / $sales_count
-            : 0;
+            : '0.00';
 
         $loyals_id = $sales_count > 0
             ? array_keys($bidders['counts'], max($bidders['counts']))
@@ -59,8 +59,8 @@ class ControllerMyitems extends Controller {
         (new View('sales'))->show([
             'user' => $user,
             'sales' => $my_sales,
-            'total' => $total,
-            'average' => $average,
+            'total' => NumberConverter::money_format($total),
+            'average' => NumberConverter::money_format($average),
             'sales_count' => $sales_count,
             'loyals' => $loyals
         ]);
