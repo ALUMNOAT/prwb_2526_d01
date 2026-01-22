@@ -5,6 +5,7 @@ https://github.com/php/php-src/issues/1481
 */
 
 enum Role: string {
+    case GUEST = "guest";
     case ADMIN = "admin";
     case USER = "user";
 }

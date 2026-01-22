@@ -1,3 +1,8 @@
+<?php
+
+$icons = "key,person"
+?>
+
 <!DOCTYPE html>
 <html>
 
@@ -6,6 +11,8 @@
     <title>Log In</title>
     <base href="<?= $web_root ?>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=<?= $icons ?>" />
+    <link rel="stylesheet" href="css/icons.css">
     <link href="css/login.css" rel="stylesheet" type="text/css" />
 </head>
 
@@ -22,8 +29,16 @@
 
             <!-- LOGIN FORM -->
             <form action="login" method="post">
-                <input type="text" id="email" name="email" placeholder="Mail" value="<?= $email ?? null ?>" required>
-                <input type="password" id="password" name="password" placeholder="***" required>
+                <div class="row">
+                    <span class="material-symbols-outlined">person</span>
+                    <input type="text" id="email" name="email" placeholder="Mail" value="<?= $email ?? null ?>" required>
+                </div>
+
+                <div class="row">
+                    <span class="material-symbols-outlined">key</span>
+                    <input type="password" id="password" name="password" placeholder="***" required>
+                </div>
+
                 <button type="submit" class="btn-login">Login</button>
             </form>
 

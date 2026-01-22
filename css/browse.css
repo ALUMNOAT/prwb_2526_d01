@@ -36,20 +36,11 @@ img {
     object-fit: contain;
     border-radius: 0.5em 0.5em 0 0;
     width: 100%;
+    max-height: 20em;
 }
 
 .green {
     color: springgreen;
-}
-
-.material-symbols-outlined {
-    font-size: 1em;
-    /* Preferred icon size */
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24
 }
 
 .content {
@@ -64,7 +55,8 @@ img {
 
 .browse {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16em, auto)); /* <-- doc 'grid wrapping' */
+    grid-template-columns: repeat(auto-fit, minmax(16em, auto));
+    /* <-- doc 'grid wrapping' */
     grid-gap: 1em;
     justify-content: center;
 }
@@ -115,12 +107,12 @@ img {
 }
 
 .starting-bid-price {
-    color:orange;
+    color: orange;
     font-size: 2em;
 }
 
 .current-bid-price {
-    color:springgreen;
+    color: springgreen;
     margin-left: auto;
 }
 
@@ -141,8 +133,6 @@ img {
     height: 100%;
     top: 0;
     left: 0;
-
-    font-size: 1em;
 }
 
 .bidder {
@@ -196,63 +186,37 @@ img {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-/* MENU LINK */
-ul.menu {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: #333333;
-    display: flex;
-}
-
-ul.menu li {
-    display: inline-block;
-    float: none;
-    flex-grow: 1;
-    /* float: left; */
-}
-
-ul.menu li a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-}
-
-ul.menu li a:hover {
-    background-color: #111111;
-}
-
 .pagination {
-  display: flex;
-  justify-content: center;
-  list-style: none; /* remove list bullets */
-  padding: 0px;
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    /* remove list bullets */
+    padding: 0px;
 }
 
 .pagination li a {
-  display: block; /* let links fill the list item */
-  padding: 8px 12px;
-  text-decoration: none;
-  border: 1px solid gray;
-  color: grey;
-  margin: 0 4px;
-  border-radius: 5px; /* add rounded borders */
+    display: block;
+    /* let links fill the list item */
+    padding: 8px 12px;
+    text-decoration: none;
+    border: 1px solid gray;
+    color: grey;
+    margin: 0 4px;
+    border-radius: 5px;
+    /* add rounded borders */
 }
 
 .pagination li a.active {
-  background-color: #4CAF50;
-  color: white;
+    background-color: #4CAF50;
+    color: white;
 }
 
 .pagination li a.disabled {
-  color: #dddddd;
-  cursor: not-allowed;
-  pointer-events: none;
+    color: #dddddd;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .pagination li a:hover:not(.active) {
-  background-color: lightgray;
+    background-color: lightgray;
 }

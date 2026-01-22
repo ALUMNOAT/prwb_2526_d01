@@ -6,9 +6,44 @@ body {
     color: #e2e8f0;
 }
 
+/* MENU LINK */
+.profile-navbar {
+    width: 100%;
+    background-color: #333333;
+    color: dodgerblue;
+    display: flex;
+    align-items: center;
+    padding-right: 3em;
+    box-sizing: border-box;
+
+    h2 {
+        max-height: fit-content;
+        margin: 0px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    button {
+        all: unset;
+        width: 3em;
+        height: 3em;
+        text-align: center;
+        color: dodgerblue;
+
+        span {
+            vertical-align: middle;
+        }
+
+        :hover {
+            color: white;
+            cursor: pointer;
+        }
+    }
+}
+
 .container {
     width: 70%;
-    margin: 40px auto;
+    margin: 0px auto;
 }
 
 .page-title {
@@ -21,7 +56,7 @@ body {
     background: #1e293b;
     padding: 25px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.4);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
 
 .section {
@@ -70,6 +105,7 @@ body {
 }
 
 .input {
+    box-sizing: border-box;
     width: 100%;
     padding: 10px;
     border-radius: 8px;
@@ -126,4 +162,14 @@ body {
     border-left: 4px solid #3b82f6;
     border-radius: 6px;
     font-size: 15px;
+}
+
+/* Erreur */
+.errors {
+    background-color: #f87171;
+    color: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    text-align: left;
 }
