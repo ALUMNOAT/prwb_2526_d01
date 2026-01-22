@@ -66,6 +66,18 @@ class ControllerMyitems extends Controller {
         ]);
     }
 
+    public function delete(): void {
+        $user = $this->get_user_or_redirect_guess();
+        $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $item = $this->get_item_or_redirect($item_id, $user);   //not owner, no access
+
+        if(isset($_POST['confirm'])) {
+            null;
+        } else {
+            (new View('delete_confirm'))->show(['item' => $item, 'user' => $user]);
+        }
+    }
+
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {
         /** @var Member $user */
         $user = $this->get_user_or_redirect();

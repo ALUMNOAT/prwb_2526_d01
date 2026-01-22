@@ -124,18 +124,6 @@ class ControllerItem extends Controller {
         $this->redirect("item", "manage_images", strval($item_id));
     }
 
-    public function delete(): void {
-        $user = $this->get_user_or_redirect_guess();
-        $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $item = $this->get_item_or_redirect($item_id, $user);   //not owner, no access
-
-        if(isset($_POST['confirm'])) {
-            null;
-        } else {
-            null;
-        }
-    }
-
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {
         /** @var Member $user */
         $user = $this->get_user_or_redirect();
