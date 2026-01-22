@@ -10,28 +10,28 @@
     <?php if (isset($user) && !$user->is_guest()): ?>
         <li>
             <a href="browse">
-                <span class="material-symbols-outlined">travel_explore</span>
+                <span class="material-symbols-outlined size-40">travel_explore</span>
                 <br>Browse
             </a>
         </li>
 
         <li>
             <a href="myitems">
-                <span class="material-symbols-outlined">home</span>
+                <span class="material-symbols-outlined size-40">home</span>
                 <br>My Items
             </a>
         </li>
 
         <li>
             <a href="add">
-                <span class="material-symbols-outlined">add</span>
+                <span class="material-symbols-outlined size-40">add</span>
                 <br>Add Offer
             </a>
         </li>
 
         <li>
             <a href="profile">
-                <span class="material-symbols-outlined">settings</span>
+                <span class="material-symbols-outlined size-40">settings</span>
                 <br>Profile
             </a>
         </li>
@@ -40,13 +40,13 @@
     <?php else: ?>
         <li>
             <a href="browse">
-                <span class="material-symbols-outlined">travel_explore</span>
+                <span class="material-symbols-outlined size-40">travel_explore</span>
                 <br>Browse
             </a>
         </li>
         <li>
             <a href="signup">
-                <span class="material-symbols-outlined">celebration</span>
+                <span class="material-symbols-outlined size-40">celebration</span>
                 <br>Join us
             </a>
         </li>

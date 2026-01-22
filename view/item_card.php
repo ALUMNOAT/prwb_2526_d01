@@ -31,11 +31,11 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
             <?php if (isset($bid)): ?>
                 <?php if ($bid->get_is_highest_bid()): ?>
                     <div class="highest-bidder">
-                        <span class="material-symbols-outlined">trophy</span> Highest Bidder
+                        <span class="material-symbols-outlined size-20">trophy</span> Highest Bidder
                     </div>
                 <?php else: ?>
                     <div class="bidder">
-                        <span class="material-symbols-outlined">gavel</span> Bidder
+                        <span class="material-symbols-outlined size-20">gavel</span> Bidder
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
@@ -44,21 +44,21 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
                 <!-- AUCTION -->
                 <?php if ($item_status->get_is_auction()): ?>
                     <div class="auction">
-                        <span class="material-symbols-outlined">gavel</span> auction
+                        <span class="material-symbols-outlined size-20">gavel</span> auction
                     </div>
                 <?php endif; ?>
 
                 <!-- BUY NOW -->
                 <?php if ($item_status->get_has_buy_now()): ?>
                     <div class="buy-now">
-                        <span class="material-symbols-outlined">shopping_bag</span> buy now
+                        <span class="material-symbols-outlined size-20">shopping_bag</span> buy now
                     </div>
                 <?php endif; ?>
 
                 <!-- IMAGE COUNT -->
                 <?php if (count($item->get_pictures()) > 1): ?>
                     <div class="image-count">
-                        <span class="material-symbols-outlined">filter</span>
+                        <span class="material-symbols-outlined size-20">filter</span>
                         <?= count($item->get_pictures()) ?> images
                     </div>
                 <?php endif; ?>
@@ -96,6 +96,6 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
         </div>
 
         <!-- TIME LEFT -->
-        <p class="green"><span class="material-symbols-outlined">schedule</span> <?= $item_status->ends_in() ?></p>
+        <p class="green"><span class="material-symbols-outlined size-20">schedule</span> <?= $item_status->ends_in() ?></p>
     </div>
 </div>

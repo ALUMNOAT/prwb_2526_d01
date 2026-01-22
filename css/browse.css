@@ -43,16 +43,6 @@ img {
     color: springgreen;
 }
 
-.material-symbols-outlined {
-    font-size: 1em;
-    /* Preferred icon size */
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24
-}
-
 .content {
     width: 100%-1em;
     margin: 1em;
@@ -143,8 +133,6 @@ img {
     height: 100%;
     top: 0;
     left: 0;
-
-    font-size: 1em;
 }
 
 .bidder {
