@@ -58,9 +58,13 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     </div>
 
     <div class='content'>
-        <div>
-            <h1>Completed Sales</h1>
-            <p class='attribution'>A snapshot of the deals you've wrapped up.</p>
+        <div class="flex-row">
+            <div>
+                <h1>Completed Sales</h1>
+                <p class='attribution'>A snapshot of the deals you've wrapped up.</p>
+            </div>
+
+            <div><p class='count'><?= $sales_count ?> sales</p></div>
         </div>
 
         <div class="data">

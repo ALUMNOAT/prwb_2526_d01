@@ -39,6 +39,23 @@ img {
     margin: 1em;
 }
 
+.flex-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    
+}
+
+.count {
+    /*
+    doc: https://dev.to/frehner/css-vh-dvh-lvh-svh-and-vw-units-27k4
+    */
+    color: white;
+    background-color: springgreen;
+    padding: 6px 18px;
+    border-radius: 1em;
+}
+
 .data {
     display: flex;
     flex-wrap: wrap;
