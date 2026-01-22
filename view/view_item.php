@@ -90,15 +90,18 @@ C'est un autre chemin pour les mecs super forts :)
         </label>
         <hr>
 
-        <!-- Show bid input only if auction is enabled and if the item didn't got bought yet-->
-        <?php if ($item_status->get_is_auction() && !$item_status->get_buy_now_reached()): ?>
-            €<input type="text" id="make_bid" name="make_bid" class="input" value="<?= $currentBid + 1 ?>">
-            <p><button type="submit" name="bid" class="bid">Place Bid</button></p>
-        <?php endif; ?>
+        <!-- owner of the item can't buy or bid himself on the item -->
+        <?php if ($member->get_id() !== $item->get_owner()->get_id()): ?>
+            <!-- Show bid input only if auction is enabled and if the item didn't got bought yet-->
+            <?php if ($item_status->get_is_auction() && !$item_status->get_buy_now_reached()): ?>
+                €<input type="text" id="make_bid" name="make_bid" class="input" value="<?= $currentBid + 1 ?>">
+                <p><button type="submit" name="bid" class="bid">Place Bid</button></p>
+            <?php endif; ?>
 
-        <!-- Show Buy Now button only if Buy Now is enabled AND price > current bid -->
-        <?php if ($item_status->get_has_buy_now() && $buyNowPrice > 0 && $buyNowPrice > $currentBid): ?>
-            <p><button type="submit" name="buy" class="buy">Buy now at € <?= $buyNowPrice ?></button></p>
+            <!-- Show Buy Now button only if Buy Now is enabled AND price > current bid -->
+            <?php if ($item_status->get_has_buy_now() && $buyNowPrice > 0 && $buyNowPrice > $currentBid): ?>
+                <p><button type="submit" name="buy" class="buy">Buy now at € <?= $buyNowPrice ?></button></p>
+            <?php endif; ?>
         <?php endif; ?>
 
     </div>
