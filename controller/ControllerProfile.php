@@ -68,9 +68,7 @@ class ControllerProfile extends Controller {
             $email = $_POST["email"];
             $iban = $_POST["iban"] ?? null;
             // Pour avoir NULL dans la BD (On économise 8x plus d'espace memoire, 0,125 octet = NULL)
-            if ($iban === ""){
-                $iban = null;
-            }
+            if ($iban === "") $iban = null;
 
             /** On vérifie que le pseudo, email et full_name sont uniques ainsi que les règles métier
              *

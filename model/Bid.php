@@ -107,7 +107,6 @@ class Bid extends Model {
         // Prevent bidding if Buy Now is reached
         if ($item_status->get_buy_now_reached()) {
             $errors[] = "Bidding is no longer allowed, the item has been bought via Buy Now.";
-            return $errors;
         }
 
         if (!$item_status->get_is_auction()) {
@@ -117,7 +116,8 @@ class Bid extends Model {
         if ($amount === null || !is_numeric($amount)) {
             $errors[] = "Invalid bid amount.";
         } else {
-            $currentMax = $item_status->get_max_bid() ?? $item_status->get_item()->get_starting_bid();
+            $newItemStatus = ItemStatus::get_item_status($item_status->get_item()->get_id());
+            $currentMax = $newItemStatus->get_max_bid() ?? $item_status->get_item()->get_starting_bid();
             if ($amount <= $currentMax) {
                 $errors[] = "Your bid must be higher than the current bid (€$currentMax).";
             }
