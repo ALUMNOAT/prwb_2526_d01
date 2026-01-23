@@ -11,7 +11,7 @@
 <div class="container">
     <h2 class="page-title">Add item</h2>
 
-    <form method="POST" action="item/add_edit_item/<?= $item->get_id() ?>" class="form-box">
+    <form method="POST" action="item/add_edit_item" class="form-box">
 
     <div class="section">
             <h3>Basic Information</h3>
@@ -23,20 +23,43 @@
             <input type="text" id="description" name="description" class="input" value="<?= $item?->get_description() ?? '' ?>" placeholder="Describe your item in detail ..." required>
 
             <label for="days" class="label">Sale Duration (days) *</label>
-            <input type="text" id="days" name="days" class="input" value="<?= $item?->get_duration_days() ?? '' ?>">
+            <input type="text" id="days" name="days" class="input" value="<?= $item?->get_duration_days() ?? '7' ?>">
         </div>
 
         <div class="section">
             <h3>Sale Type</h3>
 
+            <?php
+            // Determine values for the three inputs
+            $startingBidVal = ($item?->get_starting_bid() ?? 0) > 0 ? $item->get_starting_bid() : '';
+            // starting bid -> oui et buy_now_price -> oui
+            $buyNowVal = ($item?->get_starting_bid() ?? 0) > 0 && ($item?->get_buy_now_price() ?? 0) > 0
+                    ? $item->get_buy_now_price()
+                    : '';
+            // starting bid -> non et buy_now_price -> oui
+            $salePriceVal = ($item?->get_starting_bid() ?? 0) <= 0 && ($item?->get_buy_now_price() ?? 0) > 0
+                    ? $item->get_buy_now_price()
+                    : '';
+            ?>
+
+
+            <!--  | Type              | starting_bid | buy_now_price | sale_price |
+              | ----------------- | ------------ | ------------- | ---------- |
+              | Auction only      | 50           |               |            |
+              | Auction + Buy Now | 50           | 1500          |            |
+              | Buy only          |              |               | 550        | -->
+
+
+
             <label for="starting_bid" class="label">Starting Bid</label>
-            <input type="text" id="starting_bid" name="starting_bid" class="input" value="<?= $item?->get_starting_bid() ?? '' ?>" placeholder="e.g., 50.00">
+            <input type="text" id="starting_bid" name="starting_bid" class="input" value="<?= $startingBidVal ?>" placeholder="e.g., 50.00">
 
             <label for="buy_now_price" class="label">Instant purchase Price <span class="secondary">(optional)</span></label>
-            <input type="text" id="buy_now_price" name="buy_now_price" class="input" value="<?= $item?->get_buy_now_price() ?? '' ?>">
+            <input type="text" id="buy_now_price" name="buy_now_price" class="input" value="<?= $buyNowVal ?>">
 
             <label for="sale_price" class="label">Sale Price</label>
-            <input type="text" id="sale_price" name="sale_price" class="input" value="<?= ItemStatus::has_bids($item->get_id()) ?>">
+            <input type="text" id="sale_price" name="sale_price" class="input" value="<?= $salePriceVal ?>">
+
         </div>
 
         <button type="submit" class="btn">Save</button>

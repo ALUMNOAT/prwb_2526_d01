@@ -9,7 +9,7 @@ require_once "model/ItemPicture.php";
 class Item extends Model {
 
     public function __construct(
-        private int $id, //is id needed ? yes
+        private ?int $id, // id nullable pour la création d'item
         private string $title,
         private Member $owner,
         private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
@@ -21,7 +21,7 @@ class Item extends Model {
     ) {
     }
 
-    public function get_id(): int {
+    public function get_id(): ?int {
         return $this->id;
     }
     public function get_title(): string {
@@ -250,7 +250,7 @@ class Item extends Model {
 
         $items_pictures = ItemPicture::get_items_picture($items);
         foreach ($items as $item) {
-            $item->set_pictures($items_pictures[$item->get_id()]);
+            $item->set_pictures($items_pictures[$item->get_id()] ?? []);
         }
 
         return $available_items;
@@ -289,68 +289,6 @@ class Item extends Model {
         }
     }
 
-    public static function create(
-        Member $owner,
-        string $title,
-        string $description,
-        int $duration_days,
-        float $starting_bid,
-        ?float $buy_now_price
-    ): Item {
-
-        self::execute(
-            "INSERT INTO items (title, owner, created_at, duration_days, description, starting_bid, buy_now_price)
-         VALUES (:title, :owner, :created_at, :duration_days, :description, :starting_bid, :buy_now_price)",
-            [
-                "title" => $title,
-                "owner" => $owner->get_id(),
-                "created_at" => AppTime::get_current_datetime(),
-                "duration_days" => $duration_days,
-                "description" => $description,
-                "starting_bid" => $starting_bid,
-                "buy_now_price" => $buy_now_price
-            ]
-        );
-
-        $id = self::lastInsertId();
-
-        return self::get_item($id);
-    }
-
-    public function update(
-        string $title,
-        string $description,
-        int $duration_days,
-        float $starting_bid,
-        ?float $buy_now_price
-    ): void {
-
-        self::execute(
-            "UPDATE items
-         SET title = :title,
-             description = :description,
-             duration_days = :duration_days,
-             starting_bid = :starting_bid,
-             buy_now_price = :buy_now_price
-         WHERE id = :id",
-            [
-                "title" => $title,
-                "description" => $description,
-                "duration_days" => $duration_days,
-                "starting_bid" => $starting_bid,
-                "buy_now_price" => $buy_now_price,
-                "id" => $this->id
-            ]
-        );
-
-        // Sync object
-        $this->title = $title;
-        $this->description = $description;
-        $this->duration_days = $duration_days;
-        $this->starting_bid = $starting_bid;
-        $this->buy_now_price = $buy_now_price;
-    }
-
     public function validate_title(): array {
         $errors = [];
 
@@ -381,14 +319,60 @@ class Item extends Model {
 
     public function validate_bid(): array {
         $errors = [];
+
         if ($this->starting_bid !== null && $this->starting_bid < 0) {
             $errors[] = "Starting bid must be positive.";
         }
+
         return $errors;
     }
 
+    public function persist(): Item {
+        if ($this->id !== null) {
+            // Mise à jour d'un item existant
+            self::execute(
+                "UPDATE items
+             SET title = :title,
+                 description = :description,
+                 buy_now_price = :buy_now_price,
+                 duration_days = :duration_days,
+                 starting_bid = :starting_bid
+             WHERE id = :id",
+                [
+                    "id" => $this->id,
+                    "title" => $this->title,
+                    "description" => $this->description,
+                    "buy_now_price" => $this->buy_now_price,
+                    "duration_days" => $this->duration_days,
+                    "starting_bid" => $this->starting_bid
+                ]
+            );
+        } else {
+            // Création d'un nouvel item
+            $now = AppTime::get_current_datetime(); // date de création
 
-    // TODO: a faire validate_description
+            self::execute(
+                "INSERT INTO items(title, description, owner, created_at, buy_now_price, duration_days, starting_bid)
+             VALUES(:title, :description, :owner, :created_at, :buy_now_price, :duration_days, :starting_bid)",
+                [
+                    "title" => $this->title,
+                    "description" => $this->description,
+                    "owner" => $this->owner->get_id(),
+                    "created_at" => $now,
+                    "buy_now_price" => $this->buy_now_price,
+                    "duration_days" => $this->duration_days,
+                    "starting_bid" => $this->starting_bid
+                ]
+            );
+
+            // Synchronisation de l'objet avec la base
+            $this->id = self::lastInsertId();
+            $this->created_at = $now;
+        }
+
+        return $this;
+    }
+
 
 
 }

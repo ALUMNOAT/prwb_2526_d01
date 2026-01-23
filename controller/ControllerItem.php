@@ -87,46 +87,101 @@ class ControllerItem extends Controller {
     }
 
     public function add_edit_item(): void {
+
         $member = $this->get_user_or_redirect();
 
-        $id = (int)($_GET['param1'] ?? 0);
-        $item = Item::get_item($id);
-        if (!$item || $item->get_owner()->get_id() !== $member->get_id() || ItemStatus::has_bids($item->get_id())) {
-            $this->redirect("browse");
-        }
-
+        $item = null;
         $errors = [];
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $title = trim($_POST['title'] ?? '');
-            $description = trim($_POST['description'] ?? '');
-            $days = (int)($_POST['days'] ?? 7);
-            $startingBid = (float)($_POST['starting_bid'] ?? 0);
-            $buyNowPrice = $_POST['buy_now_price'] !== '' ? (float)$_POST['buy_now_price'] : null;
 
-            // Set properties first
-            $item->set_title($title);
-            $item->set_description($description);
-            $item->set_duration_days($days);
-            $item->set_starting_bid($startingBid);
-            $item->set_buy_now_price($buyNowPrice);
+        // On check si le Param1 existe
+        $id = isset($_GET['param1']) ? (int)$_GET['param1'] : null;
 
-            // Validation
-            $errors = array_merge($errors, $item->validate_title());
-            $errors = array_merge($errors, $item->validate_ipp());
-            $errors = array_merge($errors, $item->validate_bid());
-
-            if (empty($errors)) {
-                $item->update($title, $description, $days, $startingBid, $buyNowPrice);
-                $this->redirect("item", "show", $item->get_id());
+        if ($id) {
+            // On fetch l'ID de la DB
+            $item = Item::get_item($id);
+            // Si l'ID est mauvais (existe pas)-> redirect
+            if (!$item) {
+                $this->redirect("browse");
+            }
+            // Si c'est pas le propriétaire qui modif -> redirect
+            if ($item->get_owner()->get_id() !== $member->get_id()) {
+                $this->redirect("browse");
             }
         }
 
+        // If form submitted
+        if (!empty($_POST)) {
+            // Fetch data
+            $title = $_POST['title'] ?? '';
+            $description = $_POST['description'] ?? null;
+            $duration_days = isset($_POST['days']) ? (int)$_POST['days'] : 7;
+
+            $starting_bid = isset($_POST['starting_bid']) && $_POST['starting_bid'] !== ''
+                ? (float)$_POST['starting_bid']
+                : null;
+
+            $buy_now_price = isset($_POST['buy_now_price']) && $_POST['buy_now_price'] !== ''
+                ? (float)$_POST['buy_now_price']
+                : null;
+
+            $sale_price = isset($_POST['sale_price']) && $_POST['sale_price'] !== ''
+                ? (float)$_POST['sale_price']
+                : null;
+
+            // Si sale_price existe et reste est null, alors pas de bid et buy_now_price = $sale_price
+            if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
+                $buy_now_price = $sale_price;
+                $starting_bid = null;
+            }
+
+
+            // Si on fetch un item existant, alors l'item existe et on modif les données
+            // Sinon, il existe pas et il est null, du coup on crée l'item
+            if (!$item) {
+                $item = new Item(
+                    null,
+                    $title,
+                    $member,            // owner
+                    AppTime::get_current_datetime(), // created_at
+                    $duration_days,
+                    [],                 // pictures
+                    $description,
+                    $buy_now_price,
+                    $starting_bid
+                );
+            } else {
+                // Update existing item fields
+                $item->set_title($title);
+                $item->set_description($description);
+                $item->set_duration_days($duration_days);
+                $item->set_starting_bid($starting_bid);
+                $item->set_buy_now_price($buy_now_price);
+            }
+
+            // Validate
+            $errors = array_merge(
+                $item->validate_title(),
+                $item->validate_bid(),
+                $item->validate_ipp()
+            );
+
+            // If valid, persist and redirect
+            if (empty($errors)) {
+                $item->persist();
+                $this->redirect("item", "show", $item->get_id());
+            }
+
+
+        }
+
+        // Show form
         (new View("add_edit_item"))->show([
             "member" => $member,
             "item" => $item,
             "errors" => $errors
         ]);
     }
+
 
 
 

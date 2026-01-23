@@ -19,8 +19,11 @@
 
 <div class="item-detail">
     <h2 class="page-title">Item open</h2>
+    <?php
+    $mainPicPath = $mainPic ? $mainPic->get_picture_path() : null;
+    ?>
     <p>
-        <img id="mainImage" src="<?= htmlspecialchars($mainPic->get_picture_path()) ?>" alt="Item picture">
+        <img id="mainImage" src="<?= htmlspecialchars($mainPicPath) ?>" alt="Item picture">
     </p>
 
     <h1><?= htmlspecialchars($item->get_title()) ?></h1>

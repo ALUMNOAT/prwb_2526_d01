@@ -209,7 +209,7 @@ class Member extends Model
     /**
      * Règles metiers de l'unique :
      *
-     * email et pseudo doivent etre unique
+     * email, full_name et pseudo doivent etre unique
      */
 
     public static function validate_unicity(string $pseudo, string $email, string $full_name, ?int $exclude_id = null): array {
