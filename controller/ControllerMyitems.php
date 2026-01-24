@@ -89,7 +89,7 @@ class ControllerMyitems extends Controller {
         return $user;
     }
 
-    private function get_id_or_redirect(mixed $id, string $controller = 'browse', string $action = 'page', string $param1 = '1'): int {
+    private function get_id_or_redirect(mixed $id, string $controller = 'my_items', string $action = '', string $param1 = ''): int {
         if (!isset($id) || !NumberConverter::is_id($id))
             $this->redirect($controller, $action, $param1);
         $id = NumberConverter::get_id_or_false($id);
@@ -106,7 +106,7 @@ class ControllerMyitems extends Controller {
     private function get_item_status_or_redirect(int $item_id, ?Member $user = null): ItemStatus {
         $item_status = ItemStatus::get_item_status($item_id);
         if (!$item_status || $user !== null && !$item_status->get_item()->is_owner($user))
-            $this->redirect("browse", "page", "1");
+            $this->redirect("my_items");
         return $item_status;
     }
 }

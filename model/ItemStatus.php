@@ -206,8 +206,8 @@ class ItemStatus extends Model {
         doc: https://stackoverflow.com/questions/31136434/mysql-deleting-rows-based-on-a-condition-with-data-from-another-table-and-no-jo
         */
         $query = self::execute(
-            "DELETE FROM items WHERE items.id = :item_id;
-            DELETE FROM item_pictures AS p WHERE p.item = :item_id;
+            "DELETE FROM item_pictures WHERE item_pictures.item = :item_id;
+            DELETE FROM items WHERE items.id = :item_id;
             DELETE FROM v_items_status AS v WHERE v.id = :item_id;",
             ['item_id' => $this->item->get_id()]
         );
