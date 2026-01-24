@@ -33,3 +33,8 @@ span.size-48 {
     font-size: 48px;
     font-variation-settings: 'OPSZ' 48;
 }
+
+span.size-120 {
+    font-size: 120px;
+    font-variation-settings: 'OPSZ' 96;
+}
