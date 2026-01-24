@@ -52,7 +52,7 @@ class ControllerMyitems extends Controller {
             ? array_keys($bidders['counts'], max($bidders['counts']))
             : [];
 
-        $loyals = $sales_count > 0 
+        $loyals = $sales_count > 0
             ? array_intersect_key($bidders['users'], array_flip($loyals_id))
             : [];
 
@@ -66,6 +66,21 @@ class ControllerMyitems extends Controller {
         ]);
     }
 
+    public function delete(): void {
+        $user = $this->get_user_or_redirect_guess();
+        $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $item_status = $this->get_item_status_or_redirect($item_id, $user);   //not owner, no access
+
+        if ($item_status->get_has_bids() || $item_status->has_sold()) {
+            (new View('error'))->show(['error' => 'This item has bids, and cannot be deleted']);
+        } else if (isset($_POST['confirm']) && $_POST['confirm'] === strval($item_id)) {
+            $item_status->delete();
+            $this->redirect('my_items');
+        } else {
+            (new View('delete_confirm'))->show(['item' => $item_status->get_item(), 'user' => $user]);
+        }
+    }
+
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {
         /** @var Member $user */
         $user = $this->get_user_or_redirect();
@@ -74,7 +89,7 @@ class ControllerMyitems extends Controller {
         return $user;
     }
 
-    private function get_id_or_redirect(mixed $id, string $controller = 'browse', string $action = 'page', string $param1 = '1'): int {
+    private function get_id_or_redirect(mixed $id, string $controller = 'my_items', string $action = '', string $param1 = ''): int {
         if (!isset($id) || !NumberConverter::is_id($id))
             $this->redirect($controller, $action, $param1);
         $id = NumberConverter::get_id_or_false($id);
@@ -88,10 +103,10 @@ class ControllerMyitems extends Controller {
         return $item;
     }
 
-    private function get_item_picture_or_redirect(Item $item, int $pic_priority): ItemPicture {
-        $pic = $item->get_picture($pic_priority);
-        if (!$pic)
-            $this->redirect("item", "manage_images", strval($item->get_id()));
-        return $pic;
+    private function get_item_status_or_redirect(int $item_id, ?Member $user = null): ItemStatus {
+        $item_status = ItemStatus::get_item_status($item_id);
+        if (!$item_status || $user !== null && !$item_status->get_item()->is_owner($user))
+            $this->redirect("my_items");
+        return $item_status;
     }
 }

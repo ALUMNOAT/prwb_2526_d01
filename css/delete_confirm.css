@@ -1,0 +1,66 @@
+/*
+doc: https://www.w3schools.com/css/css_pseudo_classes.asp
+doc: https://stackoverflow.com/questions/6382023/changing-the-color-of-an-hr-element
+*/
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: rgb(15, 25, 38);
+    height: 100vh;
+}
+
+hr {
+    border-color: grey;
+}
+
+.content {
+    height: 100%;
+    min-height: fit-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card-delete_confirm {
+    position: relative;
+    max-width: 25em;
+    padding: 12px;
+    margin: 1em;
+    background-color: #333333;
+    border: 1px solid grey;
+    border-radius: 5px;
+    text-align: center;
+    color: white;
+}
+
+.warning {
+    color: red;
+}
+
+a.cancel {
+    all: unset;
+    padding: 12px;
+    margin-right: 1em;
+    border-radius: 5px;
+    color: white;
+    background-color: grey;
+}
+
+a.cancel:hover {
+    cursor: pointer;
+    background-color: darkgrey;
+}
+
+button.delete {
+    all: unset;
+    padding: 12px;
+    border-radius: 5px;
+    color: white;
+    background-color: red;
+}
+
+button.delete:hover {
+    cursor: pointer;
+    background-color: tomato;
+}

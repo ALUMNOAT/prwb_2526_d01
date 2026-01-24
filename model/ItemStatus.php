@@ -198,4 +198,18 @@ class ItemStatus extends Model {
     public function has_not_sold(): bool {
         return $this->has_ended() && !$this->has_bids && !$this->buy_now_reached;
     }
+
+    public function delete(): void {
+        /*
+        doc: https://www.w3schools.com/mysql/mysql_delete.asp
+        doc: https://dba.stackexchange.com/questions/232987/deleting-multiple-tables-in-a-single-delete-query-in-mysql
+        doc: https://stackoverflow.com/questions/31136434/mysql-deleting-rows-based-on-a-condition-with-data-from-another-table-and-no-jo
+        */
+        $query = self::execute(
+            "DELETE FROM item_pictures WHERE item_pictures.item = :item_id;
+            DELETE FROM items WHERE items.id = :item_id;
+            DELETE FROM v_items_status AS v WHERE v.id = :item_id;",
+            ['item_id' => $this->item->get_id()]
+        );
+    }
 }
