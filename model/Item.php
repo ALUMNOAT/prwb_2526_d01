@@ -189,6 +189,20 @@ class Item extends Model {
         }
     }
 
+    public function delete(): void {
+        /*
+        doc: https://www.w3schools.com/mysql/mysql_delete.asp
+        doc: https://dba.stackexchange.com/questions/232987/deleting-multiple-tables-in-a-single-delete-query-in-mysql
+        doc: https://stackoverflow.com/questions/31136434/mysql-deleting-rows-based-on-a-condition-with-data-from-another-table-and-no-jo
+        */
+        $query = self::execute(
+            "DELETE FROM item_pictures AS p WHERE p.item = :item_id;
+            DELETE FROM items WHERE items.id = :item_id;
+            DELETE FROM v_items_status AS v WHERE v.id = :item_id;",
+            ['item_id' => $this->id]
+        );
+    }
+
     public function persist_item_pictures(): void {
         /*
         doc: https://stackoverflow.com/questions/36766162/sql-query-insert-but-only-if-record-doesnt-already-exist
