@@ -751,4 +751,93 @@ class Member extends Model {
 
         return $sales;
     }
+
+    public function get_my_purchases(): array {
+        /*
+        doc: https://stackoverflow.com/questions/10724324/mysql-inner-join-alias
+        */
+        $query = self::execute(
+            "SELECT 
+                b.created_at AS b_created_at, b.amount AS b_amount,
+                u.id AS u_id, u.full_name, u.email, u.pseudo, u.password, u.role, u.picture_path, u.iban,
+                v.*
+            FROM v_items_status AS v
+            JOIN bids AS b ON ((b.item, b.amount) = (v.id, v.max_bid))
+            JOIN users AS u ON (u.id = b.owner)
+            WHERE v.owner = :user_id
+            AND (v.buy_now_reached OR 
+                (v.has_bids AND v.end_at < :right_now))
+            ORDER BY v.end_at ASC;",
+            [
+                "user_id" => $this->id,
+                "right_now" => AppTime::get_current_datetime()
+            ]
+        );
+
+        $sales = [];
+        $bidder = [];
+        $items = [];
+
+        if ($query->rowCount() > 0) {
+            $data = $query->fetchAll();
+
+            foreach ($data as $row) {
+                $item = new Item(
+                    $row['id'],
+                    $row['title'],
+                    $this,
+                    $row['created_at'],
+                    $row['duration_days'],
+                    [],
+                    $row['description'],
+                    $row['buy_now_price'],
+                    $row['starting_bid']
+                );
+                $items[$row['id']] = $item;
+
+                $item_status = new ItemStatus(
+                    $item,
+                    $row['end_at'],
+                    $row['bid_count'],
+                    $row['max_bid'],
+                    $row['is_direct_sale'] == '1',
+                    $row['is_auction'] == '1',
+                    $row['has_buy_now'] == '1',
+                    $row['has_bids'] == '1',
+                    $row['buy_now_reached'] == '1',
+                    $row['not_purchased_direct_sale'] == '1',
+                );
+
+                if (!isset($bid_owner[$row['u_id']]))
+                    $bid_owner[$row['u_id']] = new Member(
+                        $row['u_id'],
+                        $row['full_name'],
+                        $row['email'],
+                        $row['pseudo'],
+                        $row['password'],
+                        Role::from($row['role']),
+                        $row['picture_path'],
+                        $row['iban']
+                    );
+
+                $bid = new Bid(
+                    $bid_owner[$row['u_id']],
+                    $item_status,
+                    $row['b_created_at'],
+                    $row['b_amount'],
+                );
+
+                $sales[] = $bid;
+            }
+
+            $items_pictures = ItemPicture::get_items_picture($items);
+            foreach ($items as $item) {
+                /** @var Item $item */
+                $item_id = $item->get_id();
+                $item->set_pictures($items_pictures[$item_id] ?? []);
+            }
+        }
+
+        return $sales;
+    }
 }
