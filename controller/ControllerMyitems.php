@@ -56,13 +56,13 @@ class ControllerMyitems extends Controller {
             ? array_intersect_key($bidders['users'], array_flip($loyals_id))
             : [];
 
-        (new View('sales'))->show([
-            'sales_view' => true,
+        (new View('transactions'))->show([
+            'transactions_type' => 'sales',
             'user' => $user,
-            'sales' => $my_sales,
+            'transactions' => $my_sales,
             'total' => NumberConverter::money_format($total),
             'average' => NumberConverter::money_format($average),
-            'sales_count' => $sales_count,
+            'transactions_count' => $sales_count,
             'loyals' => $loyals
         ]);
     }
@@ -105,13 +105,13 @@ class ControllerMyitems extends Controller {
             ? array_intersect_key($sellers['users'], array_flip($loyals_id))
             : [];
 
-        (new View('sales'))->show([
-            'sales_view' => false,
+        (new View('transactions'))->show([
+            'transactions_type' => 'purchases',
             'user' => $user,
-            'sales' => $my_purchases,
+            'transactions' => $my_purchases,
             'total' => NumberConverter::money_format($total),
             'average' => NumberConverter::money_format($average),
-            'sales_count' => $purchase_count,
+            'transactions_count' => $purchase_count,
             'loyals' => $loyals
         ]);
     }

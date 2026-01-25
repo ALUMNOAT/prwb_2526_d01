@@ -20,15 +20,15 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
  * @var Item $item
  * @var ItemStatus $item_status
  * @var Bid $bid
- * @var array $sales
+ * @var array $transactions
  * @var array $loyals
+ * @var string $transactions_type
  * @var float $total
  * @var float $average
  * @var int $sales_count
- * @var bool $sales_view
  */
 
-$transaction_type = $sales_view ? 'sales' : 'purchases'
+$is_sales_view = $transactions_type == 'sales';
 
 ?>
 
@@ -57,7 +57,7 @@ $transaction_type = $sales_view ? 'sales' : 'purchases'
         </a>
 
         <h2 class="page-title">
-            <?= ucfirst($transaction_type) ?>
+            <?= ucfirst($transactions_type) ?>
             <span class="material-symbols-outlined">shopping_cart</span>
         </h2>
     </div>
@@ -65,40 +65,40 @@ $transaction_type = $sales_view ? 'sales' : 'purchases'
     <div class='content'>
         <div class="flex-row">
             <div>
-                <h1><?= $sales_view ? 'Completed Sales' : 'My Purchases' ?></h1>
+                <h1><?= $is_sales_view ? 'Completed Sales' : 'My Purchases' ?></h1>
                 <p class='attribution'>
-                    <?= $sales_view
+                    <?= $is_sales_view
                         ? "A snapshot of the deals you've wrapped up."
                         : "Track the gear you've succesfully secured." ?>
                 </p>
             </div>
 
             <div>
-                <p class='count <?= $transaction_type ?>'>
-                    <?= $sales_count ?> <?= $transaction_type ?>
+                <p class='count <?= $transactions_type ?>'>
+                    <?= $transactions_count ?> <?= $transactions_type ?>
                 </p>
             </div>
         </div>
 
         <div class="data">
             <div>
-                <h3><?= $sales_view ? 'TOTAL REVENUE' : 'TOTAL SPENT' ?></h3>
+                <h3><?= $is_sales_view ? 'TOTAL REVENUE' : 'TOTAL SPENT' ?></h3>
                 <h2>€ <?= $total ?></h2>
-                <p class="attribution">Across <?= $sales_count . ' ' . $transaction_type ?></p>
+                <p class="attribution">Across <?= $transactions_count . ' ' . $transactions_type ?></p>
             </div>
 
             <div>
                 <h3>AVERAGE TICKET</h3>
                 <h2>€ <?= $average ?></h2>
                 <p class="attribution">
-                    <?= $sales_view
+                    <?= $is_sales_view
                         ? 'Median buyer appetite indicator'
                         : 'Helps you plan future bids' ?>
                 </p>
             </div>
 
             <div>
-                <h3><?= $sales_view ? 'LOYAL BIDDER(s)' : 'TOP SELLER(s)' ?></h3>
+                <h3><?= $is_sales_view ? 'LOYAL BIDDER(s)' : 'TOP SELLER(s)' ?></h3>
 
                 <h2>
                     <?php foreach ($loyals as $loyal):
@@ -109,7 +109,7 @@ $transaction_type = $sales_view ? 'sales' : 'purchases'
                 </h2>
 
                 <p class="attribution">
-                    <?= $sales_view
+                    <?= $is_sales_view
                         ? 'most recurring winning buyer(s)'
                         : "Who you've bought from the most" ?>
                 </p>
@@ -123,11 +123,11 @@ $transaction_type = $sales_view ? 'sales' : 'purchases'
         </div>
 
         <!-- SALES -->
-        <?php if (!empty($sales)): ?>
+        <?php if (!empty($transactions)): ?>
             <div class="browse">
-                <?php foreach ($sales as $a_bid):
+                <?php foreach ($transactions as $a_bid):
                     /** @var Bid $a_bid */
-                    if (!$sales_view) {
+                    if (!$is_sales_view) {
                         /** @var Bid $bid */
                         $bid = $a_bid;
                         $bid->set_highest_bid($bid->get_amount()); //ugly but works...
@@ -144,7 +144,7 @@ $transaction_type = $sales_view ? 'sales' : 'purchases'
                         ?>
 
                         <div class='anecdote'>
-                            <?php if ($sales_view): ?>
+                            <?php if ($is_sales_view): ?>
                                 <p>
                                     <span class='material-symbols-outlined'>attach_money</span>
                                     Final price € <?= NumberConverter::money_format($a_bid->get_amount()) ?>
