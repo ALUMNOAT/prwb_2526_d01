@@ -763,8 +763,8 @@ class Member extends Model {
                 v.*
             FROM v_items_status AS v
             JOIN bids AS b ON ((b.item, b.amount) = (v.id, v.max_bid))
-            JOIN users AS u ON (u.id = b.owner)
-            WHERE v.owner = :user_id
+            JOIN users AS u ON (u.id = v.owner)
+            WHERE b.owner = :user_id
             AND (v.buy_now_reached OR 
                 (v.has_bids AND v.end_at < :right_now))
             ORDER BY v.end_at ASC;",
@@ -774,18 +774,30 @@ class Member extends Model {
             ]
         );
 
-        $sales = [];
-        $bidder = [];
+        $purchases = [];
+        $seller = [];
         $items = [];
 
         if ($query->rowCount() > 0) {
             $data = $query->fetchAll();
 
             foreach ($data as $row) {
+                if (!isset($seller[$row['u_id']]))
+                    $seller[$row['u_id']] = new Member(
+                        $row['u_id'],
+                        $row['full_name'],
+                        $row['email'],
+                        $row['pseudo'],
+                        $row['password'],
+                        Role::from($row['role']),
+                        $row['picture_path'],
+                        $row['iban']
+                    );
+
                 $item = new Item(
                     $row['id'],
                     $row['title'],
-                    $this,
+                    $seller[$row['u_id']],
                     $row['created_at'],
                     $row['duration_days'],
                     [],
@@ -808,26 +820,14 @@ class Member extends Model {
                     $row['not_purchased_direct_sale'] == '1',
                 );
 
-                if (!isset($bid_owner[$row['u_id']]))
-                    $bid_owner[$row['u_id']] = new Member(
-                        $row['u_id'],
-                        $row['full_name'],
-                        $row['email'],
-                        $row['pseudo'],
-                        $row['password'],
-                        Role::from($row['role']),
-                        $row['picture_path'],
-                        $row['iban']
-                    );
-
                 $bid = new Bid(
-                    $bid_owner[$row['u_id']],
+                    $this,
                     $item_status,
                     $row['b_created_at'],
                     $row['b_amount'],
                 );
 
-                $sales[] = $bid;
+                $purchases[] = $bid;
             }
 
             $items_pictures = ItemPicture::get_items_picture($items);
@@ -838,6 +838,6 @@ class Member extends Model {
             }
         }
 
-        return $sales;
+        return $purchases;
     }
 }
