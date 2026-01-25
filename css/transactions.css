@@ -125,6 +125,11 @@ img {
 
     padding: 15px;
     gap: 5px;
+
+    b {
+        color: white;
+        font-size: 1.1em;
+    }
 }
 
 .container-prices {
