@@ -72,44 +72,45 @@ class ControllerMyitems extends Controller {
         doc: https://stackoverflow.com/questions/1461348/return-index-of-highest-value-in-an-array
         */
         $user = $this->get_user_or_redirect_guess();
-        $my_sales = $user->get_my_sales();
+        $my_purchases = $user->get_my_purchases();
         $total = 0;
         $average = 0;
-        $sales_count = count($my_sales);
-        $bidders = ['counts' => [], 'users' => []];
+        $purchase_count = count($my_purchases);
+        $sellers = ['counts' => [], 'users' => []];
 
-        foreach ($my_sales as $bid) {
+        foreach ($my_purchases as $bid) {
             /** @var Bid $bid */
             $total += $bid->get_amount();
 
-            $user = $bid->get_owner();
+            $user = $bid->get_item_status()->get_item()->get_owner();
             $user_id = $user->get_id();
 
-            if (!isset($bidders['users'][$user_id])) {
-                $bidders['users'][$user_id] = $user;
-                $bidders['counts'][$user_id] = 0;
+            if (!isset($sellers['users'][$user_id])) {
+                $sellers['users'][$user_id] = $user;
+                $sellers['counts'][$user_id] = 0;
             } else
-                $bidders['counts'][$user_id]++;
+                $sellers['counts'][$user_id]++;
         }
 
-        $average = $sales_count > 0
-            ? $total / $sales_count
+        $average = $purchase_count > 0
+            ? $total / $purchase_count
             : '0.00';
 
-        $loyals_id = $sales_count > 0
-            ? array_keys($bidders['counts'], max($bidders['counts']))
+        $loyals_id = $purchase_count > 0
+            ? array_keys($sellers['counts'], max($sellers['counts']))
             : [];
 
-        $loyals = $sales_count > 0
-            ? array_intersect_key($bidders['users'], array_flip($loyals_id))
+        $loyals = $purchase_count > 0
+            ? array_intersect_key($sellers['users'], array_flip($loyals_id))
             : [];
 
         (new View('sales'))->show([
+            'sales_view' => false,
             'user' => $user,
-            'sales' => $my_sales,
+            'sales' => $my_purchases,
             'total' => NumberConverter::money_format($total),
             'average' => NumberConverter::money_format($average),
-            'sales_count' => $sales_count,
+            'sales_count' => $purchase_count,
             'loyals' => $loyals
         ]);
     }

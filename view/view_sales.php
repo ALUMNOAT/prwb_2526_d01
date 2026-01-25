@@ -25,6 +25,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
  * @var float $total
  * @var float $average
  * @var int $sales_count
+ * @var bool $sales_view
  */
 ?>
 
@@ -53,7 +54,8 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
         </a>
 
         <h2 class="page-title">
-            Sales <span class="material-symbols-outlined">shopping_cart</span>
+            <?= $sales_view ? 'Sales ' : 'Purchases ' ?>
+            <span class="material-symbols-outlined">shopping_cart</span>
         </h2>
     </div>
 
