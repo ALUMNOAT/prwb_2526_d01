@@ -57,6 +57,7 @@ class ControllerMyitems extends Controller {
             : [];
 
         (new View('sales'))->show([
+            'sales_view' => true,
             'user' => $user,
             'sales' => $my_sales,
             'total' => NumberConverter::money_format($total),

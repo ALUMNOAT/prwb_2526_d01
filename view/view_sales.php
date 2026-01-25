@@ -27,6 +27,9 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
  * @var int $sales_count
  * @var bool $sales_view
  */
+
+$transaction_type = $sales_view ? 'sales' : 'purchases'
+
 ?>
 
 <!DOCTYPE html>
@@ -36,7 +39,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     <meta charset="UTF-8">
     <title>Browse</title>
     <base href="<?= $web_root ?>">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,arrow_back,attach_money,celebration,filter,gavel,home,schedule,settings,shopping_bag,shopping_cart,travel_explore,trophy" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,arrow_back,attach_money,celebration,filter,gavel,home,schedule,settings,shopping_bag,shopping_cart,shoppingmode,travel_explore,trophy" />
     <link rel="stylesheet" href="css/sales.css">
     <link rel="stylesheet" href="css/top_navbar.css">
     <link rel="stylesheet" href="css/icons.css">
@@ -54,7 +57,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
         </a>
 
         <h2 class="page-title">
-            <?= $sales_view ? 'Sales ' : 'Purchases ' ?>
+            <?= ucfirst($transaction_type) ?>
             <span class="material-symbols-outlined">shopping_cart</span>
         </h2>
     </div>
@@ -62,30 +65,41 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     <div class='content'>
         <div class="flex-row">
             <div>
-                <h1>Completed Sales</h1>
-                <p class='attribution'>A snapshot of the deals you've wrapped up.</p>
+                <h1><?= $sales_view ? 'Completed Sales' : 'My Purchases' ?></h1>
+                <p class='attribution'>
+                    <?= $sales_view
+                        ? "A snapshot of the deals you've wrapped up."
+                        : "Track the gear you've succesfully secured." ?>
+                </p>
             </div>
 
             <div>
-                <p class='count'><?= $sales_count ?> sales</p>
+                <p class='count <?= $transaction_type ?>'>
+                    <?= $sales_count ?> <?= $transaction_type ?>
+                </p>
             </div>
         </div>
 
         <div class="data">
             <div>
-                <h3>TOTAL REVENUE</h3>
+                <h3><?= $sales_view ? 'TOTAL REVENUE' : 'TOTAL SPENT' ?></h3>
                 <h2>€ <?= $total ?></h2>
-                <p class="attribution">Across <?= $sales_count ?> sales</p>
+                <p class="attribution">Across <?= $sales_count . ' ' . $transaction_type ?></p>
             </div>
 
             <div>
                 <h3>AVERAGE TICKET</h3>
                 <h2>€ <?= $average ?></h2>
-                <p class="attribution">Median buyer appetite indicator</p>
+                <p class="attribution">
+                    <?= $sales_view
+                        ? 'Median buyer appetite indicator'
+                        : 'Helps you plan future bids' ?>
+                </p>
             </div>
 
             <div>
-                <h3>LOYAL BIDDER(s)</h3>
+                <h3><?= $sales_view ? 'LOYAL BIDDER(s)' : 'TOP SELLER(s)' ?></h3>
+
                 <h2>
                     <?php foreach ($loyals as $loyal):
                         /** @var Member $loyal */
@@ -94,8 +108,13 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
                     <?php endforeach; ?>
                 </h2>
 
-                <p class="attribution">most recurring winning buyer(s)</p>
+                <p class="attribution">
+                    <?= $sales_view
+                        ? 'most recurring winning buyer(s)'
+                        : "Who you've bought from the most" ?>
+                </p>
             </div>
+
         </div>
 
         <!-- DATA -->
@@ -108,6 +127,12 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
             <div class="browse">
                 <?php foreach ($sales as $a_bid):
                     /** @var Bid $a_bid */
+                    if (!$sales_view) {
+                        /** @var Bid $bid */
+                        $bid = $a_bid;
+                        $bid->set_highest_bid($bid->get_amount()); //ugly but works...
+                    }
+
                     $item_status = $a_bid->get_item_status();
                     $item = $item_status->get_item();
                 ?>
@@ -119,20 +144,31 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
                         ?>
 
                         <div class='anecdote'>
-                            <p>
-                                <span class='material-symbols-outlined'>attach_money</span>
-                                Final price € <?= NumberConverter::money_format($a_bid->get_amount()) ?>
-                            </p>
+                            <?php if ($sales_view): ?>
+                                <p>
+                                    <span class='material-symbols-outlined'>attach_money</span>
+                                    Final price € <?= NumberConverter::money_format($a_bid->get_amount()) ?>
+                                </p>
 
-                            <p>
-                                <span class='material-symbols-outlined'>trophy</span>
-                                <?= $a_bid->get_owner()->get_pseudo() ?>
-                            </p>
+                                <p>
+                                    <span class='material-symbols-outlined'>trophy</span>
+                                    <?= $a_bid->get_owner()->get_pseudo() ?>
+                                </p>
 
-                            <p>
-                                <span class='material-symbols-outlined'>schedule</span>
-                                Closed on <?= $item_status->get_buy_now_reached() ? $a_bid->get_created_at() : $item_status->get_end_at() ?>
-                            </p>
+                                <p>
+                                    <span class='material-symbols-outlined'>schedule</span>
+                                    Closed on <?= $item_status->get_buy_now_reached() ? $a_bid->get_created_at() : $item_status->get_end_at() ?>
+                                </p>
+                            <?php else: ?>
+                                <p>
+                                    <span class='material-symbols-outlined icon-flipped'>shoppingmode</span>
+                                    Paid € <?= NumberConverter::money_format($a_bid->get_amount()) ?>
+                                </p>
+                                <p>
+                                    <span class='material-symbols-outlined'>schedule</span>
+                                    Closed on <?= $item_status->get_buy_now_reached() ? $a_bid->get_created_at() : $item_status->get_end_at() ?>
+                                </p>
+                            <?php endif; ?>                         
                         </div>
 
                     </div>

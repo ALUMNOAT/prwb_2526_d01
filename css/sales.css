@@ -56,6 +56,14 @@ img {
     border-radius: 1em;
 }
 
+.count.sales {
+    background-color: springgreen;
+}
+
+.count.purchases {
+    background-color:cornflowerblue;
+}
+
 .data {
     display: flex;
     flex-wrap: wrap;
