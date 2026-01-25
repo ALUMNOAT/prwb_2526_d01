@@ -1,5 +1,6 @@
 /*
 doc: https://developers.google.com/fonts/docs/material_symbols#use_in_web
+doc: https://github.com/Dogfalo/materialize/issues/3732
 */
 
 .material-symbols-outlined {
@@ -37,4 +38,12 @@ span.size-48 {
 span.size-120 {
     font-size: 120px;
     font-variation-settings: 'OPSZ' 96;
+}
+
+.icon-flipped { /* see doc */
+    -o-transform: scaleX(-1);
+    -moz-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    -ms-transform: scaleX(-1);
+    transform: scaleX(-1);
 }

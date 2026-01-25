@@ -56,12 +56,62 @@ class ControllerMyitems extends Controller {
             ? array_intersect_key($bidders['users'], array_flip($loyals_id))
             : [];
 
-        (new View('sales'))->show([
+        (new View('transactions'))->show([
+            'transactions_type' => 'sales',
             'user' => $user,
-            'sales' => $my_sales,
+            'transactions' => $my_sales,
             'total' => NumberConverter::money_format($total),
             'average' => NumberConverter::money_format($average),
-            'sales_count' => $sales_count,
+            'transactions_count' => $sales_count,
+            'loyals' => $loyals
+        ]);
+    }
+
+    public function purchases(): void {
+        /*
+        doc: https://stackoverflow.com/questions/30626785/php-most-frequent-value-in-array
+        doc: https://stackoverflow.com/questions/1461348/return-index-of-highest-value-in-an-array
+        */
+        $user = $this->get_user_or_redirect_guess();
+        $my_purchases = $user->get_my_purchases();
+        $total = 0;
+        $average = 0;
+        $purchase_count = count($my_purchases);
+        $sellers = ['counts' => [], 'users' => []];
+
+        foreach ($my_purchases as $bid) {
+            /** @var Bid $bid */
+            $total += $bid->get_amount();
+
+            $user = $bid->get_item_status()->get_item()->get_owner();
+            $user_id = $user->get_id();
+
+            if (!isset($sellers['users'][$user_id])) {
+                $sellers['users'][$user_id] = $user;
+                $sellers['counts'][$user_id] = 0;
+            } else
+                $sellers['counts'][$user_id]++;
+        }
+
+        $average = $purchase_count > 0
+            ? $total / $purchase_count
+            : '0.00';
+
+        $loyals_id = $purchase_count > 0
+            ? array_keys($sellers['counts'], max($sellers['counts']))
+            : [];
+
+        $loyals = $purchase_count > 0
+            ? array_intersect_key($sellers['users'], array_flip($loyals_id))
+            : [];
+
+        (new View('transactions'))->show([
+            'transactions_type' => 'purchases',
+            'user' => $user,
+            'transactions' => $my_purchases,
+            'total' => NumberConverter::money_format($total),
+            'average' => NumberConverter::money_format($average),
+            'transactions_count' => $purchase_count,
             'loyals' => $loyals
         ]);
     }
