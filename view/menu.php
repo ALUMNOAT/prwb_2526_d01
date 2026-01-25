@@ -9,7 +9,7 @@
     <!-- USER -->
     <?php if (isset($user) && !$user->is_guest()): ?>
         <li>
-            <a href="browse">
+            <a href="item/browse/1">
                 <span class="material-symbols-outlined size-40">travel_explore</span>
                 <br>Browse
             </a>
@@ -39,7 +39,7 @@
         <!-- GUEST -->
     <?php else: ?>
         <li>
-            <a href="browse">
+            <a href="item/browse/1">
                 <span class="material-symbols-outlined size-40">travel_explore</span>
                 <br>Browse
             </a>
