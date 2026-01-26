@@ -24,9 +24,14 @@
     <?php
     $mainPicPath = $mainPic ? $mainPic->get_picture_path() : null;
     ?>
-    <p>
-        <img id="mainImage" src="<?= htmlspecialchars($mainPicPath) ?>" alt="Item picture">
-    </p>
+    <?php /** @var Item $item */
+    if($item->get_main_picture_path()): ?>
+        <p>
+            <img id="mainImage" src="<?= $item->get_main_picture_path() ?>" alt="Item picture">
+        </p>
+    <?php else:?>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Question_mark_alternate.png"/>
+    <?php endif; ?>
 
     <h1><?= htmlspecialchars($item->get_title()) ?></h1>
     <p class="desc"><?= htmlspecialchars($item->get_description() ?? "No description") ?></p>
@@ -125,10 +130,10 @@ donc pas de hidden
         <a href="item/add_edit_item/<?= $item->get_id()?>" class="row">
             <div class="row-title">Edit Item Details</div>
         </a>
-        <a href="item/manage_images" class="row">
+        <a href="item/manage_images/<?= $item->get_id() ?>" class="row">
             <div class="row-title">Manage Images</div>
         </a>
-        <a href="item/delete_item" class="row">
+        <a href="my_items/delete/<?= $item->get_id() ?>" class="row">
             <div class="row-title">Delete Item</div>
         </a>
     </div>

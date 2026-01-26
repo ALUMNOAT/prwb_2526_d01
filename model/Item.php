@@ -111,12 +111,24 @@ class Item extends Model {
 
     public function get_main_picture_path(): string|false {
         $main_picture = $this->get_main_picture();
-        return $main_picture->get_picture_path() ?? false;
+
+        if($main_picture)
+            $picture_path = $main_picture->get_picture_path();
+        else
+            $picture_path = false;
+
+        return $picture_path;
     }
 
     public function get_main_thumbnail_path(): string|false {
         $main_thumbnail = $this->get_main_picture();
-        return $main_thumbnail->get_thumbnail_path() ?? false;
+
+        if($main_thumbnail)
+            $thumbnail_path = $main_thumbnail->get_picture_path();
+        else
+            $thumbnail_path = false;
+
+        return $thumbnail_path;
     }
 
     public static function get_item(int $id): Item|false {
