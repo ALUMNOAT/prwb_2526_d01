@@ -16,7 +16,7 @@ doc 'grid wrapping': https://stackoverflow.com/questions/43129360/css-grid-wrapp
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: rgb(15, 25, 38);
+    background-color: var(--background);
 }
 
 h1 {
