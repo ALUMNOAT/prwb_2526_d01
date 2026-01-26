@@ -67,12 +67,12 @@ class ItemStatus extends Model {
                 $row['end_at'],
                 $row['bid_count'],
                 $row['max_bid'],
-                $row['is_direct_sale'],
-                $row['is_auction'],
-                $row['has_buy_now'],
-                $row['has_bids'],
-                $row['buy_now_reached'],
-                $row['not_purchased_direct_sale']
+                $row['is_direct_sale'] === 1,
+                $row['is_auction'] === 1,
+                $row['has_buy_now'] === 1,
+                $row['has_bids'] === 1,
+                $row['buy_now_reached'] === 1,
+                $row['not_purchased_direct_sale'] === 1
             );
 
             return $item_status;
