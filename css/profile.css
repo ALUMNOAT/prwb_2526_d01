@@ -1,3 +1,9 @@
+/*
+doc: https://www.w3schools.com/cssref/pr_class_display.php
+
+*/
+
+
 /* RESET */
 * {
     margin: 0;
@@ -10,14 +16,13 @@
 body {
     background: linear-gradient(180deg, #0f172a, #020617);
     color: #e5e7eb;
-    min-height: 100vh;
 }
 
 /* CONTAINER */
 .container {
-    max-width: 720px;
-    margin: 40px auto;
-    padding: 0 16px;
+    max-width: 50em;
+    margin: 3% auto 1% auto;
+    padding: 0% 1em;
 }
 
 /* PAGE TITLE */
@@ -74,9 +79,10 @@ body {
 
 /* ROW STYLE (single clickable item) */
 .row {
-    display: block;
+    display: flex;
+    gap: 1em;
     width: 100%;
-    padding: 14px 16px;
+    padding: 14px 1em;
     margin-top: 10px;
     background-color: #111827;
     border: 1px solid #334155;
@@ -84,6 +90,10 @@ body {
     text-decoration: none;
     transition: all 0.2s ease;
     cursor: pointer;
+}
+
+a.row {
+    color:#60a5fa;
 }
 
 /* TITLE */
@@ -112,7 +122,8 @@ body {
 
 /* LOGOUT ROW */
 .row.logout {
-    display: block;
+    display: flex;
+    gap: 1em;
     width: 100%;
     padding: 14px 16px;
     margin-top: 10px;
@@ -126,6 +137,14 @@ body {
 
 .row.logout .row-title {
     color: #f87171;
+}
+
+.row.logout span {
+    color:#7f1d1d
+}
+
+.row.logout:hover span {
+    color:#5f1d1d
 }
 
 .row.logout:hover {
@@ -154,7 +173,8 @@ body {
 
 button.row {
     all: unset;           /* supprime le style bouton */
-    display: block;
+    display: flex;
+    gap: 1em;
     cursor: pointer;
 }
 
