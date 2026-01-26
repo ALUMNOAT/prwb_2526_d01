@@ -315,8 +315,9 @@ class Item extends Model {
         }
 
         $items_pictures = ItemPicture::get_items_picture($items);
-        foreach ($items as $item) {
-            $item->set_pictures($items_pictures[$item->get_id()]);
+        foreach ($items as $id => $item) {
+            if(isset($items_pictures[$id]))
+                $item->set_pictures($items_pictures[$id]);
         }
 
         return $available_items;
