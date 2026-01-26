@@ -6,22 +6,22 @@
     <title>Change Password</title>
     <base href="<?= $web_root ?>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,arrow_back,home,save,settings,travel_explore">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,arrow_back,home,save,settings,shopping_cart,travel_explore">
     <link rel="stylesheet" href="css/icons.css">
+    <link rel="stylesheet" href="css/top_navbar.css">
     <link href="css/change_password.css" rel="stylesheet" type="text/css" />
     <link href="css/menu.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body>
-    <div class="profile-navbar">
-        <a href="profile">
-            <button>
-                <span class="material-symbols-outlined size-40">arrow_back</span>
-            </button>
+    <div class="top-navbar">
+        <a href='profile'>
+            <span class="material-symbols-outlined size-40">arrow_back</span>
         </a>
 
         <h2 class="page-title">
-            Edit profile
+            Change Password
+            <span class="material-symbols-outlined">shopping_cart</span>
         </h2>
 
         <button type="submit" form="profile">
@@ -30,8 +30,6 @@
     </div>
 
     <div class="container">
-        <h2 class="page-title">Change password</h2>
-
         <form name="profile" id="profile" method="POST" action='profile/change_password' class="form-box">
             <div class="section">
                 <h3>Current Password</h3>

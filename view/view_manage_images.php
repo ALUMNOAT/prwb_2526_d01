@@ -35,9 +35,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 <body>
     <div class="profile-navbar">
         <a href="profile">
-            <button>
-                <span class="material-symbols-outlined">arrow_back</span>
-            </button>
+            <span class="material-symbols-outlined">arrow_back</span>
         </a>
 
         <h2 class="page-title">

@@ -51,9 +51,7 @@ $is_sales_view = $transactions_type == 'sales';
 <body>
     <div class="top-navbar">
         <a href='profile'>
-            <button>
-                <span class="material-symbols-outlined size-40">arrow_back</span>
-            </button>
+            <span class="material-symbols-outlined size-40">arrow_back</span>
         </a>
 
         <h2 class="page-title">
@@ -168,7 +166,7 @@ $is_sales_view = $transactions_type == 'sales';
                                     <span class='material-symbols-outlined'>schedule</span>
                                     Closed on <?= $item_status->get_buy_now_reached() ? $a_bid->get_created_at() : $item_status->get_end_at() ?>
                                 </p>
-                            <?php endif; ?>                         
+                            <?php endif; ?>
                         </div>
 
                     </div>

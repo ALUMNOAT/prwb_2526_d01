@@ -1,8 +1,9 @@
-/* MENU LINK */
 /*
 doc: https://css-tricks.com/forums/topic/horizontal-centering-of-an-absolute-element/
 doc: https://stackoverflow.com/questions/16555644/how-can-i-make-a-link-inside-a-div-fill-the-entire-space-inside-the-div
 doc: https://stackoverflow.com/questions/16961877/why-are-some-of-my-links-not-clickable-but-some-are/16963245#16963245
+doc: https://stackoverflow.com/questions/47387278/center-text-and-icon-in-a-anchor-tag
+doc: https://www.w3schools.com/css/css_inline-block.asp
 */
 
 .top-navbar {
@@ -23,7 +24,23 @@ doc: https://stackoverflow.com/questions/16961877/why-are-some-of-my-links-not-c
     }
 
     a {
-        display: block;
+        all: unset;
+        width: 3em;
+        height: 3em;
+        text-align: center;
+        color: dodgerblue;
+        align-content: center;
+        z-index: 1; 
+
+        span {
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        :hover {
+            color: white;
+            /* cursor: pointer; */
+        }
     }
 
     button {

@@ -13,36 +13,6 @@ body {
 }
 
 /* MENU LINK */
-.profile-navbar {
-    width: 100%;
-    background-color: #333333;
-    color: dodgerblue;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    h2 {
-        max-height: fit-content;
-        margin: 0px;
-    }
-}
-
-.profile-navbar button {
-    all: unset;
-    width: 3em;
-    height: 3em;
-    text-align: center;
-    color: dodgerblue;
-
-    span {
-        vertical-align: middle;
-    }
-
-    :hover {
-        color: white;
-        cursor: pointer;
-    }
-}
 
 .container {
     width: 70%;
