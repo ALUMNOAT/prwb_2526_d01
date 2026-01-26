@@ -162,7 +162,8 @@ class ControllerItem extends Controller {
             $errors = array_merge(
                 $item->validate_title(),
                 $item->validate_bid(),
-                $item->validate_ipp()
+                $item->validate_ipp(),
+                $item->unicity()
             );
 
             // If valid, persist and redirect
@@ -170,7 +171,6 @@ class ControllerItem extends Controller {
                 $item->persist();
                 $this->redirect("item", "show", $item->get_id());
             }
-
 
         }
 
@@ -181,8 +181,6 @@ class ControllerItem extends Controller {
             "errors" => $errors
         ]);
     }
-
-
 
 
 }

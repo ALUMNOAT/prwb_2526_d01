@@ -292,12 +292,11 @@ class Item extends Model {
     public function validate_title(): array {
         $errors = [];
 
-        if (strlen($this->title) === 0)
-            $errors[] = "Un titre est requis.";
-        else if (strlen($this->title) < Configuration::get("full_name_min_length", 3))
-            $errors[] = "Le titre doit avoir au minimum 3 caractères.";
-        else if (strlen($this->title) > Configuration::get("full_name_max_length", 255))
-            $errors[] = "Le titre ne doit pas dépasser 255 charactères.";
+        if (strlen($this->title) < Configuration::get("title_min_length", 3)
+        && strlen($this->title) > Configuration::get("title_max_length", 255))
+        {
+            $errors[] = "Title length must be between 3 and 255 characters";
+        }
 
         return $errors;
     }
@@ -373,7 +372,28 @@ class Item extends Model {
         return $this;
     }
 
+    public function unicity(): array {
+        $errors = [];
 
+        // ID est la pour trouver et ignorer l'item quand on modifie le titre
+        $query = self::execute(
+            "SELECT id FROM items
+         WHERE title = :title
+         AND owner = :owner
+         AND (:id IS NULL OR id != :id)",
+            [
+                "title" => $this->get_title(),
+                "owner" => $this->owner->get_id(),
+                "id"    => $this->get_id()
+            ]
+        );
+
+        if ($query->fetch()) {
+            $errors[] = "Item already exists.";
+        }
+
+        return $errors;
+    }
 
 }
 
