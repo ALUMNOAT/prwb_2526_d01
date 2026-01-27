@@ -371,7 +371,8 @@ class Item extends Model {
         $errors = [];
 
         if (strlen($this->title) < Configuration::get("title_min_length", 3)
-        && strlen($this->title) > Configuration::get("title_max_length", 255))
+            || strlen($this->title) > Configuration::get("title_max_length", 255)
+        )
         {
             $errors[] = "Title length must be between 3 and 255 characters";
         }
@@ -453,18 +454,32 @@ class Item extends Model {
     public function unicity(): array {
         $errors = [];
 
-        // ID est la pour trouver et ignorer l'item quand on modifie le titre
-        $query = self::execute(
-            "SELECT id FROM items
-         WHERE title = :title
-         AND owner = :owner
-         AND (:id IS NULL OR id != :id)",
-            [
-                "title" => $this->get_title(),
-                "owner" => $this->owner->get_id(),
-                "id"    => $this->get_id()
-            ]
-        );
+        if ($this->get_id() === null) {
+            // CAS ADD
+            $query = self::execute(
+                "SELECT id FROM items
+             WHERE title = :title
+             AND owner = :owner",
+                [
+                    "title" => $this->get_title(),
+                    "owner" => $this->owner->get_id()
+                ]
+            );
+
+        } else {
+            // CAS EDIT
+            $query = self::execute(
+                "SELECT id FROM items
+             WHERE title = :title
+             AND owner = :owner
+             AND id != :id",
+                [
+                    "title" => $this->get_title(),
+                    "owner" => $this->owner->get_id(),
+                    "id"    => $this->get_id()
+                ]
+            );
+        }
 
         if ($query->fetch()) {
             $errors[] = "Item already exists.";
@@ -472,5 +487,6 @@ class Item extends Model {
 
         return $errors;
     }
+
 
 }

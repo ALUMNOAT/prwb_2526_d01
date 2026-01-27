@@ -138,28 +138,11 @@ class ControllerItem extends Controller {
         ]);
     }
 
-    public function add_edit_item(): void {
-
+    public function add(): void
+    {
         $member = $this->get_user_or_redirect();
-
         $item = null;
         $errors = [];
-
-        // On check si le Param1 existe
-        $id = isset($_GET['param1']) ? (int)$_GET['param1'] : null;
-
-        if ($id) {
-            // On fetch l'ID de la DB
-            $item = Item::get_item($id);
-            // Si l'ID est mauvais (existe pas)-> redirect
-            if (!$item) {
-                $this->redirect("browse");
-            }
-            // Si c'est pas le propriétaire qui modif -> redirect
-            if ($item->get_owner()->get_id() !== $member->get_id()) {
-                $this->redirect("browse");
-            }
-        }
 
         // If form submitted
         if (!empty($_POST)) {
@@ -167,6 +150,12 @@ class ControllerItem extends Controller {
             $title = $_POST['title'] ?? '';
             $description = $_POST['description'] ?? null;
             $duration_days = isset($_POST['days']) ? (int)$_POST['days'] : 7;
+
+            // Je dois décoder sinon les " deviennent des &quot; dans la DB à cause du framework
+            $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, "UTF-8");
+            $description = $description !== null
+                ? html_entity_decode($description, ENT_QUOTES | ENT_HTML5, "UTF-8")
+                : null;
 
             $starting_bid = isset($_POST['starting_bid']) && $_POST['starting_bid'] !== ''
                 ? (float)$_POST['starting_bid']
@@ -186,29 +175,17 @@ class ControllerItem extends Controller {
                 $starting_bid = null;
             }
 
-
-            // Si on fetch un item existant, alors l'item existe et on modif les données
-            // Sinon, il existe pas et il est null, du coup on crée l'item
-            if (!$item) {
-                $item = new Item(
-                    null,
-                    $title,
-                    $member,            // owner
-                    AppTime::get_current_datetime(), // created_at
-                    $duration_days,
-                    [],                 // pictures
-                    $description,
-                    $buy_now_price,
-                    $starting_bid
-                );
-            } else {
-                // Update existing item fields
-                $item->set_title($title);
-                $item->set_description($description);
-                $item->set_duration_days($duration_days);
-                $item->set_starting_bid($starting_bid);
-                $item->set_buy_now_price($buy_now_price);
-            }
+            $item = new Item(
+                null,
+                $title,
+                $member,            // owner
+                AppTime::get_current_datetime(), // created_at
+                $duration_days,
+                [],                 // pictures
+                $description,
+                $buy_now_price,
+                $starting_bid
+            );
 
             // Validate
             $errors = array_merge(
@@ -223,7 +200,6 @@ class ControllerItem extends Controller {
                 $item->persist();
                 $this->redirect("item", "show", $item->get_id());
             }
-
         }
 
         // Show form
@@ -233,6 +209,88 @@ class ControllerItem extends Controller {
             "errors" => $errors
         ]);
     }
+
+    public function edit(): void
+    {
+        $member = $this->get_user_or_redirect();
+        $errors = [];
+
+        // Param1 existe tjrs
+        $id = (int)$_GET['param1'];
+
+        // On fetch l'ID de la DB
+        $item = Item::get_item($id);
+        // Si l'ID est mauvais (existe pas)-> redirect
+        if (!$item) {
+            $this->redirect("browse");
+        }
+        // Si c'est pas le propriétaire qui modif -> redirect
+        if ($item->get_owner()->get_id() !== $member->get_id()) {
+            $this->redirect("browse");
+        }
+
+        // If form submitted
+        if (!empty($_POST)) {
+            // Fetch data
+            $title = $_POST['title'] ?? '';
+            $description = $_POST['description'] ?? null;
+            $duration_days = isset($_POST['days']) ? (int)$_POST['days'] : 7;
+
+            // Je dois décoder sinon les " deviennent des &quot; dans la DB à cause du framework
+            $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, "UTF-8");
+            $description = $description !== null
+                ? html_entity_decode($description, ENT_QUOTES | ENT_HTML5, "UTF-8")
+                : null;
+
+            $starting_bid = isset($_POST['starting_bid']) && $_POST['starting_bid'] !== ''
+                ? (float)$_POST['starting_bid']
+                : null;
+
+            $buy_now_price = isset($_POST['buy_now_price']) && $_POST['buy_now_price'] !== ''
+                ? (float)$_POST['buy_now_price']
+                : null;
+
+            $sale_price = isset($_POST['sale_price']) && $_POST['sale_price'] !== ''
+                ? (float)$_POST['sale_price']
+                : null;
+
+            // Si sale_price existe et reste est null, alors pas de bid et buy_now_price = $sale_price
+            if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
+                $buy_now_price = $sale_price;
+                $starting_bid = null;
+            }
+
+            // set the modified values
+            $item->set_title($title);
+            $item->set_description($description);
+            $item->set_duration_days($duration_days);
+            $item->set_starting_bid($starting_bid);
+            $item->set_buy_now_price($buy_now_price);
+
+            // Validate
+            $errors = array_merge(
+                $item->validate_title(),
+                $item->validate_bid(),
+                $item->validate_ipp(),
+                $item->unicity()
+            );
+
+            // If valid, persist and redirect
+            if (empty($errors)) {
+                $item->persist();
+                $this->redirect("item", "show", $item->get_id());
+            }
+        }
+
+        // Show form
+        (new View("add_edit_item"))->show([
+            "member" => $member,
+            "item" => $item,
+            "errors" => $errors
+        ]);
+
+    }
+
 
     public function manage_images(): void {
         $user = $this->get_user_or_redirect_guess();

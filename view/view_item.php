@@ -9,7 +9,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title><?= htmlspecialchars($item->get_title()) ?></title>
+    <title><?= $item->get_title() ?></title>
     <base href="<?= $web_root ?>">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_circle,add,celebration,filter,gavel,home,schedule,settings,shopping_bag,travel_explore,trophy">
@@ -34,15 +34,15 @@
             <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Question_mark_alternate.png" />
         <?php endif; ?>
 
-        <h1><?= htmlspecialchars($item->get_title()) ?></h1>
-        <p class="desc"><?= htmlspecialchars($item->get_description() ?? "No description") ?></p>
-        <p class="desc"><strong>Start:</strong> <?= htmlspecialchars($item->get_created_at()) ?></p>
+        <h1><?= $item->get_title() ?></h1>
+        <p class="desc"><?= $item->get_description() ?? "No description" ?></p>
+        <p class="desc"><strong>Start:</strong> <?= $item->get_created_at() ?></p>
         <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
     </div>
 
     <div class="images">
         <?php foreach ($pictures as $pic): ?>
-            <img class="thumb" src="<?= htmlspecialchars($pic->get_picture_path()) ?>" onclick="changeMain(this)">
+            <img class="thumb" src="<?= $pic->get_picture_path() ?>" onclick="changeMain(this)">
         <?php endforeach; ?>
     </div>
 
@@ -107,8 +107,8 @@
                 <tbody>
                     <?php foreach ($bids as $bid): ?>
                         <tr <?= $bid->get_is_highest_bid() ? 'style="background-color:#dff0d8;"' : '' ?>>
-                            <td><?= htmlspecialchars($bid->get_owner()->get_pseudo()) ?></td>
-                            <td><?= htmlspecialchars($bid->get_created_at()) ?></td>
+                            <td><?= $bid->get_owner()->get_pseudo() ?></td>
+                            <td><?= $bid->get_created_at() ?></td>
                             <td>
                                 € <?= number_format($bid->get_amount(), 2, ",", ".") ?>
                             </td>
@@ -128,7 +128,7 @@ donc pas de hidden
         <div class="manage-item">
             <h3>Manage Your Item</h3>
 
-            <a href="item/add_edit_item/<?= $item->get_id() ?>" class="row">
+            <a href="item/edit/<?= $item->get_id() ?>" class="row">
                 <div class="row-title">Edit Item Details</div>
             </a>
 
