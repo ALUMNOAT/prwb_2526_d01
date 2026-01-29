@@ -96,7 +96,7 @@ class Member extends Model {
         if ($this->id !== null) {
             // On met à jour l'utilisateur existant (un ID attribué déjà)
             self::execute(
-                "UPDATE users 
+                "UPDATE users
                 SET full_name=:full_name, email=:email, pseudo=:pseudo, password=:password, role=:role, picture_path=:picture_path, iban=:iban WHERE id=:id",
                 ["id" => $this->id, "full_name" => $this->full_name, "email" => $this->email, "pseudo" => $this->pseudo, "password" => $this->password, "role" => $this->role->value, "picture_path" => $this->picture_path, "iban" => $this->iban]
             );
@@ -173,7 +173,7 @@ class Member extends Model {
         $errors = [];
 
         // 8 charactères minimum
-        if (strlen($password) < Configuration::get("password_min_length", 8)) {
+        if (mb_strlen($password) < Configuration::get("password_min_length", 8)) {
             $errors[] = "Le mot de passe doit contenir au moins 8 charact&egrave;res.";
         }
 
@@ -235,9 +235,9 @@ class Member extends Model {
     public function validate_pseudo(): array {
         $errors = [];
 
-        if (strlen($this->pseudo) === 0)
+        if (mb_strlen($this->pseudo) === 0)
             $errors[] = "Un pseudo est requis.";
-        else if (strlen($this->pseudo) < Configuration::get("pseudo_min_length", 3) || strlen($this->pseudo) >= Configuration::get("pseudo_max_length", 30))
+        else if (mb_strlen($this->pseudo) < Configuration::get("pseudo_min_length", 3) || mb_strlen($this->pseudo) >= Configuration::get("pseudo_max_length", 30))
             $errors[] = "Le pseudo doit contenir entre 3 et 30 caractères.";
         /*
         else if (!strlen($this->pseudo) >= Configuration::get("pseudo_min_length", 3))
@@ -256,11 +256,11 @@ class Member extends Model {
     public function validate_full_name(): array {
         $errors = [];
 
-        if (strlen($this->full_name) === 0)
+        if (mb_strlen($this->full_name) === 0)
             $errors[] = "Un nom est requis.";
-        else if (strlen($this->full_name) < Configuration::get("full_name_min_length", 3))
+        else if (mb_strlen($this->full_name) < Configuration::get("full_name_min_length", 3))
             $errors[] = "Le nom doit avoir au minimum 3 caractères.";
-        else if (strlen($this->full_name) > Configuration::get("full_name_max_length", 255))
+        else if (mb_strlen($this->full_name) > Configuration::get("full_name_max_length", 255))
             $errors[] = "Le nom ne doit pas dépasser 255 charactère.";
 
         return $errors;
@@ -333,10 +333,10 @@ class Member extends Model {
 
 
             $small_sublist_iban = substr($iban, 0, 4); //BE99 [0;3]
-            $big_sublist_iban = substr($iban, 4, strlen($iban)); // le reste
+            $big_sublist_iban = substr($iban, 4, mb_strlen($iban)); // le reste
 
             $converted = '';
-            for ($i = 0; $i < strlen($small_sublist_iban) - 2; $i++) {
+            for ($i = 0; $i < mb_strlen($small_sublist_iban) - 2; $i++) {
                 // char(B) = 66, 66-55 = 11, B = 11 ici
                 // le code peut bug mais pas possible pratiquement car regex check
                 $converted .= ord($small_sublist_iban[$i]) - 55;
@@ -385,7 +385,7 @@ class Member extends Model {
     public static function get_member(int $id): Member|false {
         $query = self::execute(
             "SELECT *
-            FROM users 
+            FROM users
             WHERE users.id = :user_id",
             [
                 "user_id" => $id,
@@ -425,9 +425,9 @@ class Member extends Model {
 
         $query = self::execute(
             "SELECT *
-            FROM v_items_status AS v  
+            FROM v_items_status AS v
             WHERE v.id IN (
-                SELECT bids.item                
+                SELECT bids.item
                 FROM bids
                 WHERE bids.owner = :user_id
             )
@@ -500,7 +500,7 @@ class Member extends Model {
 
         $query = self::execute(
             "SELECT *
-            FROM users  
+            FROM users
             WHERE users.id IN ("
                 . implode(',', $placeholders) .
                 ")",
@@ -553,7 +553,7 @@ class Member extends Model {
                 GROUP BY bids.item
             ) AS max_bids
                 ON (max_bids.item) = (b.item)
-            JOIN v_items_status AS v    
+            JOIN v_items_status AS v
                 ON v.id = b.item
             WHERE b.ranked_order = 1
             AND v.end_at > :now
@@ -668,7 +668,7 @@ class Member extends Model {
         doc: https://stackoverflow.com/questions/10724324/mysql-inner-join-alias
         */
         $query = self::execute(
-            "SELECT 
+            "SELECT
                 b.created_at AS b_created_at, b.amount AS b_amount,
                 u.id AS u_id, u.full_name, u.email, u.pseudo, u.password, u.role, u.picture_path, u.iban,
                 v.*
@@ -676,7 +676,7 @@ class Member extends Model {
             JOIN bids AS b ON ((b.item, b.amount) = (v.id, v.max_bid))
             JOIN users AS u ON (u.id = b.owner)
             WHERE v.owner = :user_id
-            AND (v.buy_now_reached OR 
+            AND (v.buy_now_reached OR
                 (v.has_bids AND v.end_at < :right_now))
             ORDER BY v.end_at ASC;",
             [
@@ -757,7 +757,7 @@ class Member extends Model {
         doc: https://stackoverflow.com/questions/10724324/mysql-inner-join-alias
         */
         $query = self::execute(
-            "SELECT 
+            "SELECT
                 b.created_at AS b_created_at, b.amount AS b_amount,
                 u.id AS u_id, u.full_name, u.email, u.pseudo, u.password, u.role, u.picture_path, u.iban,
                 v.*
@@ -765,7 +765,7 @@ class Member extends Model {
             JOIN bids AS b ON ((b.item, b.amount) = (v.id, v.max_bid))
             JOIN users AS u ON (u.id = v.owner)
             WHERE b.owner = :user_id
-            AND (v.buy_now_reached OR 
+            AND (v.buy_now_reached OR
                 (v.has_bids AND v.end_at < :right_now))
             ORDER BY v.end_at ASC;",
             [

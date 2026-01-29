@@ -230,7 +230,7 @@ class Item extends Model {
         }
 
         self::execute(
-            "INSERT IGNORE INTO item_pictures(item, priority, picture_path) 
+            "INSERT IGNORE INTO item_pictures(item, priority, picture_path)
             VALUES " . implode(',', $placeholders) . ";",
             $params
         );
@@ -248,7 +248,7 @@ class Item extends Model {
             }
 
             $query = self::execute(
-                "SELECT * 
+                "SELECT *
                 FROM items
                 WHERE items.id IN ("
                     . implode(',', $placeholders) .
@@ -347,7 +347,7 @@ class Item extends Model {
         }
 
         $query = self::execute(
-            "SELECT * 
+            "SELECT *
             FROM item_pictures
             WHERE item IN ("
                 . implode(',', $placeholders) .
@@ -370,8 +370,8 @@ class Item extends Model {
     public function validate_title(): array {
         $errors = [];
 
-        if (strlen($this->title) < Configuration::get("title_min_length", 3)
-            || strlen($this->title) > Configuration::get("title_max_length", 255)
+        if (mb_strlen($this->title) < Configuration::get("title_min_length", 3)
+            || mb_strlen($this->title) > Configuration::get("title_max_length", 255)
         )
         {
             $errors[] = "Title length must be between 3 and 255 characters";
