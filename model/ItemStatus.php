@@ -67,12 +67,12 @@ class ItemStatus extends Model {
                 $row['end_at'],
                 $row['bid_count'],
                 $row['max_bid'],
-                $row['is_direct_sale'],
-                $row['is_auction'],
-                $row['has_buy_now'],
-                $row['has_bids'],
-                $row['buy_now_reached'],
-                $row['not_purchased_direct_sale']
+                $row['is_direct_sale'] === 1,
+                $row['is_auction'] === 1,
+                $row['has_buy_now'] === 1,
+                $row['has_bids'] === 1,
+                $row['buy_now_reached'] === 1,
+                $row['not_purchased_direct_sale'] === 1
             );
 
             return $item_status;
@@ -212,4 +212,34 @@ class ItemStatus extends Model {
             ['item_id' => $this->item->get_id()]
         );
     }
+
+    public static function has_bids(int $item_id): bool {
+        $query = self::execute(
+            "SELECT has_bids
+         FROM v_items_status
+         WHERE id = :id",
+            ["id" => $item_id]
+        );
+
+        if ($query->rowCount() === 0) {
+            return false;
+        }
+
+        return (bool)$query->fetch()['has_bids'];
+    }
+
+    public static function is_direct_sale(int $item_id): bool {
+        $query = self::execute(
+            "SELECT is_direct_sale
+            FROM v_items_status
+            WHERE id = :id",
+            ["id" => $item_id]
+        );
+        if ($query->rowCount() === 0) {
+            return false;
+        }
+
+        return (bool)$query->fetch()['is_direct_sale'];
+    }
+
 }

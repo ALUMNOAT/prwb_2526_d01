@@ -23,7 +23,7 @@
         </li>
 
         <li>
-            <a href="add">
+            <a href="item/add">
                 <span class="material-symbols-outlined size-40">add</span>
                 <br>Add Offer
             </a>

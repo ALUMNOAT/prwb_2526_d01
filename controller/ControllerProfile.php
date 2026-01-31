@@ -31,9 +31,9 @@ class ControllerProfile extends Controller {
             && $_POST["current_password"] !== "" && $_POST["new_password"] !== "" && $_POST["confirm_password"] !== ""
         ) {
 
-            $current_password = $_POST["current_password"];
-            $new_password = $_POST["new_password"];
-            $confirm_password = $_POST["confirm_password"];
+            $current_password = html_entity_decode($_POST["current_password"]);
+            $new_password = html_entity_decode($_POST["new_password"]);
+            $confirm_password = html_entity_decode($_POST["confirm_password"]);
 
             // On est connecté, donc on a toutes les données de la session, donc autant les utiliser (on a l'email)
             $errors = array_merge($errors, Member::validate_login($member->get_email(), $current_password));
@@ -64,9 +64,9 @@ class ControllerProfile extends Controller {
         $success = "";
 
         if (isset($_POST["full_name"], $_POST["pseudo"], $_POST["email"])) {
-            $full_name = $_POST["full_name"];
-            $pseudo = $_POST["pseudo"];
-            $email = $_POST["email"];
+            $full_name = html_entity_decode($_POST["full_name"]);
+            $pseudo = html_entity_decode($_POST["pseudo"]);
+            $email = html_entity_decode($_POST["email"]);
             $iban = $_POST["iban"] === "" ? null : $_POST["iban"];
 
             $member->set_full_name($full_name);

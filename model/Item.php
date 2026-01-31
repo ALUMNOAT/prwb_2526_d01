@@ -9,7 +9,7 @@ require_once "model/ItemPicture.php";
 class Item extends Model {
 
     public function __construct(
-        private int $id, //is id needed ? yes
+        private ?int $id, // id nullable pour la création d'item
         private string $title,
         private Member $owner,
         private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
@@ -21,7 +21,7 @@ class Item extends Model {
     ) {
     }
 
-    public function get_id(): int {
+    public function get_id(): ?int {
         return $this->id;
     }
     public function get_title(): string {
@@ -111,12 +111,24 @@ class Item extends Model {
 
     public function get_main_picture_path(): string|false {
         $main_picture = $this->get_main_picture();
-        return $main_picture->get_picture_path() ?? false;
+
+        if($main_picture)
+            $picture_path = $main_picture->get_picture_path();
+        else
+            $picture_path = false;
+
+        return $picture_path;
     }
 
     public function get_main_thumbnail_path(): string|false {
         $main_thumbnail = $this->get_main_picture();
-        return $main_thumbnail->get_thumbnail_path() ?? false;
+
+        if($main_thumbnail)
+            $thumbnail_path = $main_thumbnail->get_picture_path();
+        else
+            $thumbnail_path = false;
+
+        return $thumbnail_path;
     }
 
     public static function get_item(int $id): Item|false {
@@ -154,7 +166,7 @@ class Item extends Model {
                 $row['pseudo'],
                 $row['password'],
                 Role::from($row['role']),
-                $row['item_picture'],
+                $row['user_picture'],
                 $row['iban']
             );
             //ITEM
@@ -218,7 +230,7 @@ class Item extends Model {
         }
 
         self::execute(
-            "INSERT IGNORE INTO item_pictures(item, priority, picture_path) 
+            "INSERT IGNORE INTO item_pictures(item, priority, picture_path)
             VALUES " . implode(',', $placeholders) . ";",
             $params
         );
@@ -236,7 +248,7 @@ class Item extends Model {
             }
 
             $query = self::execute(
-                "SELECT * 
+                "SELECT *
                 FROM items
                 WHERE items.id IN ("
                     . implode(',', $placeholders) .
@@ -336,7 +348,7 @@ class Item extends Model {
         }
 
         $query = self::execute(
-            "SELECT * 
+            "SELECT *
             FROM item_pictures
             WHERE item IN ("
                 . implode(',', $placeholders) .
@@ -355,4 +367,127 @@ class Item extends Model {
             $items[$row['item']]->add_picture($picture);
         }
     }
+
+    public function validate_title(): array {
+        $errors = [];
+
+        if (mb_strlen($this->title) < Configuration::get("title_min_length", 3)
+            || mb_strlen($this->title) > Configuration::get("title_max_length", 255)
+        )
+        {
+            $errors[] = "Title length must be between 3 and 255 characters";
+        }
+
+        return $errors;
+    }
+
+    public function validate_ipp(): array {
+        $errors = [];
+
+        if ($this->buy_now_price !== null && $this->starting_bid !== null) {
+            if ($this->buy_now_price < $this->starting_bid) {
+                $errors[] = "Buy now price must be greater than the starting bid.";
+            }
+            if ($this->buy_now_price < 0) {
+                $errors[] = "Buy now price must be greater than 0.";
+            }
+        }
+
+        return $errors;
+    }
+
+    public function validate_bid(): array {
+        $errors = [];
+
+        if ($this->starting_bid !== null && $this->starting_bid < 0) {
+            $errors[] = "Starting bid must be positive.";
+        }
+
+        return $errors;
+    }
+
+    public function persist(): Item {
+        if ($this->id !== null) {
+            // Mise à jour d'un item existant
+            self::execute(
+                "UPDATE items
+             SET title = :title,
+                 description = :description,
+                 buy_now_price = :buy_now_price,
+                 duration_days = :duration_days,
+                 starting_bid = :starting_bid
+             WHERE id = :id",
+                [
+                    "id" => $this->id,
+                    "title" => $this->title,
+                    "description" => $this->description,
+                    "buy_now_price" => $this->buy_now_price,
+                    "duration_days" => $this->duration_days,
+                    "starting_bid" => $this->starting_bid
+                ]
+            );
+        } else {
+            // Création d'un nouvel item
+            $now = AppTime::get_current_datetime(); // date de création
+
+            self::execute(
+                "INSERT INTO items(title, description, owner, created_at, buy_now_price, duration_days, starting_bid)
+             VALUES(:title, :description, :owner, :created_at, :buy_now_price, :duration_days, :starting_bid)",
+                [
+                    "title" => $this->title,
+                    "description" => $this->description,
+                    "owner" => $this->owner->get_id(),
+                    "created_at" => $now,
+                    "buy_now_price" => $this->buy_now_price,
+                    "duration_days" => $this->duration_days,
+                    "starting_bid" => $this->starting_bid
+                ]
+            );
+
+            // Synchronisation de l'objet avec la base
+            $this->id = self::lastInsertId();
+            $this->created_at = $now;
+        }
+
+        return $this;
+    }
+
+    public function unicity(): array {
+        $errors = [];
+
+        if ($this->get_id() === null) {
+            // CAS ADD
+            $query = self::execute(
+                "SELECT id FROM items
+             WHERE title = :title
+             AND owner = :owner",
+                [
+                    "title" => $this->get_title(),
+                    "owner" => $this->owner->get_id()
+                ]
+            );
+
+        } else {
+            // CAS EDIT
+            $query = self::execute(
+                "SELECT id FROM items
+             WHERE title = :title
+             AND owner = :owner
+             AND id != :id",
+                [
+                    "title" => $this->get_title(),
+                    "owner" => $this->owner->get_id(),
+                    "id"    => $this->get_id()
+                ]
+            );
+        }
+
+        if ($query->fetch()) {
+            $errors[] = "Item already exists.";
+        }
+
+        return $errors;
+    }
+
+
 }
