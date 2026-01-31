@@ -51,9 +51,16 @@ $icons = "face,key,mail,person";
 
             <!-- CANCEL -->
             <!-- https://www.geeksforgeeks.org/html/how-to-create-an-html-button-that-acts-like-a-link/ -->
-            <form action='login' method='post'>
-                <button type="submit" class="btn-cancel">Cancel</button>
-            </form>
+
+            <a href='login' class='btn-cancel'>
+                Cancel
+            </a>
+            
+            <?php if (isset($user) && $user->is_guest()): ?>
+                <a href='signup/logout_guest' class='btn-cancel'>
+                    Exit
+                </a>
+            <?php endif; ?>
 
             <!-- ERRORS -->
             <?php if (isset($errors) && count($errors) != 0): ?>
