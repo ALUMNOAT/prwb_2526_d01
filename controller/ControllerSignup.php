@@ -9,7 +9,7 @@ class ControllerSignup extends Controller {
         if ($this->user_logged()) {
             $user = $this->get_user_or_false();
             if ($user && $user->get_id() != null)
-                $this->redirect("browse");
+                $this->redirect("item", "browse");
         }
         $email = "";
         $full_name = "";
@@ -19,11 +19,11 @@ class ControllerSignup extends Controller {
         $errors = [];
 
         if (isset($_POST["email"]) && isset($_POST["full_name"]) && isset($_POST["pseudo"]) && isset($_POST["password"]) && isset($_POST["password_confirm"])) {
-            $email = html_entity_decode($_POST["email"]);
-            $full_name = html_entity_decode($_POST["full_name"]);
-            $pseudo = html_entity_decode($_POST["pseudo"]);
-            $password = html_entity_decode($_POST["password"]);
-            $password_confirm = html_entity_decode($_POST["password_confirm"]);
+            $email = html_entity_decode($_POST["email"], ENT_QUOTES, 'UTF-8');
+            $full_name = html_entity_decode($_POST["full_name"], ENT_QUOTES, 'UTF-8');
+            $pseudo = html_entity_decode($_POST["pseudo"], ENT_QUOTES, 'UTF-8');
+            $password = html_entity_decode($_POST["password"], ENT_QUOTES, 'UTF-8');
+            $password_confirm = html_entity_decode($_POST["password_confirm"], ENT_QUOTES, 'UTF-8');
 
             $member = new Member(null, $full_name, $email, $pseudo, password_hash($password, PASSWORD_BCRYPT), Role::USER);
             // On vérifie que le pseudo et email sont uniques

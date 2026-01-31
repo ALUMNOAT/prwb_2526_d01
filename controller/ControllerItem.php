@@ -68,10 +68,10 @@ class ControllerItem extends Controller {
         $success = "";
 
         $id = isset($_GET['param1']) ? (int)$_GET['param1'] : null;
-        if (!$id) $this->redirect("browse");
+        if (!$id) $this->redirect("item", "browse");
 
         $item_status = ItemStatus::get_item_status($id);
-        if (!$item_status) $this->redirect("browse");
+        if (!$item_status) $this->redirect("item","browse");
 
         $item = $item_status->get_item();
 
@@ -140,22 +140,16 @@ class ControllerItem extends Controller {
 
     public function add(): void
     {
-        $member = $this->get_user_or_redirect();
+        $member = $this->get_user_or_redirect_guess();
         $item = null;
         $errors = [];
 
         // If form submitted
         if (!empty($_POST)) {
             // Fetch data
-            $title = $_POST['title'] ?? '';
-            $description = $_POST['description'] ?? null;
+            $title = html_entity_decode($_POST['title'], ENT_QUOTES, 'UTF-8') ?? '';
+            $description = html_entity_decode($_POST['description'], ENT_QUOTES, 'UTF-8') ?? null;
             $duration_days = isset($_POST['days']) ? (int)$_POST['days'] : 7;
-
-            // Je dois décoder sinon les " deviennent des &quot; dans la DB à cause du framework
-            $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, "UTF-8");
-            $description = $description !== null
-                ? html_entity_decode($description, ENT_QUOTES | ENT_HTML5, "UTF-8")
-                : null;
 
             $starting_bid = isset($_POST['starting_bid']) && $_POST['starting_bid'] !== ''
                 ? (float)$_POST['starting_bid']
@@ -212,7 +206,7 @@ class ControllerItem extends Controller {
 
     public function edit(): void
     {
-        $member = $this->get_user_or_redirect();
+        $member = $this->get_user_or_redirect_guess();
         $errors = [];
 
         // Param1 existe tjrs
@@ -222,25 +216,19 @@ class ControllerItem extends Controller {
         $item = Item::get_item($id);
         // Si l'ID est mauvais (existe pas)-> redirect
         if (!$item) {
-            $this->redirect("browse");
+            $this->redirect("item/browse");
         }
         // Si c'est pas le propriétaire qui modif -> redirect
         if ($item->get_owner()->get_id() !== $member->get_id()) {
-            $this->redirect("browse");
+            $this->redirect("item/browse");
         }
 
         // If form submitted
         if (!empty($_POST)) {
             // Fetch data
-            $title = $_POST['title'] ?? '';
-            $description = $_POST['description'] ?? null;
+            $title = html_entity_decode($_POST['title'], ENT_QUOTES, 'UTF-8') ?? '';
+            $description = html_entity_decode($_POST['description'], ENT_QUOTES, 'UTF-8') ?? null;
             $duration_days = isset($_POST['days']) ? (int)$_POST['days'] : 7;
-
-            // Je dois décoder sinon les " deviennent des &quot; dans la DB à cause du framework
-            $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, "UTF-8");
-            $description = $description !== null
-                ? html_entity_decode($description, ENT_QUOTES | ENT_HTML5, "UTF-8")
-                : null;
 
             $starting_bid = isset($_POST['starting_bid']) && $_POST['starting_bid'] !== ''
                 ? (float)$_POST['starting_bid']
@@ -388,11 +376,11 @@ class ControllerItem extends Controller {
         /** @var Member $user */
         $user = $this->get_user_or_redirect();
         if ($user->is_guest() && !$guest_pass)
-            $this->redirect('browse');
+            $this->redirect("item", "browse");
         return $user;
     }
 
-    private function get_id_or_redirect(mixed $id, string $controller = 'browse', string $action = 'page', string $param1 = '1'): int {
+    private function get_id_or_redirect(mixed $id, string $controller = 'item', string $action = 'browse', string $param1 = '1'): int {
         if (!isset($id) || !NumberConverter::is_id($id))
             $this->redirect($controller, $action, $param1);
         $id = NumberConverter::get_id_or_false($id);
@@ -402,7 +390,7 @@ class ControllerItem extends Controller {
     private function get_item_or_redirect(int $item_id, ?Member $user = null): Item {
         $item = Item::get_item($item_id);
         if (!$item || $user !== null && !$item->is_owner($user))
-            $this->redirect("browse", "page", "1");
+            $this->redirect("item", "browse", "1");
         return $item;
     }
 

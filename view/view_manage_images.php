@@ -44,7 +44,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
     </div>
 
     <div class="content">
-        <h1>Manage Images for "<?= $item->get_title() ?>"</h1>
+        <h1>Manage Images for "<?= Tools::sanitize($item->get_title()) ?>"</h1>
 
         <div class="section">
             <h2>Add New Images</h2>

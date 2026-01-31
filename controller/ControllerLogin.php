@@ -24,8 +24,8 @@ class ControllerLogin extends Controller {
             $errors = [];
 
             if (isset($_POST["email"]) && isset($_POST["password"])) {
-                $email = $_POST["email"];
-                $password = $_POST["password"];
+                $email = html_entity_decode($_POST["email"], ENT_QUOTES, 'UTF-8');
+                $password = html_entity_decode($_POST["password"], ENT_QUOTES, 'UTF-8');
 
                 $errors = Member::validate_login($email, $password);
 

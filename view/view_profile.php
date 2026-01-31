@@ -40,9 +40,9 @@ $icons = "account_circle,add,arrow_back,celebration,home,logout,manage_accounts,
             <?php endif; ?>
 
             <br>
-            <p><?= $user->get_full_name() ?></p>
-            <p>@<?= $user->get_pseudo() ?></p>
-            <p><?= $user->get_email() ?></p>
+            <p><?= Tools::sanitize($user->get_full_name() ?? "") ?></p>
+            <p>@<?= Tools::sanitize($user->get_pseudo() ?? "") ?></p>
+            <p><?= Tools::sanitize($user->get_email() ?? "") ?></p>
         </div>
 
         <div class="section">

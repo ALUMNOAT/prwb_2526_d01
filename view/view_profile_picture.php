@@ -45,11 +45,11 @@ doc
                 <?php if (!$user->get_picture_path()): ?>
                     <p>You have no picture.</p>
                 <?php else: ?>
-                    <img src="<?= $user->get_picture_path() ?>" alt="<?= $user->get_pseudo() ?>&apos;s photo!">
+                    <img src="<?= $user->get_picture_path() ?>" alt="<?= Tools::sanitize($user->get_pseudo()) ?>&apos;s photo!">
                 <?php endif; ?>
                 <br>
-                <p><strong><?= $user->get_full_name() ?></strong></p>
-                <p>@<?= $user->get_pseudo() ?></p>
+                <p><strong><?= Tools::sanitize($user->get_full_name()) ?></strong></p>
+                <p>@<?= Tools::sanitize($user->get_pseudo()) ?></p>
             </div>
         </div>
 

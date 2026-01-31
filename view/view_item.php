@@ -9,7 +9,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $item->get_title() ?></title>
+    <title><?= Tools::sanitize($item->get_title()) ?></title>
     <base href="<?= $web_root ?>">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_circle,add,celebration,filter,gavel,home,schedule,settings,shopping_bag,travel_explore,trophy">
@@ -34,8 +34,8 @@
             <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Question_mark_alternate.png" />
         <?php endif; ?>
 
-        <h1><?= $item->get_title() ?></h1>
-        <p class="desc"><?= $item->get_description() ?? "No description" ?></p>
+        <h1><?= Tools::sanitize($item->get_title()) ?></h1>
+        <p class="desc"><?= Tools::sanitize($item->get_description()) ?? "No description" ?></p>
         <p class="desc"><strong>Start:</strong> <?= $item->get_created_at() ?></p>
         <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
     </div>
@@ -84,9 +84,9 @@
         <?php if (!$item->get_owner()->get_picture_path()): ?>
             <span class="material-symbols-outlined size-120">account_circle</span>
         <?php else: ?>
-            <img src="<?= $item->get_owner()->get_picture_path() ?>" width="100" alt="<?= $member->get_pseudo() ?>&apos;s photo!">
+            <img src="<?= $item->get_owner()->get_picture_path() ?>" width="100" alt="<?= Tools::sanitize($member->get_pseudo()) ?>&apos;s photo!">
         <?php endif; ?>
-        <label class="label"><?= $item->get_owner()->get_pseudo() ?></label>
+        <label class="label"><?= Tools::sanitize($item->get_owner()->get_pseudo()) ?></label>
         <p class="desc">Member</p>
     </div>
 
@@ -107,7 +107,7 @@
                 <tbody>
                     <?php foreach ($bids as $bid): ?>
                         <tr <?= $bid->get_is_highest_bid() ? 'style="background-color:#dff0d8;"' : '' ?>>
-                            <td><?= $bid->get_owner()->get_pseudo() ?></td>
+                            <td><?= Tools::sanitize($bid->get_owner()->get_pseudo()) ?></td>
                             <td><?= $bid->get_created_at() ?></td>
                             <td>
                                 € <?= number_format($bid->get_amount(), 2, ",", ".") ?>
