@@ -1,6 +1,6 @@
 <?php
 
-$icons = "key,person"
+$icons = "key,person";
 ?>
 
 <!DOCTYPE html>
@@ -70,11 +70,11 @@ $icons = "key,person"
             <!-- LOGIN DEBUG -->
             <div class="debug">
                 <h3>For Debug Purpose</h3>
-                <p>Login as <a href="login/login_as/Boris" class="white"><strong>boverhaegen@epfc.eu</strong></a></p>
-                <p>Login as <a href="login/login_as/Marc" class="white"><strong>mamichel@epfc.eu</strong></a></p>
-                <p>Login as <a href="login/login_as/Quentin" class="white"><strong>quhouben@epfc.eu</strong></a></p>
-                <p>Login as <a href="login/login_as/Xavier" class="white"><strong>xapigeolet@epfc.eu</strong></a></p>
-                <p>Login as <a href="login/login_as/Admin" class="white"><strong>admin@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/4" class="white"><strong>boverhaegen@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/2" class="white"><strong>mamichel@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/1" class="white"><strong>quhouben@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/3" class="white"><strong>xapigeolet@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/5" class="white"><strong>admin@epfc.eu</strong></a></p>
 
                 <a href="#" class="green">Restore original data</a>
                 <a href="#" class="orange">Backup personal data</a>

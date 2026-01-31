@@ -59,7 +59,7 @@ class ControllerLogin extends Controller {
         }
 
         $pseudo = $_GET['param1'];
-        $member = Member::get_member_by_pseudo($pseudo);
+        $member = Member::get_member_by_id($pseudo);
         if ($member)
             $this->log_user($member, 'item','browse');
         else

@@ -410,6 +410,34 @@ class Member extends Model {
         return $member;
     }
 
+    public static function get_member_by_id(int $id): Member|false {
+        $query = self::execute(
+            "SELECT *
+            FROM users
+            WHERE users.id = :user_id",
+            [
+                "user_id" => $id,
+            ]
+        );
+
+        if ($query->rowCount() == 0)
+            return false;
+
+        $row = $query->fetch();
+        $member = new Member(
+            $row['id'],
+            $row['full_name'],
+            $row['email'],
+            $row['pseudo'],
+            $row['password'],
+            Role::from($row['role']),
+            $row['picture_path'],
+            $row['iban']
+        );
+
+        return $member;
+    }
+
     public function get_my_bidded_items(): array {
         /*
         doc: https://www.dataforgelabs.com/advanced-sql-concepts/join-with-subquery-sql
