@@ -62,8 +62,8 @@
             </label>
             <hr>
 
-            <!-- owner of the item can't buy or bid himself on the item -->
-            <?php if ($member->get_id() !== $item->get_owner()->get_id()): ?>
+            <!-- si id du membre différent du id du owner de l'objet et pas un guest, montre l'option d'achat -->
+            <?php if ($member->get_id() !== $item->get_owner()->get_id() && !$member->is_guest()): ?>
                 <!-- Show bid input only if auction is enabled and if the item didn't got bought yet-->
                 <?php if ($item_status->get_is_auction() && !$item_status->get_buy_now_reached()): ?>
                     €<input type="text" id="make_bid" name="make_bid" class="input" value="<?= $currentBid + 1 ?>">

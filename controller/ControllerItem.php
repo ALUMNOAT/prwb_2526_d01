@@ -97,11 +97,22 @@ class ControllerItem extends Controller {
 
         if (isset($_POST["bid"])) {
             $bidAmount = isset($_POST['make_bid']) ? (float)$_POST['make_bid'] : null;
-            $errors = Bid::validate_bid($member, $item_status, $bidAmount);
 
-            if (empty($errors)) {
-                Bid::place_bid($member, $item_status, $bidAmount);
-                $success = "You bidded successfully!";
+            $errors = [];
+
+            if ($member->is_guest()) {
+                $errors[] = "You must be logged in to bid.";
+            } elseif ($member->get_id() === $item->get_owner()->get_id()) {
+                $errors[] = "You cannot bid on your own item.";
+            } elseif (!$item_status->get_is_auction() || $item_status->get_buy_now_reached()) {
+                $errors[] = "This item is not open for bidding.";
+            } else {
+                $errors = Bid::validate_bid($member, $item_status, $bidAmount);
+
+                if (empty($errors)) {
+                    Bid::place_bid($member, $item_status, $bidAmount);
+                    $success = "You bidded successfully!";
+                }
             }
         }
 
@@ -111,7 +122,11 @@ class ControllerItem extends Controller {
 
             $errors = [];
 
-            if (!$item_status->get_has_buy_now() || $item_status->get_buy_now_reached() || $buyNowPrice <= $currentBid) {
+            if ($member->is_guest()) {
+                $errors[] = "You must be logged in to buy.";
+            } elseif ($member->get_id() === $item->get_owner()->get_id()) {
+                $errors[] = "You cannot buy on your own item.";
+            } elseif (!$item_status->get_has_buy_now() || $item_status->get_buy_now_reached() || $buyNowPrice <= $currentBid) {
                 $errors[] = "Cannot buy this item now.";
             } else {
                 Bid::place_bid($member, $item_status, $buyNowPrice);
