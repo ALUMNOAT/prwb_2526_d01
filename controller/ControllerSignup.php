@@ -19,11 +19,11 @@ class ControllerSignup extends Controller {
         $errors = [];
 
         if (isset($_POST["email"]) && isset($_POST["full_name"]) && isset($_POST["pseudo"]) && isset($_POST["password"]) && isset($_POST["password_confirm"])) {
-            $email = trim($_POST["email"]);
-            $full_name = trim($_POST["full_name"]);
-            $pseudo = trim($_POST["pseudo"]);
-            $password = $_POST["password"];
-            $password_confirm = $_POST["password_confirm"];
+            $email = html_entity_decode($_POST["email"]);
+            $full_name = html_entity_decode($_POST["full_name"]);
+            $pseudo = html_entity_decode($_POST["pseudo"]);
+            $password = html_entity_decode($_POST["password"]);
+            $password_confirm = html_entity_decode($_POST["password_confirm"]);
 
             $member = new Member(null, $full_name, $email, $pseudo, password_hash($password, PASSWORD_BCRYPT), Role::USER);
             // On vérifie que le pseudo et email sont uniques
