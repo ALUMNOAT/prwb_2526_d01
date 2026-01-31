@@ -68,6 +68,7 @@ $icons = "key,person"
             <?php endif; ?>
 
             <!-- LOGIN DEBUG -->
+            <?php if (Configuration::is_dev()): ?>
             <div class="debug">
                 <h3>For Debug Purpose</h3>
                 <p>Login as <a href="login/login_as/Boris" class="white"><strong>boverhaegen@epfc.eu</strong></a></p>
@@ -80,6 +81,7 @@ $icons = "key,person"
                 <a href="#" class="orange">Backup personal data</a>
                 <a href="#" class="orange">Restore personal data</a>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </body>
