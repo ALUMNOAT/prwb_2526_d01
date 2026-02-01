@@ -49,10 +49,6 @@ img {
     justify-content: center;
 }
 
-.attribution {
-    color: grey;
-}
-
 .browse {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(16em, auto));
