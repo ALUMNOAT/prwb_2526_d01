@@ -115,7 +115,7 @@ class Item extends Model {
     public function get_main_picture_path(): string|false {
         $main_picture = $this->get_main_picture();
 
-        if($main_picture)
+        if ($main_picture)
             $picture_path = $main_picture->get_picture_path();
         else
             $picture_path = false;
@@ -126,7 +126,7 @@ class Item extends Model {
     public function get_main_thumbnail_path(): string|false {
         $main_thumbnail = $this->get_main_picture();
 
-        if($main_thumbnail)
+        if ($main_thumbnail)
             $thumbnail_path = $main_thumbnail->get_picture_path();
         else
             $thumbnail_path = false;
@@ -283,14 +283,19 @@ class Item extends Model {
         return $items;
     }
 
-    public static function get_all_available_items(): array {
+    public static function get_all_available_items(Member $user): array {
         $query = self::execute(
             "SELECT *
             FROM v_items_status AS v
             WHERE v.end_at > :now
+            AND v.buy_now_reached = 0
+            AND v.owner != :user_id
             ORDER BY v.end_at ASC",
             [
-                "now" => AppTime::get_current_datetime()
+                "now" => AppTime::get_current_datetime(),
+                "user_id" => $user->is_guest()
+                    ? 0
+                    : $user->get_id()
             ]
         );
 
@@ -331,7 +336,7 @@ class Item extends Model {
 
         $items_pictures = ItemPicture::get_items_picture($items);
         foreach ($items as $id => $item) {
-            if(isset($items_pictures[$id]))
+            if (isset($items_pictures[$id]))
                 $item->set_pictures($items_pictures[$id]);
         }
 
@@ -374,10 +379,10 @@ class Item extends Model {
     public function validate_title(): array {
         $errors = [];
 
-        if (mb_strlen($this->title) < Configuration::get("title_min_length", 3)
+        if (
+            mb_strlen($this->title) < Configuration::get("title_min_length", 3)
             || mb_strlen($this->title) > Configuration::get("title_max_length", 255)
-        )
-        {
+        ) {
             $errors[] = "Title length must be between 3 and 255 characters";
         }
 
@@ -469,7 +474,6 @@ class Item extends Model {
                     "owner" => $this->owner->get_id()
                 ]
             );
-
         } else {
             // CAS EDIT
             $query = self::execute(
@@ -491,6 +495,4 @@ class Item extends Model {
 
         return $errors;
     }
-
-
 }

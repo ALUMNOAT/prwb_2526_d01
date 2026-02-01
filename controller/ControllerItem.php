@@ -36,7 +36,7 @@ class ControllerItem extends Controller {
             $user = $this->get_user_or_redirect();
 
             $my_bids = $user->get_my_bids();    //returns '[]' for guests
-            $available_items = Item::get_all_available_items();
+            $available_items = Item::get_all_available_items($user);
             $my_available_items = array_diff_key($available_items, $my_bids);   // set theory: 'A - B' on keys (here it's item id)
 
             //each chunk is 12 items: chunk 1 is page 1; chunk 2 is page 2; etc...
