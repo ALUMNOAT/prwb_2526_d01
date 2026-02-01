@@ -4,6 +4,15 @@
     }
 </script>
 
+<?php
+
+/** 
+ * @var ItemStatus $item_status 
+ * @var Member $member
+ * 
+ * */
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -49,7 +58,7 @@
     </div>
 
     <!-- BIDS/BUY -->
-    <form method="POST" action="" class="form-box">
+    <!-- <form method="POST" action="" class="form-box">
         <div class="price-container">
             <h3 class="desc">Pricing</h3>
 
@@ -67,25 +76,65 @@
             <label class="label"><strong>Buy Now:</strong>
                 <?= $buyNowPrice > 0 ? "€ " . number_format($buyNowPrice, 2, ",", ".") : "N/A" ?>
             </label>
-            
-            <hr>
 
-            <!-- owner of the item can't buy or bid himself on the item -->
-            <?php if ($member->get_id() !== $item->get_owner()->get_id()): ?>
-                <!-- Show bid input only if auction is enabled and if the item didn't got bought yet-->
-                <?php if ($item_status->get_is_auction() && !$item_status->get_buy_now_reached()): ?>
-                    €<input type="text" id="make_bid" name="make_bid" class="input" value="<?= $currentBid + 1 ?>">
-                    <p><button type="submit" name="bid" class="bid">Place Bid</button></p>
-                <?php endif; ?>
+            <hr> -->
 
-                <!-- Show Buy Now button only if Buy Now is enabled AND price > current bid -->
-                <?php if ($item_status->get_has_buy_now() && $buyNowPrice > 0 && $buyNowPrice > $currentBid): ?>
-                    <p><button type="submit" name="buy" class="buy">Buy now at € <?= $buyNowPrice ?></button></p>
-                <?php endif; ?>
-            <?php endif; ?>
+    <!-- owner of the item can't buy or bid himself on the item -->
+    <?php if ($member->get_id() !== $item->get_owner()->get_id()): ?>
+        <!-- Show bid input only if auction is enabled and if the item didn't got bought yet-->
+        <?php if ($item_status->get_is_auction() && !$item_status->get_buy_now_reached()): ?>
+            <!-- €<input type="text" id="make_bid" name="make_bid" class="input" value="<?= $currentBid + 1 ?>">
+                    <p><button type="submit" name="bid" class="bid">Place Bid</button></p> -->
+        <?php endif; ?>
 
-        </div>
-    </form>
+        <!-- Show Buy Now button only if Buy Now is enabled AND price > current bid -->
+        <?php if ($item_status->get_has_buy_now() && $buyNowPrice > 0 && $buyNowPrice > $currentBid): ?>
+            <!-- <p><button type="submit" name="buy" class="buy">Buy now at € <?= $buyNowPrice ?></button></p> -->
+        <?php endif; ?>
+    <?php endif; ?>
+
+    <!-- </div>
+    </form> -->
+
+    <!-- BIDS/BUY -->
+    <div class="price-container">
+        <h3 class="desc">Pricing 2</h3>
+
+        <?php
+        $buyNowPrice = $item->get_buy_now_price() ?? 0;
+        $currentBid = $currentBid ?? 0;
+        ?>
+
+        <label class="label"><strong>Current Bid:</strong>
+            <?= $currentBid > 0 ? "€ " . number_format($currentBid, 2, ",", ".") : "N/A" ?>
+        </label>
+
+        <br>
+
+        <label class="label"><strong>Buy Now:</strong>
+            <?= $buyNowPrice > 0 ? "€ " . number_format($buyNowPrice, 2, ",", ".") : "N/A" ?>
+        </label>
+
+        <hr>
+
+
+        <!-- is the item biddable (by the connected member) ? -->
+        <?php if ($item_status->is_biddable($member)): ?>
+            <form method="POST" action="item/bid" class="form-box">
+                €<input type="text" id="make_bid" name="make_bid" class="input" value="<?= $currentBid + 1 ?>">
+                <br>
+                <br>
+                <button type="submit" name="bid" class="bid">Place Bid</button>
+            </form>
+        <?php endif; ?>
+
+        <!-- Show Buy Now button only if Buy Now is enabled AND price > current bid -->
+        <?php if ($item_status->is_buyable($member)): ?>
+            <form method="POST" action="item/buy" class="form-box">
+                <button type="submit" name="buy" class="buy">Buy now at € <?= $buyNowPrice ?></button>
+            </form>
+        <?php endif; ?>
+    </div>
 
     <!-- SELLER INFO -->
     <div class="seller-container">
