@@ -11,6 +11,7 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
     <title><?= $pageTitle ?></title>
     <base href="<?= $web_root ?>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/colors.css">
     <link href="css/add_edit_item.css" rel="stylesheet" type="text/css" />
 </head>
 
@@ -28,10 +29,10 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
                 <input value="MacBook Pro 14" M2 Pro"> (HTML breaks because of ")
                 <input value="MacBook Pro 14&quot; M2 Pro"> (thanks to Tools::sanitize() and web changes it to ", HTML doesn't break)
                 -->
-                <input type="text" id="title" name="title" class="input" value="<?= Tools::sanitize($item?->get_title() ?? '' )?>" placeholder="Ex: iPhone 13 Pro Max 256GB" required>
+                <input type="text" id="title" name="title" class="input" value="<?= Tools::sanitize($item?->get_title() ?? '') ?>" placeholder="Ex: iPhone 13 Pro Max 256GB" required>
 
                 <label for="description" class="label">Description</label>
-                <input type="text" id="description" name="description" class="input" value="<?= Tools::sanitize($item?->get_description() ?? '' )?>" placeholder="Describe your item in detail ..." required>
+                <input type="text" id="description" name="description" class="input" value="<?= Tools::sanitize($item?->get_description() ?? '') ?>" placeholder="Describe your item in detail ..." required>
 
                 <label for="days" class="label">Sale Duration (days) *</label>
                 <input type="text" id="days" name="days" class="input" value="<?= $item?->get_duration_days() ?? '7' ?>">
