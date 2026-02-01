@@ -585,6 +585,7 @@ class Member extends Model {
                 ON v.id = b.item
             WHERE b.ranked_order = 1
             AND v.end_at > :now
+            AND v.buy_now_reached = 0
             ORDER BY v.end_at ASC;",
             [
                 "user_id" => $this->id,
