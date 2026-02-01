@@ -65,22 +65,42 @@ class ControllerItem extends Controller {
     public function bid(): void {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
-        
-        if(!$item_status->get_is_auction() || $item_status->has_ended())
+        $bids = Bid::get_bids_for_item($item_id);
+        $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
+
+        if (!$item_status->get_is_auction() || $item_status->has_ended())
             $this->redirect('item', 'show', $item_id);
 
+        if (isset($_POST["bid_amount"])) {
+            $bid_amount = isset($_POST['make_bid']) ? (float)$_POST['make_bid'] : null;
+            $errors = Bid::validate_bid($user, $item_status, $bid_amount);
 
-        // if (isset($_POST["bid"])) {
-        //     $bidAmount = isset($_POST['make_bid']) ? (float)$_POST['make_bid'] : null;
-        //     $errors = Bid::validate_bid($member, $item_status, $bidAmount);
+            if (empty($errors)) {
+                Bid::place_bid($user, $item_status, $bid_amount);
+                $success = "You bidded successfully!";
+            }
+        }
 
-        //     if (empty($errors)) {
-        //         Bid::place_bid($member, $item_status, $bidAmount);
-        //         $success = "You bidded successfully!";
-        //     }
-        // }
+        // Redirect if POST and no errors (PRG)
+        if (empty($errors)) 
+            $this->redirect("item", "show", $item_id);
+        else {
+            $bids = Bid::get_bids_for_item($item_id);
+            (new View("item"))->show([
+                "member" => $user,
+                "item" => $item_status->get_item(),
+                "item_status" => $item_status,
+                "currentBid" => $current_bid,
+                "bids" => $bids,
+                "mainPic" => $mainPic,
+                "pictures" => $pictures,
+                "errors" => $errors,
+                "success" => $success
+            ]);
+        }
     }
 
     public function show(): void {
@@ -138,11 +158,11 @@ class ControllerItem extends Controller {
 
         if (isset($_POST["buy"])) {
             $buyNowPrice = $item->get_buy_now_price() ?? 0;
-            $currentBid = $item_status->get_max_bid() ?? $item->get_starting_bid();
+            $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
             $errors = [];
 
-            if (!$item_status->get_has_buy_now() || $item_status->get_buy_now_reached() || $buyNowPrice <= $currentBid) {
+            if (!$item_status->get_has_buy_now() || $item_status->get_buy_now_reached() || $buyNowPrice <= $current_bid) {
                 $errors[] = "Cannot buy this item now.";
             } else {
                 Bid::place_bid($member, $item_status, $buyNowPrice);
@@ -160,7 +180,7 @@ class ControllerItem extends Controller {
             "member" => $member,
             "item" => $item,
             "item_status" => $item_status,
-            "currentBid" => $currentBid,
+            "currentBid" => $current_bid,
             "bids" => $bids,
             "mainPic" => $mainPic,
             "pictures" => $pictures,
@@ -431,7 +451,7 @@ class ControllerItem extends Controller {
             $priority = 1;
         elseif (!NumberConverter::is_id($priority))
             $this->redirect($controller, $action, $param1);
-        else 
+        else
             $priority = NumberConverter::get_id_or_false($priority);
 
         return $priority;

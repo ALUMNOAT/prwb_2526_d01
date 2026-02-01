@@ -20,6 +20,7 @@
 
 <body>
 
+    <!--ITEM DETAILS-->
     <div class="item-detail">
         <h2 class="page-title">Item open</h2>
         <?php
@@ -40,26 +41,33 @@
         <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
     </div>
 
+    <!-- THUMBNAILS -->
     <div class="images">
         <?php foreach ($pictures as $pic): ?>
             <img class="thumb" src="<?= $pic->get_picture_path() ?>" onclick="changeMain(this)">
         <?php endforeach; ?>
     </div>
 
+    <!-- BIDS/BUY -->
     <form method="POST" action="" class="form-box">
         <div class="price-container">
             <h3 class="desc">Pricing</h3>
+
             <?php
             $buyNowPrice = $item->get_buy_now_price() ?? 0;
             $currentBid = $currentBid ?? 0;
             ?>
+
             <label class="label"><strong>Current Bid:</strong>
                 <?= $currentBid > 0 ? "€ " . number_format($currentBid, 2, ",", ".") : "N/A" ?>
             </label>
+
             <br>
+
             <label class="label"><strong>Buy Now:</strong>
                 <?= $buyNowPrice > 0 ? "€ " . number_format($buyNowPrice, 2, ",", ".") : "N/A" ?>
             </label>
+            
             <hr>
 
             <!-- owner of the item can't buy or bid himself on the item -->
@@ -79,6 +87,7 @@
         </div>
     </form>
 
+    <!-- SELLER INFO -->
     <div class="seller-container">
         <h3 class="desc">Seller Information</h3>
         <?php if (!$item->get_owner()->get_picture_path()): ?>
@@ -90,6 +99,7 @@
         <p class="desc">Member</p>
     </div>
 
+    <!-- BIDS HISTORY -->
     <div class="bid-history">
         <h3>Bid History</h3>
 
@@ -119,12 +129,9 @@
         <?php endif; ?>
     </div>
 
-    <!--
-O(1) comparaison avec ID vu qu'elles sont uniques
-les object hidden peuvent encore etre manipulé par le client ...
-donc pas de hidden
--->
-    <?php if ($member->get_id() === $item->get_owner()->get_id()): ?>
+
+    <?php if ($item->is_owner($member)): ?>
+        <!-- OWNER'S ACTIONS -->
         <div class="manage-item">
             <h3>Manage Your Item</h3>
 
@@ -142,10 +149,11 @@ donc pas de hidden
                     <div class="row-title">Delete Item</div>
                 </a>
             <?php endif; ?>
-            
+
         </div>
     <?php endif; ?>
 
+    <!-- ERRORS -->
     <?php if (count($errors) != 0): ?>
         <div class='errors'>
             <p>Please correct the following error(s) :</p>
@@ -160,8 +168,6 @@ donc pas de hidden
             <?= $success ?>
         </div>
     <?php endif; ?>
-
-
 
 </body>
 
