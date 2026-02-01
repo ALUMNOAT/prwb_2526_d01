@@ -9,7 +9,7 @@
 /** 
  * @var ItemStatus $item_status 
  * @var Member $member
- * 
+ * @var ItemPicture $main_pic
  * */
 ?>
 
@@ -117,18 +117,17 @@
 
         <hr>
 
-
         <!-- is the item biddable (by the connected member) ? -->
         <?php if ($item_status->is_biddable($member)): ?>
-            <form method="POST" action="item/bid" class="form-box">
-                €<input type="text" id="make_bid" name="make_bid" class="input" value="<?= $currentBid + 1 ?>">
+            <form method="POST" action="item/bid/<?= $item->get_id() ?>/<?= $main_pic->get_priority() ?>" class="form-box">
+                €<input type="text" id="bid_amount" name="bid_amount" class="input" value="<?= $currentBid + 1 ?>">
                 <br>
                 <br>
-                <button type="submit" name="bid" class="bid">Place Bid</button>
+                <button type="submit">Place Bid</button>
             </form>
         <?php endif; ?>
 
-        <!-- Show Buy Now button only if Buy Now is enabled AND price > current bid -->
+        <!-- is the item buyable (by the connected member) ? -->
         <?php if ($item_status->is_buyable($member)): ?>
             <form method="POST" action="item/buy" class="form-box">
                 <button type="submit" name="buy" class="buy">Buy now at € <?= $buyNowPrice ?></button>

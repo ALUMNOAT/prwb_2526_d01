@@ -62,130 +62,96 @@ class ControllerItem extends Controller {
         }
     }
 
-    public function bid(): void {
+    public function show(): void {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
+        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2'] ?? 1);
+
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
+        $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
         $bids = Bid::get_bids_for_item($item_id);
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
-        if (!$item_status->get_is_auction() || $item_status->has_ended())
-            $this->redirect('item', 'show', $item_id);
-
-        if (isset($_POST["bid_amount"])) {
-            $bid_amount = isset($_POST['make_bid']) ? (float)$_POST['make_bid'] : null;
-            $errors = Bid::validate_bid($user, $item_status, $bid_amount);
-
-            if (empty($errors)) {
-                Bid::place_bid($user, $item_status, $bid_amount);
-                $success = "You bidded successfully!";
-            }
-        }
-
-        // Redirect if POST and no errors (PRG)
-        if (empty($errors)) 
-            $this->redirect("item", "show", $item_id);
-        else {
-            $bids = Bid::get_bids_for_item($item_id);
-            (new View("item"))->show([
-                "member" => $user,
-                "item" => $item_status->get_item(),
-                "item_status" => $item_status,
-                "currentBid" => $current_bid,
-                "bids" => $bids,
-                "mainPic" => $mainPic,
-                "pictures" => $pictures,
-                "errors" => $errors,
-                "success" => $success
-            ]);
-        }
-    }
-
-    public function show(): void {
-        $user = $this->get_user_or_redirect_guess(true);
-        $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
-        $item_status = $this->get_item_status_or_redirect($item_id);
-
-        $member = $this->get_user_or_redirect();
-        $errors = [];
-        $success = "";
-
-        //
-        $id = isset($_GET['param1']) ? (int)$_GET['param1'] : null;
-        if (!$id) $this->redirect("browse");
-
-        $item_status = ItemStatus::get_item_status($id);
-        if (!$item_status) $this->redirect("browse");
-        //
-
-        $item = $item_status->get_item();
-
-        $current_bid = $item_status->get_max_bid();
-        if ($current_bid === null) $current_bid = $item->get_starting_bid();
-
-        $bids = Bid::get_bids_for_item($item->get_id());
-
-        $pictures = $item->get_pictures();
-        $mainPic = $pictures[0] ?? null;
-
-        // If a second parameter exists (clean URL image), override mainPic
-        //
-        $id = isset($_GET['param2']) ? (int)$_GET['param1'] : 0;
-        if (!empty($_GET['param2']) && !empty($pictures)) {
-            $imgName = urldecode($_GET['param2']);
-            foreach ($pictures as $pic) {
-                $picName = pathinfo($pic->get_picture_path(), PATHINFO_BASENAME);
-                if ($picName === $imgName) {
-                    $mainPic = $pic;
-                    break;
-                }
-            }
-        }
-        //
-
-        if (isset($_POST["bid"])) {
-            $bidAmount = isset($_POST['make_bid']) ? (float)$_POST['make_bid'] : null;
-            $errors = Bid::validate_bid($member, $item_status, $bidAmount);
-
-            if (empty($errors)) {
-                Bid::place_bid($member, $item_status, $bidAmount);
-                $success = "You bidded successfully!";
-            }
-        }
-
-        if (isset($_POST["buy"])) {
-            $buyNowPrice = $item->get_buy_now_price() ?? 0;
-            $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
-
-            $errors = [];
-
-            if (!$item_status->get_has_buy_now() || $item_status->get_buy_now_reached() || $buyNowPrice <= $current_bid) {
-                $errors[] = "Cannot buy this item now.";
-            } else {
-                Bid::place_bid($member, $item_status, $buyNowPrice);
-                $success = "You bought the item successfully!";
-            }
-        }
-
-        // Redirect if POST and no errors (PRG)
-        if (!empty($_POST) && empty($errors)) {
-            $this->redirect("item", "show", $item->get_id());
-        }
-
-
         (new View("item"))->show([
-            "member" => $member,
+            "member" => $user,
             "item" => $item,
             "item_status" => $item_status,
             "currentBid" => $current_bid,
             "bids" => $bids,
-            "mainPic" => $mainPic,
-            "pictures" => $pictures,
+            "main_pic" => $main_pic,
+            "pictures" => $item->get_pictures(),
+            "errors" => [],
+            "success" => ""
+        ]);
+    }
+
+    public function bid(): void {
+        $user = $this->get_user_or_redirect_guess();
+        $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
+
+        $item_status = $this->get_item_status_or_redirect($item_id);
+        $item = $item_status->get_item();
+        $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
+        $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
+
+        if (!$item_status->is_biddable($user))
+            $this->redirect('item', 'show', $item_id);
+
+        if (isset($_POST["bid_amount"]) && NumberConverter::is_positive_float($_POST["bid_amount"])) {
+            $bid_amount = NumberConverter::get_positive_float_or_false($_POST["bid_amount"]);
+            $errors = Bid::validate_bid($user, $item_status, $bid_amount);
+
+            if (empty($errors)) {
+                Bid::place_bid($user, $item_status, $bid_amount);
+                $this->redirect("item", "show", $item_id);
+            }
+        }
+
+        (new View("item"))->show([
+            "member" => $user,
+            "item" => $item_status->get_item(),
+            "item_status" => $item_status,
+            "currentBid" => $current_bid,
+            "bids" => Bid::get_bids_for_item($item_id),
+            "main_pic" => $main_pic,
+            "pictures" => $item->get_pictures(),
             "errors" => $errors,
-            "success" => $success
+        ]);
+    }
+
+    public function buy(): void {
+        $user = $this->get_user_or_redirect_guess();
+        $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
+
+        $item_status = $this->get_item_status_or_redirect($item_id);
+        $item = $item_status->get_item();
+        $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
+        $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
+
+        if (!$item_status->is_buyable($user))
+            $this->redirect('item', 'show', $item_id);
+
+        if (isset($_POST["buy"])) {
+            $errors = Bid::validate_bid($user, $item_status, $bid_amount);
+
+            if (empty($errors)) {
+                Bid::place_bid($user, $item_status, $bid_amount);
+                $this->redirect("item", "show", $item_id);
+            }
+        }
+
+        (new View("item"))->show([
+            "member" => $user,
+            "item" => $item_status->get_item(),
+            "item_status" => $item_status,
+            "currentBid" => $current_bid,
+            "bids" => Bid::get_bids_for_item($item_id),
+            "main_pic" => $main_pic,
+            "pictures" => $item->get_pictures(),
+            "errors" => $errors,
         ]);
     }
 
@@ -447,9 +413,7 @@ class ControllerItem extends Controller {
     }
 
     private function get_priority_or_redirect(mixed $priority, string $controller = 'item', string $action = 'browse', string $param1 = '1'): int {
-        if (!isset($priority))
-            $priority = 1;
-        elseif (!NumberConverter::is_id($priority))
+        if (!NumberConverter::is_id($priority))
             $this->redirect($controller, $action, $param1);
         else
             $priority = NumberConverter::get_id_or_false($priority);
@@ -471,10 +435,10 @@ class ControllerItem extends Controller {
         return $item_status;
     }
 
-    private function get_item_picture_or_redirect(Item $item, int $pic_priority): ItemPicture {
+    private function get_item_picture_or_redirect(Item $item, int $pic_priority, string $controller = 'item', string $action = 'manage_images'): ItemPicture {
         $pic = $item->get_picture($pic_priority);
         if (!$pic)
-            $this->redirect("item", "manage_images", strval($item->get_id()));
+            $this->redirect($controller, $action, strval($item->get_id()));
         return $pic;
     }
 
