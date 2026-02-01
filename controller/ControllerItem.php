@@ -111,7 +111,7 @@ class ControllerItem extends Controller {
 
         (new View("item"))->show([
             "member" => $user,
-            "item" => $item_status->get_item(),
+            "item" => $item,
             "item_status" => $item_status,
             "currentBid" => $current_bid,
             "bids" => Bid::get_bids_for_item($item_id),
@@ -122,10 +122,12 @@ class ControllerItem extends Controller {
     }
 
     public function buy(): void {
+        //user and IDs
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
 
+        //item, picture and bid
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
         $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
@@ -135,10 +137,11 @@ class ControllerItem extends Controller {
             $this->redirect('item', 'show', $item_id);
 
         if (isset($_POST["buy"])) {
-            $errors = Bid::validate_bid($user, $item_status, $bid_amount);
+            $buy_now_price = $item->get_buy_now_price();
+            $errors = Bid::validate_bid($user, $item_status, $buy_now_price);
 
             if (empty($errors)) {
-                Bid::place_bid($user, $item_status, $bid_amount);
+                Bid::place_bid($user, $item_status, $buy_now_price);
                 $this->redirect("item", "show", $item_id);
             }
         }

@@ -1,13 +1,8 @@
-<script>
-    function changeMain(thumb) {
-        document.getElementById('mainImage').src = thumb.src;
-    }
-</script>
-
 <?php
 
 /** 
  * @var ItemStatus $item_status 
+ * @var Item $item 
  * @var Member $member
  * @var ItemPicture $main_pic
  * */
@@ -32,16 +27,10 @@
     <!--ITEM DETAILS-->
     <div class="item-detail">
         <h2 class="page-title">Item open</h2>
-        <?php
-        $mainPicPath = $mainPic ? $mainPic->get_picture_path() : null;
-        ?>
-        <?php /** @var Item $item */
-        if ($item->get_main_picture_path()): ?>
-            <p>
-                <img id="mainImage" src="<?= $item->get_main_picture_path() ?>" alt="Item picture">
-            </p>
-        <?php else: ?>
+        <?php if ($item->has_no_picture()): ?>
             <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Question_mark_alternate.png" />
+        <?php else: ?>
+            <img src="<?= $main_pic->get_picture_path() ?>" alt="Item picture">
         <?php endif; ?>
 
         <h1><?= $item->get_title() ?></h1>
@@ -52,8 +41,11 @@
 
     <!-- THUMBNAILS -->
     <div class="images">
-        <?php foreach ($pictures as $pic): ?>
-            <img class="thumb" src="<?= $pic->get_picture_path() ?>" onclick="changeMain(this)">
+        <?php /** @var ItemPicture $pic */
+        foreach ($pictures as $pic): ?>
+            <a href="item/show/<?= $item->get_id() ?>/<?= $pic->get_priority() ?>">
+                <img class="thumb" src="<?= $pic->get_picture_path() ?>">
+            </a>
         <?php endforeach; ?>
     </div>
 
@@ -129,7 +121,7 @@
 
         <!-- is the item buyable (by the connected member) ? -->
         <?php if ($item_status->is_buyable($member)): ?>
-            <form method="POST" action="item/buy" class="form-box">
+            <form method="POST" action="item/buy/<?= $item->get_id() ?>/<?= $main_pic->get_priority() ?>" class="form-box">
                 <button type="submit" name="buy" class="buy">Buy now at € <?= $buyNowPrice ?></button>
             </form>
         <?php endif; ?>
