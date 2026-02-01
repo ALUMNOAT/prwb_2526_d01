@@ -105,7 +105,7 @@ class ControllerItem extends Controller {
 
             if (empty($errors)) {
                 Bid::place_bid($user, $item_status, $bid_amount);
-                $this->redirect("item", "show", $item_id);
+                $this->redirect("item", "show", $item_id, $main_pic_priority);
             }
         }
 
@@ -142,7 +142,7 @@ class ControllerItem extends Controller {
 
             if (empty($errors)) {
                 Bid::place_bid($user, $item_status, $buy_now_price);
-                $this->redirect("item", "show", $item_id);
+                $this->redirect("item", "show", $item_id, $main_pic_priority);
             }
         }
 
