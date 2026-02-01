@@ -86,6 +86,9 @@ class Item extends Model {
     public function has_no_picture(): bool {
         return $this->get_picture_count() === 0;
     }
+    public function has_many_pictures(): bool {
+        return count($this->pictures) > 1;
+    }
     public function add_picture(ItemPicture $picture): void {
         $this->pictures[] = $picture;
     }
