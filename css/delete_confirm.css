@@ -6,7 +6,7 @@ doc: https://stackoverflow.com/questions/6382023/changing-the-color-of-an-hr-ele
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: rgb(15, 25, 38);
+    background-color: var(--background);
     height: 100vh;
 }
 
