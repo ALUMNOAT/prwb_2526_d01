@@ -133,5 +133,29 @@ doc: https://css-tricks.com/what-do-you-name-color-variables/
   --flexoki-magenta-900:     #39172B;
   --flexoki-magenta-950:     #24131D;
 
-  --background: var(--flexoki-950);
+  --background: var(--flexoki-blue-950);
+  --middleground: var(--flexoki-850);
+  --frontground: var(--flexoki-blue-200);
+
+  --text: var(--flexoki-50);
+  --text-2: var(--flexoki-400);
+
+
+  --green:var(--flexoki-green-600);
+  --green-highlight:var(--flexoki-green-400);
+
+  --yellow:var(--flexoki-yellow-600);
+  --yellow-highlight:var(--flexoki-yellow-400);
+
+  --orange:var(--flexoki-orange-600);
+  --orange-highlight:var(--flexoki-orange-400);
+
+  --red:var(--flexoki-red-600);
+  --red-highlight:var(--flexoki-red-400);
+
+  --blue:var(--flexoki-blue-600);
+  --blue-highlight:var(--flexoki-blue-400);
+
+
+
 }
