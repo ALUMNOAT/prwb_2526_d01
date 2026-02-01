@@ -678,7 +678,7 @@ class Member extends Model {
             WHERE v.owner = :user_id
             AND (v.buy_now_reached OR
                 (v.has_bids AND v.end_at < :right_now))
-            ORDER BY v.end_at ASC;",
+            ORDER BY v.end_at DESC;",
             [
                 "user_id" => $this->id,
                 "right_now" => AppTime::get_current_datetime()
@@ -767,7 +767,7 @@ class Member extends Model {
             WHERE b.owner = :user_id
             AND (v.buy_now_reached OR
                 (v.has_bids AND v.end_at < :right_now))
-            ORDER BY v.end_at ASC;",
+            ORDER BY v.end_at DESC;",
             [
                 "user_id" => $this->id,
                 "right_now" => AppTime::get_current_datetime()
