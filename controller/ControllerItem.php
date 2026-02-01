@@ -62,21 +62,49 @@ class ControllerItem extends Controller {
         }
     }
 
+    public function bid(): void {
+        $user = $this->get_user_or_redirect_guess();
+        $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $item_status = $this->get_item_status_or_redirect($item_id);
+        $item = $item_status->get_item();
+        
+        if(!$item_status->get_is_auction() || $item_status->has_ended())
+            $this->redirect('item', 'show', $item_id);
+
+
+        // if (isset($_POST["bid"])) {
+        //     $bidAmount = isset($_POST['make_bid']) ? (float)$_POST['make_bid'] : null;
+        //     $errors = Bid::validate_bid($member, $item_status, $bidAmount);
+
+        //     if (empty($errors)) {
+        //         Bid::place_bid($member, $item_status, $bidAmount);
+        //         $success = "You bidded successfully!";
+        //     }
+        // }
+    }
+
     public function show(): void {
+        $user = $this->get_user_or_redirect_guess(true);
+        $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
+        $item_status = $this->get_item_status_or_redirect($item_id);
+
         $member = $this->get_user_or_redirect();
         $errors = [];
         $success = "";
 
+        //
         $id = isset($_GET['param1']) ? (int)$_GET['param1'] : null;
         if (!$id) $this->redirect("browse");
 
         $item_status = ItemStatus::get_item_status($id);
         if (!$item_status) $this->redirect("browse");
+        //
 
         $item = $item_status->get_item();
 
-        $currentBid = $item_status->get_max_bid();
-        if ($currentBid === null) $currentBid = $item->get_starting_bid();
+        $current_bid = $item_status->get_max_bid();
+        if ($current_bid === null) $current_bid = $item->get_starting_bid();
 
         $bids = Bid::get_bids_for_item($item->get_id());
 
@@ -84,6 +112,8 @@ class ControllerItem extends Controller {
         $mainPic = $pictures[0] ?? null;
 
         // If a second parameter exists (clean URL image), override mainPic
+        //
+        $id = isset($_GET['param2']) ? (int)$_GET['param1'] : 0;
         if (!empty($_GET['param2']) && !empty($pictures)) {
             $imgName = urldecode($_GET['param2']);
             foreach ($pictures as $pic) {
@@ -94,6 +124,7 @@ class ControllerItem extends Controller {
                 }
             }
         }
+        //
 
         if (isset($_POST["bid"])) {
             $bidAmount = isset($_POST['make_bid']) ? (float)$_POST['make_bid'] : null;
@@ -132,14 +163,13 @@ class ControllerItem extends Controller {
             "currentBid" => $currentBid,
             "bids" => $bids,
             "mainPic" => $mainPic,
-            "pictures"=>$pictures,
+            "pictures" => $pictures,
             "errors" => $errors,
             "success" => $success
         ]);
     }
 
-    public function add(): void
-    {
+    public function add(): void {
         $member = $this->get_user_or_redirect();
         $item = null;
         $errors = [];
@@ -210,8 +240,7 @@ class ControllerItem extends Controller {
         ]);
     }
 
-    public function edit(): void
-    {
+    public function edit(): void {
         $member = $this->get_user_or_redirect();
         $errors = [];
 
@@ -288,9 +317,7 @@ class ControllerItem extends Controller {
             "item" => $item,
             "errors" => $errors
         ]);
-
     }
-
 
     public function manage_images(): void {
         $user = $this->get_user_or_redirect_guess();
@@ -392,18 +419,36 @@ class ControllerItem extends Controller {
         return $user;
     }
 
-    private function get_id_or_redirect(mixed $id, string $controller = 'browse', string $action = 'page', string $param1 = '1'): int {
+    private function get_id_or_redirect(mixed $id, string $controller = 'item', string $action = 'browse', string $param1 = '1'): int {
         if (!isset($id) || !NumberConverter::is_id($id))
             $this->redirect($controller, $action, $param1);
         $id = NumberConverter::get_id_or_false($id);
         return $id;
     }
 
-    private function get_item_or_redirect(int $item_id, ?Member $user = null): Item {
+    private function get_priority_or_redirect(mixed $priority, string $controller = 'item', string $action = 'browse', string $param1 = '1'): int {
+        if (!isset($priority))
+            $priority = 1;
+        elseif (!NumberConverter::is_id($priority))
+            $this->redirect($controller, $action, $param1);
+        else 
+            $priority = NumberConverter::get_id_or_false($priority);
+
+        return $priority;
+    }
+
+    private function get_item_or_redirect(int $item_id, ?Member $owner = null): Item {
         $item = Item::get_item($item_id);
-        if (!$item || $user !== null && !$item->is_owner($user))
-            $this->redirect("browse", "page", "1");
+        if (!$item || $owner !== null && !$item->is_owner($owner))
+            $this->redirect("item", "browse", "1");
         return $item;
+    }
+
+    private function get_item_status_or_redirect(int $item_id, ?Member $owner = null): ItemStatus {
+        $item_status = ItemStatus::get_item_status($item_id);
+        if (!$item_status || $owner !== null && !$item_status->is_owner($owner))
+            $this->redirect("item", "browse", "1");
+        return $item_status;
     }
 
     private function get_item_picture_or_redirect(Item $item, int $pic_priority): ItemPicture {

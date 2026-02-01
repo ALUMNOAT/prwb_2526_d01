@@ -51,6 +51,10 @@ class ItemStatus extends Model {
         return $this->not_purchased_direct_sale;
     }
 
+    public function is_owner(Member $user): bool {
+        return $this->item->is_owner($user);
+    }
+
     public static function get_item_status(int $id): ItemStatus|false {
         $query = self::execute(
             "SELECT * FROM v_items_status
