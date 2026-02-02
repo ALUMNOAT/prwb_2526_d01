@@ -35,7 +35,7 @@ doc:
                 <p>This process cannot be undone.</p>
     
                 <form action='my_items/delete/<?= $item->get_id() ?>' method='POST' id='delete' name='delete'>
-                    <a class='cancel' href='my_items'>Cancel</a>
+                    <a class='cancel' href='item/show/<?= $item->get_id() ?>'>Cancel</a>
                     <button class='delete' id='confirm' name='confirm' form='delete' type='submit' value='<?= $item->get_id() ?>'>Delete</button>
                 </form>
             </div>
