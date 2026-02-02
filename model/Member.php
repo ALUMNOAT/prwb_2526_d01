@@ -206,19 +206,28 @@ class Member extends Model {
 
     public static function validate_unicity(string $pseudo, string $email, string $full_name, ?int $exclude_id = null): array {
         $errors = [];
-        //TODO: do only one SQL query to verify unicity !
-        //it's also better if it's self contained, ie the SQL query is inside this function
-        $member_pseudo = self::get_member_by_pseudo($pseudo);
-        $member_email = self::get_member_by_email($email);
-        $member_full_name = self::get_member_by_full_name($full_name);
-        if ($member_pseudo && $member_pseudo->get_id() !== $exclude_id) {
-            $errors[] = "Ce pseudo '$pseudo' existe déjà.";
-        }
-        if ($member_email && $member_email->get_id() !== $exclude_id) {
-            $errors[] = "Cet email '$email' existe déjà.";
-        }
-        if ($member_full_name && $member_full_name->get_id() !== $exclude_id) {
-            $errors[] = "Ce nom d'utilisateur '$full_name' existe déjà.";
+
+        $query = self::execute(
+            "SELECT pseudo, email, full_name FROM users 
+            WHERE (pseudo = :pseudo OR email = :email OR full_name = :full_name) 
+            AND (:exclude_id IS NULL OR id != :exclude_id)",
+            [":pseudo" => $pseudo, ":email" => $email, ":full_name" => $full_name, ":exclude_id" => $exclude_id]
+        );
+
+        $data = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        // Vu que les variables de la DB sont UNIQUE dès le départ, pas besoin de flag (samePseudo = true/false et autres)
+        //
+        foreach ($data as $user) {
+            if ($user['pseudo'] === $pseudo) {
+                $errors[] = "Ce pseudo '$pseudo' existe déjà.";
+            }
+            if ($user['email'] === $email) {
+                $errors[] = "Cet email '$email' existe déjà.";
+            }
+            if ($user['full_name'] === $full_name) {
+                $errors[] = "Ce nom d'utilisateur '$full_name' existe déjà.";
+            }
         }
         return $errors;
     }
