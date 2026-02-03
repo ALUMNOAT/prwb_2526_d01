@@ -54,18 +54,22 @@ class ItemStatus extends Model {
     public function is_owner(Member $user): bool {
         return $this->item->is_owner($user);
     }
+
     public function is_biddable(Member $bidder): bool {
-        return $this->is_auction 
-        && !$this->is_owner($bidder) 
-        && !$this->buy_now_reached 
-        && !$this->has_ended();
+        return $this->is_auction
+            && !$this->is_owner($bidder)
+            && !$this->buy_now_reached
+            && !$this->has_ended()
+            && !$bidder->is_guest();
     }
+
     public function is_buyable(?Member $buyer): bool {
-        return $this->has_buy_now 
-        && !$this->is_owner($buyer)
-        && !$this->buy_now_reached 
-        && !$this->has_ended()
-        && $this->max_bid < $this->item->get_buy_now_price();
+        return $this->has_buy_now
+            && !$this->is_owner($buyer)
+            && !$this->buy_now_reached
+            && !$this->has_ended()
+            && !$buyer->is_guest()
+            && $this->max_bid < $this->item->get_buy_now_price();
     }
 
     public static function get_item_status(int $id): ItemStatus|false {
