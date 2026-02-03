@@ -16,7 +16,7 @@ doc: https://www.w3schools.com/TAGs/att_form_enctype.asp
  * @var array $errors
  */
 
-$icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,filter,home,schedule,settings,shopping_bag,travel_explore,trophy";
+$icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,filter,home,schedule,settings,shopping_bag,shopping_cart,travel_explore,trophy";
 ?>
 
 <!DOCTYPE html>
@@ -27,20 +27,23 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
     <title>Browse</title>
     <base href="<?= $web_root ?>">
     <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="css/icons.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=<?= $icons ?>">
+    <link rel="stylesheet" href="css/top_navbar.css">
     <link rel="stylesheet" href="css/manage_images.css">
     <link rel="stylesheet" href="css/menu.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
-    <div class="profile-navbar">
-        <a href="profile">
-            <span class="material-symbols-outlined">arrow_back</span>
+    <div class="top-navbar">
+        <a href='profile'>
+            <span class="material-symbols-outlined size-40">arrow_back</span>
         </a>
 
         <h2 class="page-title">
             Manage Images
+            <span class="material-symbols-outlined">shopping_cart</span>
         </h2>
     </div>
 
@@ -108,13 +111,19 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
                         <br>
 
-                        <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority - 1) ?>" <?= $priority == 1 ? "disabled" : "" ?>>
-                            <span class="material-symbols-outlined">arrow_left_alt</span>
-                        </button>
+                        <?php if (!$item_picture->is_first_priority()): ?>
+                            <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>" 
+                            type="submit" name="priority" form="move_image" value="<?= ($priority-1) ?>">
+                                <span class="material-symbols-outlined">arrow_left_alt</span>
+                            </button>
+                        <?php endif; ?>
 
-                        <button type="submit" name="priority" form="move_image" value="<?= $priority ?>,<?= ($priority + 1) ?>" <?= $priority == $image_count ? "disabled" : "" ?>>
-                            <span class="material-symbols-outlined">arrow_right_alt</span>
-                        </button>
+                        <?php if (!$item_picture->is_last_priority()): ?>
+                            <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>" 
+                            type="submit" name="priority" form="move_image" value="<?= ($priority+1) ?>">
+                                <span class="material-symbols-outlined">arrow_right_alt</span>
+                            </button>
+                        <?php endif; ?>
 
                         <button class="delete" type="submit" name="priority" form="remove_image" value="<?= $priority ?>">
                             <span class="material-symbols-outlined">close_small</span>

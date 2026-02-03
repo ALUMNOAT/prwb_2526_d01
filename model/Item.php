@@ -95,6 +95,16 @@ class Item extends Model {
     public function is_owner(Member $user): bool {
         return $this->owner->get_id() == $user->get_id();
     }
+    public function is_first_priority(ItemPicture $pic): bool {
+        $item_pictures_priorities = array_keys($this->pictures);
+        $first_priority = min($item_pictures_priorities);
+        return $pic->get_priority() == $first_priority;
+    }
+    public function is_last_priority(ItemPicture $pic): bool {
+        $item_pictures_priorities = array_keys($this->pictures);
+        $first_priority = max($item_pictures_priorities);
+        return $pic->get_priority() == $first_priority;
+    }
     public function get_picture(int $priority): ItemPicture|false {
         return $this->pictures[$priority] ?? false;
     }
