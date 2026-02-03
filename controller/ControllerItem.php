@@ -169,7 +169,7 @@ class ControllerItem extends Controller {
     }
 
     public function add(): void {
-        $member = $this->get_user_or_redirect();
+        $member = $this->get_user_or_redirect_guess();
         $item = null;
         $errors = [];
 
@@ -240,21 +240,20 @@ class ControllerItem extends Controller {
     }
 
     public function edit(): void {
-        $member = $this->get_user_or_redirect();
+        $member = $this->get_user_or_redirect_guess();
         $errors = [];
-
         // Param1 existe tjrs
         $id = (int)$_GET['param1'];
+        $item_status = $this->get_item_status_or_redirect($id, $member);   //not owner, no access
 
         // On fetch l'ID de la DB
         $item = Item::get_item($id);
         // Si l'ID est mauvais (existe pas)-> redirect
         if (!$item) {
-            $this->redirect("browse");
+            $this->redirect("item","browse");
         }
-        // Si c'est pas le propriétaire qui modif -> redirect
-        if ($item->get_owner()->get_id() !== $member->get_id()) {
-            $this->redirect("browse");
+        if ($item_status->get_has_bids() || $item_status->has_sold()) {
+            $this->redirect("item", "show", $item->get_id());
         }
 
         // If form submitted
