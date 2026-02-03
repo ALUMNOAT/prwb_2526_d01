@@ -165,10 +165,11 @@
                 <!-- OWNER'S ACTIONS -->
                 <div class="manage-item">
                     <h3>Manage Your Item</h3>
-
+                    <?php if (!$item_status->get_has_bids()): ?>
                     <a href="item/edit/<?= $item->get_id() ?>" class="row">
                         <div class="row-title">Edit Item Details</div>
                     </a>
+                    <?php endif; ?>
 
                     <a href="item/manage_images/<?= $item->get_id() ?>" class="row">
                         <div class="row-title">Manage Images</div>
