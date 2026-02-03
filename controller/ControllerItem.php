@@ -63,13 +63,23 @@ class ControllerItem extends Controller {
     }
 
     public function show(): void {
-        $user = $this->get_user_or_redirect_guess();
+        $user = $this->get_user_or_redirect();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $main_pic_priority = $this->get_priority_or_redirect($_GET['param2'] ?? 1);
 
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
-        $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
+
+        $main_pic = null;
+        $picture = $item->get_pictures();
+        if (!empty($picture)) {
+            $main_pic = $item->get_picture($main_pic_priority);
+            // If specific priority doesn't exist, fall back to first picture
+            if (!$main_pic) {
+                $main_pic = reset($picture); // Get first picture
+            }
+        }
+
         $bids = Bid::get_bids_for_item($item_id);
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
@@ -80,7 +90,7 @@ class ControllerItem extends Controller {
             "currentBid" => $current_bid,
             "bids" => $bids,
             "main_pic" => $main_pic,
-            "pictures" => $item->get_pictures(),
+            "pictures" => $picture,
             "errors" => [],
             "success" => ""
         ]);
@@ -404,7 +414,7 @@ class ControllerItem extends Controller {
         /** @var Member $user */
         $user = $this->get_user_or_redirect();
         if ($user->is_guest() && !$guest_pass)
-            $this->redirect('browse');
+            $this->redirect('item', 'browse');
         return $user;
     }
 
