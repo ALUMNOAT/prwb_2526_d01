@@ -90,7 +90,8 @@ class Item extends Model {
         return count($this->pictures) > 1;
     }
     public function add_picture(ItemPicture $picture): void {
-        $this->pictures[] = $picture;
+        $priority = $picture->get_priority();
+        $this->pictures[$priority] = $picture;
     }
     public function is_owner(Member $user): bool {
         return $this->owner->get_id() == $user->get_id();
@@ -109,9 +110,13 @@ class Item extends Model {
         return $this->pictures[$priority] ?? false;
     }
     public function get_next_priority(): int {
-        return empty($this->pictures)
-            ? 1
-            : (max(array_keys($this->pictures)) + 1);
+        $next_priority = 1;
+        $priorities = array_keys($this->db_get_pictures());
+
+        if (!empty($priorities))
+            $next_priority = max($priorities) + 1;
+
+        return $next_priority;
     }
 
     private function get_main_picture(): ItemPicture|false {
@@ -235,15 +240,19 @@ class Item extends Model {
         $params = ['item' => $this->id];
         $placeholders = [];
 
+        $db_pictures_priorities = array_keys($this->db_get_pictures());
+
         foreach ($this->pictures as $priority => $pic) {
             /** @var ItemPicture $pic */
-            $placeholders[] = "(:item, :priority$priority, :pic_path$priority)";
-            $params["priority$priority"] = $priority;
-            $params["pic_path$priority"] = $pic->get_picture_path();
+            if (!in_array($priority, $db_pictures_priorities)) {
+                $placeholders[] = "(:item, :priority$priority, :pic_path$priority)";
+                $params["priority$priority"] = $priority;
+                $params["pic_path$priority"] = $pic->get_picture_path();
+            }
         }
 
         self::execute(
-            "INSERT IGNORE INTO item_pictures(item, priority, picture_path)
+            "INSERT INTO item_pictures(item, priority, picture_path)
             VALUES " . implode(',', $placeholders) . ";",
             $params
         );
@@ -468,6 +477,30 @@ class Item extends Model {
         }
 
         return $this;
+    }
+
+    public function db_get_pictures(): array {
+        $pictures = [];
+
+        $query = self::execute(
+            "SELECT p.item, p.priority, p.picture_path
+            FROM item_pictures AS p
+            WHERE p.item = :item_id
+            ORDER BY p.priority ASC",
+            ["item_id" => $this->id]
+        );
+
+        $data = $query->fetchAll();
+
+        foreach ($data as $row) {
+            $pictures[$row['priority']] = new ItemPicture(
+                $this,
+                $row['priority'],
+                $row['picture_path']
+            );
+        }
+
+        return $pictures;
     }
 
     public function unicity(): array {

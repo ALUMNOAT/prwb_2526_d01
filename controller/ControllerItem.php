@@ -250,7 +250,7 @@ class ControllerItem extends Controller {
         $item = Item::get_item($id);
         // Si l'ID est mauvais (existe pas)-> redirect
         if (!$item) {
-            $this->redirect("item","browse");
+            $this->redirect("item", "browse");
         }
         if ($item_status->get_has_bids() || $item_status->has_sold()) {
             $this->redirect("item", "show", $item->get_id());
@@ -370,6 +370,7 @@ class ControllerItem extends Controller {
                     $priority++;
                 }
 
+
                 $item->persist_item_pictures();
                 $this->redirect('item', 'manage_images', strval($item_id));
             }
@@ -380,7 +381,7 @@ class ControllerItem extends Controller {
     public function remove_image(): void {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $picture_priority = $this->get_id_or_redirect($_POST['priority'], 'item', 'manage_images', $item_id);
+        $picture_priority = $this->get_priority_or_redirect($_POST['delete'], 'item', 'manage_images', $item_id);
         $item = $this->get_item_or_redirect($item_id, $user);
         $item_picture = $this->get_item_picture_or_redirect($item, $picture_priority);
 
@@ -394,19 +395,20 @@ class ControllerItem extends Controller {
         doc: https://beerpla.net/2009/02/17/swapping-column-values-in-mysql/
         doc: https://stackoverflow.com/questions/5029409/how-to-check-if-an-integer-is-within-a-range <-- sometimes simplicity is "ugly", but faster
         */
+
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $priorities = isset($_POST['priority'])
-            ? explode(",", $_POST['priority'])
-            : [false, false];
-        $picture_priority = $this->get_id_or_redirect($priorities[0], 'item', 'manage_images', $item_id);
-        $target_priority = $this->get_id_or_redirect($priorities[1] ?? false, 'item', 'manage_images', $item_id);
+        $source_priority = $this->get_priority_or_redirect($_GET['param2'], 'item', 'show', $item_id);
         $item = $this->get_item_or_redirect($item_id, $user);
-        $item_picture = $this->get_item_picture_or_redirect($item, $picture_priority);
-        $target_item_picture = $this->get_item_picture_or_redirect($item, $target_priority);
+        if (isset($_POST['move'])) {
+            $target_priority = $this->get_priority_or_redirect($_POST['move'], 'item', 'show', $item_id);
+            $item_picture = $this->get_item_picture_or_redirect($item, $source_priority);
+            $target_item_picture = $this->get_item_picture_or_redirect($item, $target_priority);
 
-        $item_picture->swap_priority($target_item_picture);
-        $this->redirect("item", "manage_images", strval($item_id));
+            $item_picture->swap_priority($target_item_picture);
+            $this->redirect('item', 'manage_images', strval($item_id));
+        }
+        (new View("manage_images"))->show(["user" => $user, "item" => $item]);
     }
 
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {

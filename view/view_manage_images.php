@@ -113,19 +113,19 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
                         <?php if (!$item_picture->is_first_priority()): ?>
                             <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>" 
-                            type="submit" name="priority" form="move_image" value="<?= ($priority-1) ?>">
+                            type="submit" name="move" id='move' form="move_image" value="<?= ($priority-1) ?>">
                                 <span class="material-symbols-outlined">arrow_left_alt</span>
                             </button>
                         <?php endif; ?>
 
                         <?php if (!$item_picture->is_last_priority()): ?>
                             <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>" 
-                            type="submit" name="priority" form="move_image" value="<?= ($priority+1) ?>">
+                            type="submit" name="move" id='move' form="move_image" value="<?= ($priority+1) ?>">
                                 <span class="material-symbols-outlined">arrow_right_alt</span>
                             </button>
                         <?php endif; ?>
 
-                        <button class="delete" type="submit" name="priority" form="remove_image" value="<?= $priority ?>">
+                        <button class="delete" type="submit" name="delete" id='delete' form="remove_image" value="<?= $priority ?>">
                             <span class="material-symbols-outlined">close_small</span>
                         </button>
                     </div>
