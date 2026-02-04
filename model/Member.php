@@ -869,4 +869,8 @@ class Member extends Model {
 
         return $purchases;
     }
+
+    public function equal($other_user): bool {
+        return $this->id === $other_user->get_id();
+    }
 }

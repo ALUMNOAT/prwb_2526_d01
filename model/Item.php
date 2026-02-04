@@ -538,4 +538,8 @@ class Item extends Model {
 
         return $errors;
     }
+
+    public function equal($other_item): bool {
+        return $this->id === $$other_item->get_id();
+    }
 }
