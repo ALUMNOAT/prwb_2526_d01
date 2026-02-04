@@ -8,6 +8,8 @@ class ItemPicturesCollection extends Model {
     //ATTRIBUTES
     private array $db_pictures;
     private array $local_pictures;
+    private ?ItemPicture $main_picture;
+    private ?ItemPicture $selected_picture;
 
 
     //__CONSTRUCT
@@ -15,12 +17,21 @@ class ItemPicturesCollection extends Model {
         private Item $item
     ) {
         $this->set_pictures();
+        $this->set_main_picture();
+        $this->set_selected_picture($this->main_picture);
     }
 
 
     //OBJECT
     public function get_picture(int $priority): ItemPicture|false {
         return $this->db_pictures[$priority] ?? false;
+    }
+    public function get_main_picture(): ?ItemPicture {
+        $this->set_main_picture();
+        return $this->main_picture;
+    }
+    public function get_selected_picture(int $priority): ?ItemPicture {
+        return $this->selected_picture;
     }
 
 
@@ -44,6 +55,11 @@ class ItemPicturesCollection extends Model {
         //no local pictures since they're not validated yet
         return count($this->db_pictures);
     }
+    public function first_priority(): int {
+        return !empty($db_pictures)
+            ? min(array_keys($db_pictures))
+            : 0;
+    }
     public function last_priority(): int {
         return !empty($db_pictures)
             ? max(array_keys($db_pictures))
@@ -51,7 +67,7 @@ class ItemPicturesCollection extends Model {
     }
 
 
-    //VOID
+    //ADD / SET
     public function add(ItemPicture ...$pictures): void {
         //doc: https://stackoverflow.com/questions/16823611/passing-multiple-arguments-to-function-php
         //doc: https://www.php.net/manual/en/functions.arguments.php
@@ -62,6 +78,15 @@ class ItemPicturesCollection extends Model {
             $local_pictures[$next_priority] = $pic;
             $next_priority++;
         }
+    }
+    public function set_main_picture(): void {
+        !empty($this->db_pictures)
+            ? $this->main_picture = $this->db_pictures[$this->first_priority()]
+            : null;
+    }
+    public function set_selected_picture(ItemPicture $pic): void {
+        if (in_array($pic, $this->db_pictures))
+            $this->selected_picture = $pic;
     }
 
 
@@ -88,7 +113,7 @@ class ItemPicturesCollection extends Model {
         $this->local_pictures = [];
     }
 
-    
+
     //PRIVATE
     private function set_pictures(): void {
         $query = self::execute(
