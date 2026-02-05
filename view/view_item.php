@@ -112,7 +112,7 @@
         <div class='seller-data'>
             <!-- BIDS/BUY -->
             <div class="price-container">
-                <h3 class="desc">Pricing 2</h3>
+                <h3 class="desc">Pricing</h3>
 
                 <?php
                 $buyNowPrice = $item->get_buy_now_price() ?? 0;
