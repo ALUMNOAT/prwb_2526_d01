@@ -4,6 +4,7 @@ require_once 'model/Member.php';
 require_once 'framework/View.php';
 require_once 'framework/Controller.php';
 require_once 'utils/Image.php';
+require_once 'utils/Role.php';
 
 class ControllerProfile extends Controller {
 

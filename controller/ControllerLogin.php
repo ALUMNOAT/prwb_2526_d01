@@ -3,6 +3,7 @@ require_once "framework/Controller.php";
 require_once "framework/View.php";
 require_once "framework/Tools.php";
 require_once "model/Member.php";
+require_once 'utils/Role.php';
 
 
 class ControllerLogin extends Controller {
