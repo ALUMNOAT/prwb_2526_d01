@@ -3,6 +3,7 @@ require_once "framework/Controller.php";
 require_once "framework/View.php";
 require_once "framework/Tools.php";
 require_once "model/Member.php";
+require_once 'utils/Role.php';
 
 
 class ControllerLogin extends Controller {
@@ -24,8 +25,8 @@ class ControllerLogin extends Controller {
             $errors = [];
 
             if (isset($_POST["email"]) && isset($_POST["password"])) {
-                $email = $_POST["email"];
-                $password = $_POST["password"];
+                $email = html_entity_decode($_POST["email"], ENT_QUOTES, 'UTF-8');
+                $password = html_entity_decode($_POST["password"], ENT_QUOTES, 'UTF-8');
 
                 $errors = Member::validate_login($email, $password);
 

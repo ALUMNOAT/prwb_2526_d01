@@ -176,15 +176,9 @@ class ControllerItem extends Controller {
         // If form submitted
         if (!empty($_POST)) {
             // Fetch data
-            $title = $_POST['title'] ?? '';
-            $description = $_POST['description'] ?? null;
+            $title = html_entity_decode($_POST['title'], ENT_QUOTES, 'UTF-8') ?? '';
+            $description = html_entity_decode($_POST['description'], ENT_QUOTES, 'UTF-8') ?? null;
             $duration_days = isset($_POST['days']) ? (int)$_POST['days'] : 7;
-
-            // Je dois décoder sinon les " deviennent des &quot; dans la DB à cause du framework
-            $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, "UTF-8");
-            $description = $description !== null
-                ? html_entity_decode($description, ENT_QUOTES | ENT_HTML5, "UTF-8")
-                : null;
 
             $starting_bid = isset($_POST['starting_bid']) && $_POST['starting_bid'] !== ''
                 ? (float)$_POST['starting_bid']
@@ -259,15 +253,9 @@ class ControllerItem extends Controller {
         // If form submitted
         if (!empty($_POST)) {
             // Fetch data
-            $title = $_POST['title'] ?? '';
-            $description = $_POST['description'] ?? null;
+            $title = html_entity_decode($_POST['title'], ENT_QUOTES, 'UTF-8') ?? '';
+            $description = html_entity_decode($_POST['description'], ENT_QUOTES, 'UTF-8') ?? null;
             $duration_days = isset($_POST['days']) ? (int)$_POST['days'] : 7;
-
-            // Je dois décoder sinon les " deviennent des &quot; dans la DB à cause du framework
-            $title = html_entity_decode($title, ENT_QUOTES | ENT_HTML5, "UTF-8");
-            $description = $description !== null
-                ? html_entity_decode($description, ENT_QUOTES | ENT_HTML5, "UTF-8")
-                : null;
 
             $starting_bid = isset($_POST['starting_bid']) && $_POST['starting_bid'] !== ''
                 ? (float)$_POST['starting_bid']

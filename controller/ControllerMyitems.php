@@ -135,7 +135,7 @@ class ControllerMyitems extends Controller {
         /** @var Member $user */
         $user = $this->get_user_or_redirect();
         if ($user->is_guest() && !$guest_pass)
-            $this->redirect('browse');
+            $this->redirect('item', "browse");
         return $user;
     }
 
@@ -149,7 +149,7 @@ class ControllerMyitems extends Controller {
     private function get_item_or_redirect(int $item_id, ?Member $user = null): Item {
         $item = Item::get_item($item_id);
         if (!$item || $user !== null && !$item->is_owner($user))
-            $this->redirect("browse", "page", "1");
+            $this->redirect("item", "browse", "1");
         return $item;
     }
 

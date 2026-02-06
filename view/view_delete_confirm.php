@@ -31,7 +31,7 @@ doc:
             <h1 class='warning'>Are you sure ?</h1>
             <hr>
             <div>
-                <p>Do you really want to delete item <b>"<?= $item->get_title() ?>"</b> by <?= $user->get_full_name() ?> and all of its dependencies ?</p>
+                <p>Do you really want to delete item <b>"<?= Tools::sanitize($item->get_title()) ?>"</b> by <?= Tools::sanitize($user->get_full_name()) ?> and all of its dependencies ?</p>
                 <p>This process cannot be undone.</p>
     
                 <form action='my_items/delete/<?= $item->get_id() ?>' method='POST' id='delete' name='delete'>
