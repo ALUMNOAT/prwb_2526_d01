@@ -6,6 +6,7 @@ require_once "model/ItemStatus.php";
 
 
 class Bid extends Model {
+    private Item $item;
 
     public function __construct(
         private Member $owner,
@@ -14,6 +15,7 @@ class Bid extends Model {
         private float $amount,
         private ?float $highest_bid = null
     ) {
+        $this->item = $item_status->get_item();
     }
 
     public function get_owner(): Member {
@@ -21,6 +23,9 @@ class Bid extends Model {
     }
     public function get_item_status(): ItemStatus {
         return $this->item_status;
+    }
+    public function get_item(): Item {
+        return $this->item;
     }
     public function get_created_at(): string {
         return $this->created_at;
@@ -148,6 +153,10 @@ class Bid extends Model {
     }
 
 
-
-
+    public function equal(Bid $other_bid): bool {
+        return $this->owner->equal($other_bid->get_owner())
+            && $this->item->equal($other_bid->get_item())
+            && $this->created_at === $other_bid->get_created_at()
+            && $this->amount === $other_bid->get_amount();
+    }
 }

@@ -11,14 +11,31 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
     <title><?= $pageTitle ?></title>
     <base href="<?= $web_root ?>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="css/add_edit_item.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,arrow_back,celebration,filter,gavel,home,save,schedule,settings,shopping_cart,travel_explore,trophy">
+    <link rel="stylesheet" href="css/icons.css">
+    <link rel="stylesheet" href="css/top_navbar.css">
+    <link rel="stylesheet" href="css/add_edit_item.css" type="text/css" />
 </head>
 
 <body>
-    <div class="container">
-        <h2 class="page-title"><?= $pageTitle ?></h2>
+    <div class="top-navbar">
+        <a href='profile'>
+            <span class="material-symbols-outlined size-40">arrow_back</span>
+        </a>
 
-        <form method="POST" action="" class="form-box">
+        <h2 class="page-title">
+            <?= $pageTitle ?>
+            <span class="material-symbols-outlined">shopping_cart</span>
+        </h2>
+
+        <button type="submit" form="add_item">
+            <span class="material-symbols-outlined size-40">save</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <form method="POST" name='add_item' id='add_item' action="" class="form-box">
 
             <div class="section">
                 <h3>Basic Information</h3>
@@ -28,10 +45,10 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
                 <input value="MacBook Pro 14" M2 Pro"> (HTML breaks because of ")
                 <input value="MacBook Pro 14&quot; M2 Pro"> (thanks to Tools::sanitize() and web changes it to ", HTML doesn't break)
                 -->
-                <input type="text" id="title" name="title" class="input" value="<?= Tools::sanitize($item?->get_title() ?? '' )?>" placeholder="Ex: iPhone 13 Pro Max 256GB" required>
+                <input type="text" id="title" name="title" class="input" value="<?= Tools::sanitize($item?->get_title() ?? '') ?>" placeholder="Ex: iPhone 13 Pro Max 256GB" required>
 
                 <label for="description" class="label">Description</label>
-                <input type="text" id="description" name="description" class="input" value="<?= Tools::sanitize($item?->get_description() ?? '' )?>" placeholder="Describe your item in detail ..." required>
+                <input type="text" id="description" name="description" class="input" value="<?= Tools::sanitize($item?->get_description() ?? '') ?>" placeholder="Describe your item in detail ..." required>
 
                 <label for="days" class="label">Sale Duration (days) *</label>
                 <input type="text" id="days" name="days" class="input" value="<?= $item?->get_duration_days() ?? '7' ?>">
@@ -72,8 +89,6 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
                 <input type="text" id="sale_price" name="sale_price" class="input" value="<?= $salePriceVal ?>">
 
             </div>
-
-            <button type="submit" class="btn">Save</button>
         </form>
 
         <?php if (count($errors) != 0): ?>

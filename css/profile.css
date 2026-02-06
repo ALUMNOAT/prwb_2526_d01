@@ -15,20 +15,20 @@ doc: https://www.w3schools.com/cssref/pr_class_display.php
 /* PAGE BACKGROUND */
 body {
     background: linear-gradient(180deg, #0f172a, #020617);
-    color: #e5e7eb;
+    color: var(--text);
 }
 
 /* CONTAINER */
 .container {
     max-width: 50em;
     margin: 3% auto 1% auto;
-    padding: 0% 1em;
+    padding: 0% 2em;
 }
 
 /* PAGE TITLE */
 .page-title {
     text-align: center;
-    color: #60a5fa;
+    color: dodgerblue;
     margin-bottom: 24px;
     font-size: 22px;
     font-weight: 600;
@@ -54,7 +54,7 @@ body {
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 12px;
-    border: 2px solid #60a5fa;
+    border: 2px solid dodgerblue;
 }
 
 .section p {
@@ -93,7 +93,7 @@ body {
 }
 
 a.row {
-    color:#60a5fa;
+    color:dodgerblue;
 }
 
 /* TITLE */
@@ -113,11 +113,11 @@ a.row {
 /* HOVER EFFECT */
 .row:hover {
     background-color: #1e293b;
-    border-color: #60a5fa;
+    border-color: dodgerblue;
 }
 
 .row:hover .row-title {
-    color: #60a5fa;
+    color: dodgerblue;
 }
 
 /* LOGOUT ROW */

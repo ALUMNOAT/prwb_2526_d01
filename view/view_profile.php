@@ -19,6 +19,7 @@ $icons = "account_circle,add,arrow_back,celebration,home,logout,manage_accounts,
     <meta charset="UTF-8">
     <title>Profile</title>
     <base href="<?= $web_root ?>" />
+    <link rel="stylesheet" href="css/colors.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=<?= $icons ?>">
     <link rel="stylesheet" href="css/icons.css">
     <link href="css/profile.css" rel="stylesheet" type="text/css" />

@@ -16,6 +16,7 @@ doc:
     <meta charset="UTF-8">
     <title>Browse</title>
     <base href="<?= $web_root ?>">
+    <link rel="stylesheet" href="css/colors.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=delete_forever">
     <link rel="stylesheet" href="css/delete_confirm.css">
     <link rel="stylesheet" href="css/icons.css">
@@ -34,7 +35,7 @@ doc:
                 <p>This process cannot be undone.</p>
     
                 <form action='my_items/delete/<?= $item->get_id() ?>' method='POST' id='delete' name='delete'>
-                    <a class='cancel' href='my_items'>Cancel</a>
+                    <a class='cancel' href='item/show/<?= $item->get_id() ?>'>Cancel</a>
                     <button class='delete' id='confirm' name='confirm' form='delete' type='submit' value='<?= $item->get_id() ?>'>Delete</button>
                 </form>
             </div>

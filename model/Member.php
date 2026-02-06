@@ -419,6 +419,34 @@ class Member extends Model {
         return $member;
     }
 
+    public static function get_member_by_id(int $id): Member|false {
+        $query = self::execute(
+            "SELECT *
+            FROM users
+            WHERE users.id = :user_id",
+            [
+                "user_id" => $id,
+            ]
+        );
+
+        if ($query->rowCount() == 0)
+            return false;
+
+        $row = $query->fetch();
+        $member = new Member(
+            $row['id'],
+            $row['full_name'],
+            $row['email'],
+            $row['pseudo'],
+            $row['password'],
+            Role::from($row['role']),
+            $row['picture_path'],
+            $row['iban']
+        );
+
+        return $member;
+    }
+
     public function get_my_bidded_items(): array {
         /*
         doc: https://www.dataforgelabs.com/advanced-sql-concepts/join-with-subquery-sql
@@ -566,6 +594,7 @@ class Member extends Model {
                 ON v.id = b.item
             WHERE b.ranked_order = 1
             AND v.end_at > :now
+            AND v.buy_now_reached = 0
             ORDER BY v.end_at ASC;",
             [
                 "user_id" => $this->id,
@@ -848,5 +877,9 @@ class Member extends Model {
         }
 
         return $purchases;
+    }
+
+    public function equal($other_user): bool {
+        return $this->id === $other_user->get_id();
     }
 }

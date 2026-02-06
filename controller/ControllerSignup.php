@@ -11,6 +11,7 @@ class ControllerSignup extends Controller {
             if ($user && $user->get_id() != null)
                 $this->redirect("item", "browse");
         }
+
         $email = "";
         $full_name = "";
         $pseudo = "";
@@ -45,6 +46,14 @@ class ControllerSignup extends Controller {
                 $this->log_user($member, "placeholder");
             }
         }
-        (new View("signup"))->show(["email" => $email, "full_name" => $full_name, "pseudo" => $pseudo, "password" => $password, "password_confirm" => $password_confirm, "errors" => $errors]);
+
+        if(isset($user))
+            (new View("signup"))->show(["user"=>$user,"email" => $email, "full_name" => $full_name, "pseudo" => $pseudo, "password" => $password, "password_confirm" => $password_confirm, "errors" => $errors]);
+        else 
+            (new View("signup"))->show(["email" => $email, "full_name" => $full_name, "pseudo" => $pseudo, "password" => $password, "password_confirm" => $password_confirm, "errors" => $errors]);
+    }
+
+    public function logout_guest() : void {
+        parent::logout();
     }
 }

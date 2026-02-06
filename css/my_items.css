@@ -1,7 +1,7 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: rgb(15, 25, 38);
+    background-color: var(--background);
 }
 
 h1 {
@@ -9,7 +9,7 @@ h1 {
 }
 
 h4 {
-    color: white;
+    color: var(--text);
     margin: 0;
 }
 
