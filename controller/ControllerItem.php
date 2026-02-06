@@ -338,7 +338,6 @@ class ControllerItem extends Controller {
                     mkdir($items_dir, 0755, true);
 
                 $priority = $item->get_next_priority();
-                $images = [];
 
                 foreach ($files['tmp_name'] as $tmp_name) {
                     //IMAGE
