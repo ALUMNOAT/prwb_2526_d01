@@ -203,11 +203,43 @@ class ControllerItem extends Controller {
             $sale_price = isset($_POST['sale_price']) && $_POST['sale_price'] !== ''
                 ? (float)$_POST['sale_price']
                 : null;
+                
+            // VALIDATIONS DES COMBINAISONS
+                
+            // 1) starting_bid ET sale_price interdit  
+            // bid = on
+            // ipp = null
+            // sale price = on  
+            if ($starting_bid !== null && $sale_price !== null) {
+                $errors[] = "You cannot use both 'Starting Bid' and 'Sale Price'. Choose 'Instant Purchase Price' instead.";
+            }
+            
+            // 2) buy_now_price sans starting_bid interdit
+            // bid = null
+            // ipp = on
+            // starting bid = on
+            if ($buy_now_price !== null && $starting_bid === null && $sale_price === null) {
+                $errors[] = "Instant Purchase Price requires a Starting Bid for auctions.";
+            }
+            
+            // 3) buy_now_price ET sale_price interdit
+            // ipp = on
+            // starting bid = on
+            if ($buy_now_price !== null && $sale_price !== null) {
+                $errors[] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
+            }
+            
+            // 4) Pas de prix interdit
+            if ($starting_bid === null && $buy_now_price === null && $sale_price === null) {
+                $errors[] = "You must specify at least one price (Starting Bid or Sale Price).";
+            }
 
-            // Si sale_price existe et reste est null, alors pas de bid et buy_now_price = $sale_price
+            // Conversion : si sale_price seul => buy only
+            // bid = null
+            // ipp = null
+            // sale price = on
             if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
                 $buy_now_price = $sale_price;
-                $starting_bid = null;
             }
 
             $item = new Item(
@@ -223,12 +255,14 @@ class ControllerItem extends Controller {
             );
 
             // Validate
-            $errors = array_merge(
-                $item->validate_title(),
-                $item->validate_bid(),
-                $item->validate_ipp(),
-                $item->unicity()
-            );
+            if (empty($errors)) {
+                $errors = array_merge(
+                    $errors,
+                    $item->validate_title(),
+                    $item->validate_prices(),
+                    $item->unicity()
+                );
+            }
 
             // If valid, persist and redirect
             if (empty($errors)) {
@@ -280,13 +314,45 @@ class ControllerItem extends Controller {
             $sale_price = isset($_POST['sale_price']) && $_POST['sale_price'] !== ''
                 ? (float)$_POST['sale_price']
                 : null;
-
-            // Si sale_price existe et reste est null, alors pas de bid et buy_now_price = $sale_price
+            
+            // VALIDATIONS DES COMBINAISONS
+                    
+            // 1) starting_bid ET sale_price interdit  
+            // bid = on
+            // ipp = null
+            // sale price = on  
+            if ($starting_bid !== null && $sale_price !== null) {
+                $errors[] = "You cannot use both 'Starting Bid' and 'Sale Price'. Choose 'Instant Purchase Price' instead.";
+            }
+                
+            // 2) buy_now_price sans starting_bid interdit
+            // bid = null
+            // ipp = on
+            // starting bid = on
+            if ($buy_now_price !== null && $starting_bid === null && $sale_price === null) {
+                $errors[] = "Instant Purchase Price requires a Starting Bid for auctions.";
+            }
+                
+            // 3) buy_now_price ET sale_price interdit
+            // ipp = on
+            // starting bid = on
+            if ($buy_now_price !== null && $sale_price !== null) {
+                $errors[] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
+            }
+                
+            // 4) Pas de prix interdit
+            if ($starting_bid === null && $buy_now_price === null && $sale_price === null) {
+                $errors[] = "You must specify at least one price (Starting Bid or Sale Price).";
+            }
+    
+            // Conversion : si sale_price seul => buy only
+            // bid = null
+            // ipp = null
+            // sale price = on 
             if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
                 $buy_now_price = $sale_price;
-                $starting_bid = null;
             }
-
+            
             // set the modified values
             $item->set_title($title);
             $item->set_description($description);
@@ -295,12 +361,14 @@ class ControllerItem extends Controller {
             $item->set_buy_now_price($buy_now_price);
 
             // Validate
-            $errors = array_merge(
-                $item->validate_title(),
-                $item->validate_bid(),
-                $item->validate_ipp(),
-                $item->unicity()
-            );
+            if (empty($errors)) {
+                $errors = array_merge(
+                    $errors,
+                    $item->validate_title(),
+                    $item->validate_prices(),
+                    $item->unicity()
+                );
+            }
 
             // If valid, persist and redirect
             if (empty($errors)) {

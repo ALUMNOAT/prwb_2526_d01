@@ -411,28 +411,22 @@ class Item extends Model {
         return $errors;
     }
 
-    public function validate_ipp(): array {
+    public function validate_prices(): array {
         $errors = [];
-
-        if ($this->buy_now_price !== null && $this->starting_bid !== null) {
-            if ($this->buy_now_price < $this->starting_bid) {
-                $errors[] = "Buy now price must be greater than the starting bid.";
-            }
-            if ($this->buy_now_price < 0) {
-                $errors[] = "Buy now price must be greater than 0.";
-            }
+        
+        if ($this->starting_bid !== null && $this->starting_bid <= 0) {
+            $errors[] = "Starting bid must be greater than 0.";
         }
-
-        return $errors;
-    }
-
-    public function validate_bid(): array {
-        $errors = [];
-
-        if ($this->starting_bid !== null && $this->starting_bid < 0) {
-            $errors[] = "Starting bid must be positive.";
+        
+        if ($this->buy_now_price !== null && $this->buy_now_price <= 0) {
+            $errors[] = "Buy now price must be greater than 0.";
         }
-
+        
+        if ($this->starting_bid !== null && $this->buy_now_price !== null 
+            && $this->buy_now_price <= $this->starting_bid) {
+            $errors[] = "Buy now price must be greater than starting bid.";
+        }
+        
         return $errors;
     }
 
