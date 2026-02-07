@@ -5,6 +5,8 @@
  * @var Item $item 
  * @var Member $member
  * @var ItemPicture $main_pic
+ * @var string $bid_path
+ * @var string $buy_path
  * */
 ?>
 
@@ -133,8 +135,8 @@
 
                 <!-- is the item biddable (by the connected member) ? -->
                 <?php if ($item_status->is_biddable($member)): ?>
-                    <form method="POST" action="item/bid/<?= $item->get_id() ?>/<?= $main_pic->get_priority() ?>" class="form-box">
-                        €<input type="text" id="bid_amount" name="bid_amount" class="input" value="<?= $currentBid + 1 ?>">
+                    <form method="POST" action=<?= $bid_path ?> class="form-box">
+                        €<input type="text" id="bid_amount" name="bid_amount" class="input" value="<?= ($currentBid + 1) ?>">
                         <br>
                         <br>
                         <button type="submit">Place Bid</button>
@@ -143,7 +145,7 @@
 
                 <!-- is the item buyable (by the connected member) ? -->
                 <?php if ($item_status->is_buyable($member)): ?>
-                    <form method="POST" action="item/buy/<?= $item->get_id() ?>/<?= $main_pic->get_priority() ?>" class="form-box">
+                    <form method="POST" action=<?= $buy_path ?> class="form-box">
                         <button type="submit" name="buy" class="buy">Buy now at € <?= $buyNowPrice ?></button>
                     </form>
                 <?php endif; ?>
