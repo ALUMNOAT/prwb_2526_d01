@@ -89,6 +89,9 @@ class Item extends Model {
     public function has_many_pictures(): bool {
         return count($this->pictures) > 1;
     }
+    public function has_pictures(): bool {
+        return count($this->pictures) > 0;
+    }
     public function add_picture(ItemPicture $picture): void {
         $priority = $picture->get_priority();
         $this->pictures[$priority] = $picture;

@@ -92,18 +92,23 @@ class ControllerItem extends Controller {
             "main_pic" => $main_pic,
             "pictures" => $picture,
             "errors" => [],
-            "success" => ""
+            "success" => "",
+            "bid_path" => $this->bid_path($item, $main_pic),
+            "buy_path" => $this->buy_path($item, $main_pic)
         ]);
     }
 
     public function bid(): void {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
+        $main_pic_priority = $this->get_priority_or_false($_GET['param2']);
 
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
-        $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
+
+        $main_pic = $main_pic_priority
+            ? $this->get_item_picture_or_default($item, $main_pic_priority, 'item', 'show')
+            : null;
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
         if (!$item_status->is_biddable($user))
@@ -128,6 +133,8 @@ class ControllerItem extends Controller {
             "main_pic" => $main_pic,
             "pictures" => $item->get_pictures(),
             "errors" => $errors,
+            "bid_path" => $this->bid_path($item, $main_pic),
+            "buy_path" => $this->buy_path($item, $main_pic)
         ]);
     }
 
@@ -135,12 +142,14 @@ class ControllerItem extends Controller {
         //user and IDs
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
+        $main_pic_priority = $this->get_priority_or_false($_GET['param2']);
 
         //item, picture and bid
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
-        $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
+        $main_pic = $main_pic_priority
+            ? $this->get_item_picture_or_default($item, $main_pic_priority, 'item', 'show')
+            : null;
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
         if (!$item_status->is_buyable($user))
@@ -165,6 +174,8 @@ class ControllerItem extends Controller {
             "main_pic" => $main_pic,
             "pictures" => $item->get_pictures(),
             "errors" => $errors,
+            "bid_path" => $this->bid_path($item, $main_pic),
+            "buy_path" => $this->buy_path($item, $main_pic),
         ]);
     }
 
@@ -422,6 +433,15 @@ class ControllerItem extends Controller {
         return $priority;
     }
 
+    private function get_priority_or_false(mixed $priority): int|false {
+        if (!NumberConverter::is_id($priority))
+            $priority = false;
+        else
+            $priority = NumberConverter::get_id_or_false($priority);
+
+        return $priority;
+    }
+
     private function get_item_or_redirect(int $item_id, ?Member $owner = null): Item {
         $item = Item::get_item($item_id);
         if (!$item || $owner !== null && !$item->is_owner($owner))
@@ -443,6 +463,15 @@ class ControllerItem extends Controller {
         return $pic;
     }
 
+    private function get_item_picture_or_default(Item $item, int $pic_priority, string $controller = 'item', string $action = 'manage_images'): ?ItemPicture {
+        $pic = $item->get_picture($pic_priority);
+        if (!$pic && $item->has_no_picture())
+            $pic = null;
+        else
+            $pic = $item->get_picture(1);
+        return $pic;
+    }
+
     private function append_count_if_it_already_exist(string &$path): void {
         $pathinfo = pathinfo($path);
         $temp_path = $pathinfo['dirname'] . "/" . $pathinfo['filename'] . ".jpg";
@@ -456,5 +485,19 @@ class ControllerItem extends Controller {
         }
 
         $path = $temp_path;
+    }
+
+    private function bid_path(Item $item, ?ItemPicture $main_pic): string {
+        $bid_path = 'item/bid/' . $item->get_id();
+        if (!is_null($main_pic))
+            $bid_path = $bid_path . "/" . $main_pic->get_priority();
+        return $bid_path;
+    }
+
+    private function buy_path(Item $item, ?ItemPicture $main_pic): string {
+        $buy_path = 'item/buy/' . $item->get_id();
+        if (!is_null($main_pic))
+            $buy_path = $buy_path . "/" . $main_pic->get_priority();
+        return $buy_path;
     }
 }
