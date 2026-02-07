@@ -202,14 +202,7 @@ class ControllerProfile extends Controller {
         /**
          * LE RESTE EST COMMUN POUR LES 2 BOUTONS
          *
-         * UPDATE DU PROFIL
          */
-
-        if (isset($_POST["profile"])) {
-            $member->profile = $_POST['profile'];
-            $member->persist();
-            $success = "Your profile has been successfully updated.";
-        }
 
         /**
          * REDIRECTION POST (PRG)
