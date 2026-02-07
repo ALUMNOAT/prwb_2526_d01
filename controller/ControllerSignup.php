@@ -43,7 +43,7 @@ class ControllerSignup extends Controller {
                 // update la base de données
                 $member->persist();
                 // login
-                $this->log_user($member, "placeholder");
+                $this->log_user($member, "item", "browse");
             }
         }
 
