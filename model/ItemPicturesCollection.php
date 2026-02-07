@@ -112,6 +112,11 @@ class ItemPicturesCollection extends Model {
         array_merge($this->db_pictures, $this->local_pictures);
         $this->local_pictures = [];
     }
+    public function update(): void {
+        $this->set_pictures();
+        $this->set_main_picture();
+        $this->set_selected_picture($this->main_picture);
+    }
 
 
     //PRIVATE
