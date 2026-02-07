@@ -90,7 +90,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
 
         <div class="section">
-            <?php //doc: https://github.com/bigskysoftware/htmx/issues/1541 
+            <?php //doc: https://github.com/bigskysoftware/htmx/issues/1541
             ?>
 
             <h2>Current Image<?= $item->has_single_picture() ? "" : "s" ?></h2>

@@ -8,6 +8,29 @@ require_once "model/Item.php";
 
 
 class ItemPicture extends Model {
+    //ATTRIBUTES
+    private static $phpFileUploadErrors = array(
+        /* 
+        doc: https://www.php.net/manual/en/features.file-upload.errors.php <-- see @Viktor's note
+        */
+        0 => 'There is no error, the file uploaded with success',
+        1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
+        2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
+        3 => 'The uploaded file was only partially uploaded',
+        4 => 'No file was uploaded',
+        6 => 'Missing a temporary folder',
+        7 => 'Failed to write file to disk.',
+        8 => 'A PHP extension stopped the file upload.',
+    );
+    private static $valid_types = [
+        'jpg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp',
+    ];
+
+
+    //__CONSTRUCT
     public function __construct(
         private Item $item,
         private int $priority,
@@ -18,12 +41,26 @@ class ItemPicture extends Model {
             $this->thumbnail_path = $this->get_thumbnail_path();
     }
 
-    public function get_item(): Item {
-        return $this->item;
+
+    //BOOL
+    public function is_owner(Member $user): bool {
+        return $this->item->is_owner($user);
     }
+    public function is_first_priority(): bool {
+        return $this->item->is_first_priority($this);
+    }
+    public function is_last_priority(): bool {
+        return $this->item->is_last_priority($this);
+    }
+
+
+    //NUMBERS
     public function get_priority(): int {
         return $this->priority;
     }
+
+
+    //STRING
     public function get_picture_path(): string {
         return $this->picture_path;
     }
@@ -37,26 +74,11 @@ class ItemPicture extends Model {
         return $thumbnail_path;
     }
 
-    public function set_item(Item $new_item): void {
-        $this->item = $new_item;
-    }
-    public function set_priority(int $new_priority): void {
-        $this->priority = $new_priority;
-    }
-    public function set_picture_path(string $new_picture_path): void {
-        $this->picture_path = $new_picture_path;
-    }
 
-    public function is_owner(Member $user): bool {
-        return $this->item->is_owner($user);
+    //OBJECT
+    public function get_item(): Item {
+        return $this->item;
     }
-    public function is_first_priority(): bool {
-        return $this->item->is_first_priority($this);
-    }
-    public function is_last_priority(): bool {
-        return $this->item->is_last_priority($this);
-    }
-
     public static function get_main_picture(Item $item): ItemPicture|false {
         $query = self::execute(
             "SELECT * FROM item_pictures
@@ -77,7 +99,6 @@ class ItemPicture extends Model {
             return $item_picture;
         }
     }
-
     public static function get_items_picture(array $items): array {
         /*
         doc: https://www.php.net/manual/en/function.array-keys.php
@@ -114,7 +135,6 @@ class ItemPicture extends Model {
 
         return $items_pictures;
     }
-
     public static function get_item_picture(Item $item, int $priority): ItemPicture|false {
         $query = self::execute(
             "SELECT picture_path
@@ -136,6 +156,20 @@ class ItemPicture extends Model {
         }
     }
 
+
+    //ADD / SET
+    public function set_item(Item $new_item): void {
+        $this->item = $new_item;
+    }
+    public function set_priority(int $new_priority): void {
+        $this->priority = $new_priority;
+    }
+    public function set_picture_path(string $new_picture_path): void {
+        $this->picture_path = $new_picture_path;
+    }
+
+
+    //MODIFY DATABASE
     public function persist(): void {
         self::execute(
             "INSERT INTO item_pictures(item,priority,picture_path) 
@@ -147,7 +181,6 @@ class ItemPicture extends Model {
             ]
         );
     }
-
     public function delete(): void {
         /*
         doc: https://stackoverflow.com/questions/9407963/declaring-sql-variables-sql-server
@@ -176,7 +209,6 @@ class ItemPicture extends Model {
         if (file_exists($this->thumbnail_path))
             unlink($this->thumbnail_path);
     }
-
     public function swap_priority(ItemPicture $other_pic): void {
         /*
         doc: https://stackoverflow.com/questions/3667439/setting-multiple-column-using-one-update
@@ -210,27 +242,7 @@ class ItemPicture extends Model {
         }
     }
 
-    private static $phpFileUploadErrors = array(
-        /* 
-        doc: https://www.php.net/manual/en/features.file-upload.errors.php <-- see @Viktor's note
-        */
-        0 => 'There is no error, the file uploaded with success',
-        1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
-        2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
-        3 => 'The uploaded file was only partially uploaded',
-        4 => 'No file was uploaded',
-        6 => 'Missing a temporary folder',
-        7 => 'Failed to write file to disk.',
-        8 => 'A PHP extension stopped the file upload.',
-    );
-
-    private static $valid_types = [
-        'jpg' => 'image/jpeg',
-        'png' => 'image/png',
-        'gif' => 'image/gif',
-        'webp' => 'image/webp',
-    ];
-
+    //VALIDATE
     public static function validate_images(array $file): array {
         /*
         doc: https://stackoverflow.com/questions/1957629/how-to-access-a-private-member-inside-a-static-function-in-php
@@ -251,7 +263,7 @@ class ItemPicture extends Model {
 
             $mime = mime_content_type($file['tmp_name'][$key]);
 
-            if(!in_array($mime, self::$valid_types, true))
+            if (!in_array($mime, self::$valid_types, true))
                 $errors[$name][] = "Format d'image non supporté.";
         }
 

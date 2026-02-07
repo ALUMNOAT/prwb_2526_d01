@@ -117,9 +117,6 @@ class ItemPicturesCollection extends Model {
         $this->set_main_picture();
         $this->set_selected_picture($this->main_picture);
     }
-
-
-    //PRIVATE
     private function set_pictures(): void {
         $query = self::execute(
             "SELECT p.priority, p.picture_path

@@ -22,12 +22,6 @@ class ItemBidsCollection extends Model {
     }
 
 
-    //OBJECT
-    public function get_last_bid(int $priority): ?Bid {
-        return $this->last_bid;
-    }
-
-
     //BOOL
     public function has_no_bids(): bool {
         return $this->get_bids_count() === 0;
@@ -46,6 +40,12 @@ class ItemBidsCollection extends Model {
         return !empty($db_pictures)
             ? max(array_keys($db_pictures))
             : null;
+    }
+
+
+    //OBJECT
+    public function get_last_bid(int $priority): ?Bid {
+        return $this->last_bid;
     }
 
 
