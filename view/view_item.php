@@ -57,8 +57,8 @@
                 
                 <!-- INFO -->
                 <div class='item-details'>
-                    <h1><?= $item->get_title() ?></h1>
-                    <p class="desc"><?= $item->get_description() ?? "No description" ?></p>
+                    <h1><?= Tools::sanitize($item->get_title()) ?></h1>
+                    <p class="desc"><?= Tools::sanitize($item->get_description()) ?? "No description" ?></p>
                     <p class="desc"><strong>Start:</strong> <?= $item->get_created_at() ?></p>
                     <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
                 </div>
@@ -97,7 +97,7 @@
                         <tbody>
                             <?php foreach ($bids as $bid): ?>
                                 <tr <?= $bid->get_is_highest_bid() ? "class='highlight'" : '' ?>>
-                                    <td><?= $bid->get_owner()->get_pseudo() ?></td>
+                                    <td><?= Tools::sanitize($bid->get_owner()->get_pseudo()) ?></td>
                                     <td><?= $bid->get_created_at() ?></td>
                                     <td>
                                         € <?= number_format($bid->get_amount(), 2, ",", ".") ?>
@@ -157,9 +157,9 @@
                 <?php if (!$item->get_owner()->get_picture_path()): ?>
                     <span class="material-symbols-outlined size-120">account_circle</span>
                 <?php else: ?>
-                    <img src="<?= $item->get_owner()->get_picture_path() ?>" width="100" alt="<?= $member->get_pseudo() ?>&apos;s photo!">
+                    <img src="<?= $item->get_owner()->get_picture_path() ?>" width="100" alt="<?= Tools::sanitize($item->get_owner()->get_pseudo()) ?>&apos;s photo!">
                 <?php endif; ?>
-                <label class="label"><?= $item->get_owner()->get_pseudo() ?></label>
+                <label class="label"><?= Tools::sanitize($item->get_owner()->get_pseudo()) ?></label>
                 <p class="desc">Member</p>
             </div>
 

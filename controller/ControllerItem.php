@@ -102,6 +102,7 @@ class ControllerItem extends Controller {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $main_pic_priority = $this->get_priority_or_false($_GET['param2']);
+        $errors = [];
 
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
@@ -143,6 +144,7 @@ class ControllerItem extends Controller {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $main_pic_priority = $this->get_priority_or_false($_GET['param2']);
+        $errors = [];
 
         //item, picture and bid
         $item_status = $this->get_item_status_or_redirect($item_id);
@@ -157,7 +159,6 @@ class ControllerItem extends Controller {
 
         if (isset($_POST["buy"])) {
             $buy_now_price = $item->get_buy_now_price();
-            $errors = Bid::validate_bid($user, $item_status, $buy_now_price);
 
             if (empty($errors)) {
                 Bid::place_bid($user, $item_status, $buy_now_price);
