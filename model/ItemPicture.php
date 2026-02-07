@@ -50,6 +50,12 @@ class ItemPicture extends Model {
     public function is_owner(Member $user): bool {
         return $this->item->is_owner($user);
     }
+    public function is_first_priority(): bool {
+        return $this->item->is_first_priority($this);
+    }
+    public function is_last_priority(): bool {
+        return $this->item->is_last_priority($this);
+    }
 
     public static function get_main_picture(Item $item): ItemPicture|false {
         $query = self::execute(
@@ -99,7 +105,7 @@ class ItemPicture extends Model {
         $data = $query->fetchAll();
         $items_pictures = [];
         foreach ($data as $row) {
-            $items_pictures[$row['item']][] = new ItemPicture(
+            $items_pictures[$row['item']][$row['priority']] = new ItemPicture(
                 $items[$row['item']],
                 $row['priority'],
                 $row['picture_path']

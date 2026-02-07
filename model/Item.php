@@ -9,7 +9,7 @@ require_once "model/ItemPicture.php";
 class Item extends Model {
 
     public function __construct(
-        private int $id, //is id needed ? yes
+        private ?int $id, // id nullable pour la création d'item
         private string $title,
         private Member $owner,
         private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
@@ -21,7 +21,7 @@ class Item extends Model {
     ) {
     }
 
-    public function get_id(): int {
+    public function get_id(): ?int {
         return $this->id;
     }
     public function get_title(): string {
@@ -86,19 +86,37 @@ class Item extends Model {
     public function has_no_picture(): bool {
         return $this->get_picture_count() === 0;
     }
+    public function has_many_pictures(): bool {
+        return count($this->pictures) > 1;
+    }
     public function add_picture(ItemPicture $picture): void {
-        $this->pictures[] = $picture;
+        $priority = $picture->get_priority();
+        $this->pictures[$priority] = $picture;
     }
     public function is_owner(Member $user): bool {
         return $this->owner->get_id() == $user->get_id();
+    }
+    public function is_first_priority(ItemPicture $pic): bool {
+        $item_pictures_priorities = array_keys($this->pictures);
+        $first_priority = min($item_pictures_priorities);
+        return $pic->get_priority() == $first_priority;
+    }
+    public function is_last_priority(ItemPicture $pic): bool {
+        $item_pictures_priorities = array_keys($this->pictures);
+        $first_priority = max($item_pictures_priorities);
+        return $pic->get_priority() == $first_priority;
     }
     public function get_picture(int $priority): ItemPicture|false {
         return $this->pictures[$priority] ?? false;
     }
     public function get_next_priority(): int {
-        return empty($this->pictures)
-            ? 1
-            : (max(array_keys($this->pictures)) + 1);
+        $next_priority = 1;
+        $priorities = array_keys($this->db_get_pictures());
+
+        if (!empty($priorities))
+            $next_priority = max($priorities) + 1;
+
+        return $next_priority;
     }
 
     private function get_main_picture(): ItemPicture|false {
@@ -111,12 +129,24 @@ class Item extends Model {
 
     public function get_main_picture_path(): string|false {
         $main_picture = $this->get_main_picture();
-        return $main_picture->get_picture_path() ?? false;
+
+        if ($main_picture)
+            $picture_path = $main_picture->get_picture_path();
+        else
+            $picture_path = false;
+
+        return $picture_path;
     }
 
     public function get_main_thumbnail_path(): string|false {
         $main_thumbnail = $this->get_main_picture();
-        return $main_thumbnail->get_thumbnail_path() ?? false;
+
+        if ($main_thumbnail)
+            $thumbnail_path = $main_thumbnail->get_picture_path();
+        else
+            $thumbnail_path = false;
+
+        return $thumbnail_path;
     }
 
     public static function get_item(int $id): Item|false {
@@ -154,7 +184,7 @@ class Item extends Model {
                 $row['pseudo'],
                 $row['password'],
                 Role::from($row['role']),
-                $row['item_picture'],
+                $row['user_picture'],
                 $row['iban']
             );
             //ITEM
@@ -189,6 +219,20 @@ class Item extends Model {
         }
     }
 
+    public function delete(): void {
+        /*
+        doc: https://www.w3schools.com/mysql/mysql_delete.asp
+        doc: https://dba.stackexchange.com/questions/232987/deleting-multiple-tables-in-a-single-delete-query-in-mysql
+        doc: https://stackoverflow.com/questions/31136434/mysql-deleting-rows-based-on-a-condition-with-data-from-another-table-and-no-jo
+        */
+        $query = self::execute(
+            "DELETE FROM item_pictures AS p WHERE p.item = :item_id;
+            DELETE FROM items WHERE items.id = :item_id;
+            DELETE FROM v_items_status AS v WHERE v.id = :item_id;",
+            ['item_id' => $this->id]
+        );
+    }
+
     public function persist_item_pictures(): void {
         /*
         doc: https://stackoverflow.com/questions/36766162/sql-query-insert-but-only-if-record-doesnt-already-exist
@@ -196,15 +240,19 @@ class Item extends Model {
         $params = ['item' => $this->id];
         $placeholders = [];
 
+        $db_pictures_priorities = array_keys($this->db_get_pictures());
+
         foreach ($this->pictures as $priority => $pic) {
             /** @var ItemPicture $pic */
-            $placeholders[] = "(:item, :priority$priority, :pic_path$priority)";
-            $params["priority$priority"] = $priority;
-            $params["pic_path$priority"] = $pic->get_picture_path();
+            if (!in_array($priority, $db_pictures_priorities)) {
+                $placeholders[] = "(:item, :priority$priority, :pic_path$priority)";
+                $params["priority$priority"] = $priority;
+                $params["pic_path$priority"] = $pic->get_picture_path();
+            }
         }
 
         self::execute(
-            "INSERT IGNORE INTO item_pictures(item, priority, picture_path) 
+            "INSERT INTO item_pictures(item, priority, picture_path)
             VALUES " . implode(',', $placeholders) . ";",
             $params
         );
@@ -222,7 +270,7 @@ class Item extends Model {
             }
 
             $query = self::execute(
-                "SELECT * 
+                "SELECT *
                 FROM items
                 WHERE items.id IN ("
                     . implode(',', $placeholders) .
@@ -254,14 +302,19 @@ class Item extends Model {
         return $items;
     }
 
-    public static function get_all_available_items(): array {
+    public static function get_all_available_items(Member $user): array {
         $query = self::execute(
             "SELECT *
             FROM v_items_status AS v
             WHERE v.end_at > :now
+            AND v.buy_now_reached = 0
+            AND v.owner != :user_id
             ORDER BY v.end_at ASC",
             [
-                "now" => AppTime::get_current_datetime()
+                "now" => AppTime::get_current_datetime(),
+                "user_id" => $user->is_guest()
+                    ? 0
+                    : $user->get_id()
             ]
         );
 
@@ -301,8 +354,9 @@ class Item extends Model {
         }
 
         $items_pictures = ItemPicture::get_items_picture($items);
-        foreach ($items as $item) {
-            $item->set_pictures($items_pictures[$item->get_id()]);
+        foreach ($items as $id => $item) {
+            if (isset($items_pictures[$id]))
+                $item->set_pictures($items_pictures[$id]);
         }
 
         return $available_items;
@@ -321,7 +375,7 @@ class Item extends Model {
         }
 
         $query = self::execute(
-            "SELECT * 
+            "SELECT *
             FROM item_pictures
             WHERE item IN ("
                 . implode(',', $placeholders) .
@@ -339,5 +393,153 @@ class Item extends Model {
 
             $items[$row['item']]->add_picture($picture);
         }
+    }
+
+    public function validate_title(): array {
+        $errors = [];
+
+        if (
+            mb_strlen($this->title) < Configuration::get("title_min_length", 3)
+            || mb_strlen($this->title) > Configuration::get("title_max_length", 255)
+        ) {
+            $errors[] = "Title length must be between 3 and 255 characters";
+        }
+
+        return $errors;
+    }
+
+    public function validate_ipp(): array {
+        $errors = [];
+
+        if ($this->buy_now_price !== null && $this->starting_bid !== null) {
+            if ($this->buy_now_price < $this->starting_bid) {
+                $errors[] = "Buy now price must be greater than the starting bid.";
+            }
+            if ($this->buy_now_price < 0) {
+                $errors[] = "Buy now price must be greater than 0.";
+            }
+        }
+
+        return $errors;
+    }
+
+    public function validate_bid(): array {
+        $errors = [];
+
+        if ($this->starting_bid !== null && $this->starting_bid < 0) {
+            $errors[] = "Starting bid must be positive.";
+        }
+
+        return $errors;
+    }
+
+    public function persist(): Item {
+        if ($this->id !== null) {
+            // Mise à jour d'un item existant
+            self::execute(
+                "UPDATE items
+             SET title = :title,
+                 description = :description,
+                 buy_now_price = :buy_now_price,
+                 duration_days = :duration_days,
+                 starting_bid = :starting_bid
+             WHERE id = :id",
+                [
+                    "id" => $this->id,
+                    "title" => $this->title,
+                    "description" => $this->description,
+                    "buy_now_price" => $this->buy_now_price,
+                    "duration_days" => $this->duration_days,
+                    "starting_bid" => $this->starting_bid
+                ]
+            );
+        } else {
+            // Création d'un nouvel item
+            $now = AppTime::get_current_datetime(); // date de création
+
+            self::execute(
+                "INSERT INTO items(title, description, owner, created_at, buy_now_price, duration_days, starting_bid)
+             VALUES(:title, :description, :owner, :created_at, :buy_now_price, :duration_days, :starting_bid)",
+                [
+                    "title" => $this->title,
+                    "description" => $this->description,
+                    "owner" => $this->owner->get_id(),
+                    "created_at" => $now,
+                    "buy_now_price" => $this->buy_now_price,
+                    "duration_days" => $this->duration_days,
+                    "starting_bid" => $this->starting_bid
+                ]
+            );
+
+            // Synchronisation de l'objet avec la base
+            $this->id = self::lastInsertId();
+            $this->created_at = $now;
+        }
+
+        return $this;
+    }
+
+    public function db_get_pictures(): array {
+        $pictures = [];
+
+        $query = self::execute(
+            "SELECT p.item, p.priority, p.picture_path
+            FROM item_pictures AS p
+            WHERE p.item = :item_id
+            ORDER BY p.priority ASC",
+            ["item_id" => $this->id]
+        );
+
+        $data = $query->fetchAll();
+
+        foreach ($data as $row) {
+            $pictures[$row['priority']] = new ItemPicture(
+                $this,
+                $row['priority'],
+                $row['picture_path']
+            );
+        }
+
+        return $pictures;
+    }
+
+    public function unicity(): array {
+        $errors = [];
+
+        if ($this->get_id() === null) {
+            // CAS ADD
+            $query = self::execute(
+                "SELECT id FROM items
+             WHERE title = :title
+             AND owner = :owner",
+                [
+                    "title" => $this->get_title(),
+                    "owner" => $this->owner->get_id()
+                ]
+            );
+        } else {
+            // CAS EDIT
+            $query = self::execute(
+                "SELECT id FROM items
+             WHERE title = :title
+             AND owner = :owner
+             AND id != :id",
+                [
+                    "title" => $this->get_title(),
+                    "owner" => $this->owner->get_id(),
+                    "id"    => $this->get_id()
+                ]
+            );
+        }
+
+        if ($query->fetch()) {
+            $errors[] = "Item already exists.";
+        }
+
+        return $errors;
+    }
+
+    public function equal($other_item): bool {
+        return $this->id === $$other_item->get_id();
     }
 }

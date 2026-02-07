@@ -2,43 +2,8 @@ body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
-}
-
-/* MENU LINK */
-.profile-navbar {
-    width: 100%;
-    background-color: #333333;
-    color: dodgerblue;
-    display: flex;
-    align-items: center;
-    padding-right: 3em;
-    box-sizing: border-box;
-
-    h2 {
-        max-height: fit-content;
-        margin: 0px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    button {
-        all: unset;
-        width: 3em;
-        height: 3em;
-        text-align: center;
-        color: dodgerblue;
-
-        span {
-            vertical-align: middle;
-        }
-
-        :hover {
-            color: white;
-            cursor: pointer;
-        }
-    }
+    background: var(--background);
+    color: var(--text);
 }
 
 .container {
@@ -60,7 +25,7 @@ body {
 }
 
 .section {
-    background: #0f172a;
+    background: var(--background);;
     padding: 20px;
     margin-bottom: 20px;
     border-radius: 10px;

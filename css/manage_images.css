@@ -8,14 +8,14 @@ doc: https://www.reddit.com/r/css/comments/wj5mcp/how_do_i_put_the_text_that_is_
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background-color: rgb(15, 25, 38);
+    background-color: var(--background);
 }
 
 h1 {
     color: white;
 }
 
-h2 {
+.content h2 {
     color: white;
     margin: 0em;
 }
@@ -26,52 +26,6 @@ h3 {
 
 label {
     color: grey
-}
-
-/* MENU LINK */
-.profile-navbar {
-    width: 100%;
-    background-color: #333333;
-    color: dodgerblue;
-    display: flex;
-    align-items: center;
-    padding-right: 3em;
-    box-sizing: border-box;
-
-    h2 {
-        max-height: fit-content;
-        margin: 0px;
-        margin-left: auto;
-        margin-right: auto;
-        color: dodgerblue;
-    }
-
-    button {
-        all: unset;
-        width: 3em;
-        height: 3em;
-        text-align: center;
-        color: dodgerblue;
-
-        span {
-            vertical-align: middle;
-        }
-
-        :hover {
-            color: white;
-            cursor: pointer;
-        }
-    }
-}
-
-.material-symbols-outlined {
-    font-size: 1.5em;
-    /* Preferred icon size */
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24
 }
 
 .like_button {

@@ -3,6 +3,8 @@ require_once "framework/Controller.php";
 require_once "framework/Configuration.php";
 require_once "framework/Tools.php";
 require_once "utils/AppTime.php";
+require_once 'utils/Role.php';
+
 
 class ControllerSetup extends Controller {
     public function index(): void {
