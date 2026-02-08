@@ -260,6 +260,7 @@ class ControllerItem extends Controller {
                     $errors,
                     $item->validate_title(),
                     $item->validate_prices(),
+                    $item->validate_description(),
                     $item->unicity()
                 );
             }
@@ -300,7 +301,7 @@ class ControllerItem extends Controller {
         if (!empty($_POST)) {
             // Fetch data
             $title = html_entity_decode($_POST['title'], ENT_QUOTES, 'UTF-8') ?? '';
-            $description = html_entity_decode($_POST['description'], ENT_QUOTES, 'UTF-8') ?? null;
+            $description = html_entity_decode($_POST['description'], ENT_QUOTES, 'UTF-8') ?? '';
             $duration_days = isset($_POST['days']) ? (int)$_POST['days'] : 7;
 
             $starting_bid = isset($_POST['starting_bid']) && $_POST['starting_bid'] !== ''
@@ -365,6 +366,7 @@ class ControllerItem extends Controller {
                 $errors = array_merge(
                     $errors,
                     $item->validate_title(),
+                    $item->validate_description(),
                     $item->validate_prices(),
                     $item->unicity()
                 );
