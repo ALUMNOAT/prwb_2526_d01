@@ -86,6 +86,20 @@ div.item-card {
     .highlight {
         background-color: var(--flexoki-600);
     }
+
+    .row {
+        display: flex;
+        justify-content: space-between;
+        vertical-align: middle;
+    }
+
+    .entries {
+        background-color: white;
+        color: black;
+        height:fit-content;
+        padding: 2px 6px;
+        border-radius: 6px;
+    }
 }
 
 .manage-item {
