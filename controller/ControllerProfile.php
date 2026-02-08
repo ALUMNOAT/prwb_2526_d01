@@ -230,4 +230,16 @@ class ControllerProfile extends Controller {
             $this->redirect("item", "browse");
         return $user;
     }
+
+    public function logout(): void
+    {
+        // On peut faire ca meme si profile est dans le ControllerMember
+        // car le form et button est [form action="test/logout"]
+        // du coup le controlleur connait le bouton
+        if (!isset($_POST["logout"])) {
+            echo "Logout must be done via POST.";
+            return;
+        }
+        parent::logout();
+    }
 }
