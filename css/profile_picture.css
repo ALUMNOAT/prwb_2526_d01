@@ -1,0 +1,140 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: var(--background);
+    color: var(--text);
+}
+
+.container {
+    width: 70%;
+    margin: 0px auto;
+}
+
+.page-title {
+    text-align: center;
+    color: #60a5fa;
+    margin-bottom: 20px;
+}
+
+.form-box {
+    background: #1e293b;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+.section {
+    background: var(--background);;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
+/* PROFILE */
+
+.profile-content {
+    text-align: center;
+}
+
+.profile-content img {
+    display: block;
+    margin: 0 auto 12px auto;
+}
+
+.profile-content p {
+    margin: 8px 0;
+}
+
+/* SECTION */
+
+.section img {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 12px;
+    border: 2px solid #60a5fa;
+}
+
+
+.section h3 {
+    color: #93c5fd;
+    margin-bottom: 15px;
+}
+
+.label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #1e293b;
+    color: white;
+    margin-bottom: 8px;
+}
+
+.input:focus {
+    outline: 2px solid #3b82f6;
+}
+
+.desc {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-bottom: 15px;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-delete {
+    width: 100%;
+    padding: 12px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #2563eb;
+}
+
+.btn-delete:hover {
+    background: #7f1d1d;
+}
+
+.message {
+    padding: 12px;
+    margin-bottom: 15px;
+    background: #334155;
+    border-left: 4px solid #3b82f6;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+/* Erreur */
+.errors {
+    background-color: #f87171;
+    color: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    text-align: left;
+}

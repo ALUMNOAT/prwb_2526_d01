@@ -1,0 +1,98 @@
+/* General styles */
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--background);;
+    color: var(--text);;
+}
+
+.row {
+    display: flex;
+    border: 1px solid grey;
+    border-radius: 5px;
+    height: 3em;
+    margin: 10px 0;
+
+    span {
+        justify-content: center;
+        align-content: center;
+        height: 100%;
+        width: 2.5em;
+        background-color: grey;
+    }
+}
+
+/* Container */
+.signup-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Login box */
+.signup-box {
+    background-color: #27272A;
+    padding: 40px;
+    border-radius: 12px;
+    width: 360px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+/* Inputs */
+.signup-box input {
+    width: 100%;
+    padding-left: 1em;
+    border: none;
+    border-radius: 5px;
+    background-color: #212529;
+    color: #fff;
+    font-size: 16px;
+}
+
+.signup-box input::placeholder {
+    color: #cbd5e1;
+}
+
+/* Boutons */
+.btn-signup {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    background-color: #4A9EFF;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.btn-signup:hover {
+    background-color: #2563eb;
+}
+
+.btn-cancel {
+    all:unset;
+    box-sizing: border-box;
+    display: block;
+    width:100%;
+    padding: 12px;
+    margin: 5px 0px;
+    background-color: #27272A;
+    border: 1px solid red;
+    border-radius: 6px;
+    color: red;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* Erreur */
+.errors {
+    background-color: #f87171;
+    color: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    text-align: left;
+}
