@@ -230,8 +230,7 @@ class Item extends Model {
         */
         $query = self::execute(
             "DELETE FROM item_pictures AS p WHERE p.item = :item_id;
-            DELETE FROM items WHERE items.id = :item_id;
-            DELETE FROM v_items_status AS v WHERE v.id = :item_id;",
+            DELETE FROM items WHERE items.id = :item_id;",
             ['item_id' => $this->id]
         );
     }
