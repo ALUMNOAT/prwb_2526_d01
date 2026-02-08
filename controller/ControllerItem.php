@@ -48,7 +48,7 @@ class ControllerItem extends Controller {
 
             if ($page > $bids_pages && $page > $items_pages) {   //user entered a big number ? go to last page
                 $page = strval(max($bids_pages, $items_pages));
-                $this->redirect('browse', 'page', $page);
+                $this->redirect('item', 'browse', $page);
             }
 
             (new View("browse"))->show([
