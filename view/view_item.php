@@ -178,14 +178,12 @@
                         <a href="item/edit/<?= $item->get_id() ?>" class="row">
                             <div class="row-title">Edit Item Details</div>
                         </a>
-                    <?php endif; ?>
 
                     <a href="item/manage_images/<?= $item->get_id() ?>" class="row">
                         <div class="row-title">Manage Images</div>
                     </a>
 
-                    <?php /** @var ItemStatus $item_status */
-                    if (!$item_status->get_has_bids()): ?>
+                    <?php /** @var ItemStatus $item_status */ ?>
                         <a href="my_items/delete/<?= $item->get_id() ?>" class="row">
                             <div class="row-title">Delete Item</div>
                         </a>

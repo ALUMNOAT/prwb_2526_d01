@@ -390,9 +390,13 @@ class ControllerItem extends Controller {
     public function manage_images(): void {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $item = $this->get_item_or_redirect($item_id, $user);
+        $item_status = $this->get_item_status_or_redirect($item_id, $user);
 
-        (new View("manage_images"))->show(["user" => $user, "item" => $item]);
+        if ($item_status->get_has_bids() || $item_status->has_sold()) {
+            $this->redirect("item", "show", $item_id);
+        }
+
+        (new View("manage_images"))->show(["user" => $user, "item" => $item_status->get_item()]);
     }
 
     public function add_images(): void {
@@ -406,7 +410,13 @@ class ControllerItem extends Controller {
         */
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $item = $this->get_item_or_redirect($item_id, $user);
+        $item_status = $this->get_item_status_or_redirect($item_id, $user);
+        $item = $item_status->get_item();
+
+        if ($item_status->get_has_bids() || $item_status->has_sold()) {
+            $this->redirect("item", "show", $item_id);
+        }
+
         $errors = [];
 
         if (isset($_POST['upload']) && isset($_FILES['images']) && !empty($_FILES['images']['type'][0])) {
@@ -451,7 +461,13 @@ class ControllerItem extends Controller {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $picture_priority = $this->get_priority_or_redirect($_POST['delete'], 'item', 'manage_images', $item_id);
-        $item = $this->get_item_or_redirect($item_id, $user);
+        $item_status = $this->get_item_status_or_redirect($item_id, $user);
+        $item = $item_status->get_item();
+
+        if ($item_status->get_has_bids() || $item_status->has_sold()) {
+            $this->redirect("item", "show", $item_id);
+        }
+        
         $item_picture = $this->get_item_picture_or_redirect($item, $picture_priority);
 
         if ($item_picture->is_owner($user))
