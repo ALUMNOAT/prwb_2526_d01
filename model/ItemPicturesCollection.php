@@ -6,17 +6,16 @@ require_once "model/ItemPicture.php";
 
 class ItemPicturesCollection extends Model {
     //ATTRIBUTES
-    private array $db_pictures;
-    private array $local_pictures;
-    private ?ItemPicture $main_picture;
-    private ?ItemPicture $selected_picture;
+    private array $local_pictures = [];
+    private ?ItemPicture $main_picture = null;
+    private ?ItemPicture $selected_picture = null;
 
 
     //__CONSTRUCT
     public function __construct(
-        private Item $item
+        private Item $item,
+        private array $db_pictures = [],
     ) {
-        $this->set_pictures();
         $this->set_main_picture();
         $this->set_selected_picture($this->main_picture);
     }
@@ -30,8 +29,11 @@ class ItemPicturesCollection extends Model {
         $this->set_main_picture();
         return $this->main_picture;
     }
-    public function get_selected_picture(int $priority): ?ItemPicture {
+    public function get_selected_picture(): ?ItemPicture {
         return $this->selected_picture;
+    }
+    public function get_all_pictures(): array {
+        return $this->db_pictures;
     }
 
 
@@ -44,6 +46,12 @@ class ItemPicturesCollection extends Model {
     }
     public function has_many_pictures(): bool {
         return $this->get_picture_count() > 1;
+    }
+    public function has_pictures(): bool {
+        return $this->get_picture_count() >= 1;
+    }
+    public function is_first_priority(ItemPicture $pic): bool {
+        return $pic->get_priority() === $this->first_priority();
     }
     public function is_last_priority(ItemPicture $pic): bool {
         return $pic->get_priority() === $this->last_priority();
@@ -84,9 +92,67 @@ class ItemPicturesCollection extends Model {
             ? $this->main_picture = $this->db_pictures[$this->first_priority()]
             : null;
     }
-    public function set_selected_picture(ItemPicture $pic): void {
-        if (in_array($pic, $this->db_pictures))
+    public function set_selected_picture(ItemPicture $pic): bool {
+        if (in_array($pic, $this->db_pictures)) {
             $this->selected_picture = $pic;
+            return true;
+        }
+        return false;
+    }
+    public function update(): void {
+        $this->set_db_pictures();
+        $this->set_main_picture();
+        $this->set_selected_picture($this->main_picture);
+    }
+    private function set_db_pictures(): void {
+        if ($this->item->get_id() !== null) {
+
+            $query = self::execute(
+                "SELECT p.priority, p.picture_path
+                FROM item_pictures AS p
+                WHERE p.item = :item_id
+                ORDER BY p.priority ASC",
+                ["item_id" => $this->item->get_id()]
+            );
+
+            $data = $query->fetchAll();
+
+            foreach ($data as $row) {
+                $this->db_pictures[$row['priority']] = new ItemPicture(
+                    $this->item,
+                    $row['priority'],
+                    $row['picture_path']
+                );
+            }
+        }
+    }
+    public static function set_pictures_for_items(array $items): void {
+        $placeholders = [];
+        $params = [];
+        foreach ($items as $item_id => $item) {
+            $placeholders[] = ":u$item_id";
+            $params[":u$item_id"] = $item->get_id();
+        }
+
+        $query = self::execute(
+            "SELECT *
+            FROM item_pictures
+            WHERE item IN ("
+                . implode(',', $placeholders) .
+                ")",
+            $params
+        );
+
+        $data = $query->fetchAll();
+        foreach ($data as $row) {
+            $pictures[$row['item']] = new ItemPicture(
+                $items[$row['item']],
+                $row['priority'],
+                $row['picture_path']
+            );
+
+            $items[$row['item']]->add_picture($picture);
+        }
     }
 
 
@@ -111,29 +177,5 @@ class ItemPicturesCollection extends Model {
 
         array_merge($this->db_pictures, $this->local_pictures);
         $this->local_pictures = [];
-    }
-    public function update(): void {
-        $this->set_pictures();
-        $this->set_main_picture();
-        $this->set_selected_picture($this->main_picture);
-    }
-    private function set_pictures(): void {
-        $query = self::execute(
-            "SELECT p.priority, p.picture_path
-            FROM item_pictures AS p
-            WHERE p.item = :item_id
-            ORDER BY p.priority ASC",
-            ["item_id" => $this->item->get_id()]
-        );
-
-        $data = $query->fetchAll();
-
-        foreach ($data as $row) {
-            $this->db_pictures[$row['priority']] = new ItemPicture(
-                $this->item,
-                $row['priority'],
-                $row['picture_path']
-            );
-        }
     }
 }

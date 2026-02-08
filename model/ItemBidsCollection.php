@@ -6,19 +6,19 @@ require_once "model/ItemPicture.php";
 
 class ItemBidsCollection extends Model {
     //ATTRIBUTES
-    private array $db_bids;
-    private array $local_bids;
-    private ?Bid $last_bid;
-    private Item $item;
+    private array $db_bids = [];
+    private ?Bid $new_bid = null;
+    private ?Bid $last_bid = null;
 
 
     //__CONSTRUCT
     public function __construct(
-        private ItemStatus $item_status
+        private ?Item $item = null
     ) {
-        $this->item = $item_status->get_item();
-        $this->set_bids();
-        $this->set_latest_bid();
+        if ($item !== null) {
+            $this->set_bids();
+            $this->set_latest_bid();
+        }
     }
 
 
@@ -28,7 +28,7 @@ class ItemBidsCollection extends Model {
     }
     public function is_latest_bid(Bid $bid): bool {
         return $bid->get_amount() === $this->last_bid->get_amount()
-        && $bid->get_created_at();
+            && $bid->get_created_at();
     }
 
 
@@ -44,44 +44,32 @@ class ItemBidsCollection extends Model {
 
 
     //OBJECT
-    public function get_last_bid(int $priority): ?Bid {
+    public function get_last_bid(): ?Bid {
         return $this->last_bid;
     }
 
 
     //ADD / SET
-    public function add(ItemPicture ...$pictures): void {
+    public function add(Bid ...$bids): void {
         //doc: https://stackoverflow.com/questions/16823611/passing-multiple-arguments-to-function-php
         //doc: https://www.php.net/manual/en/functions.arguments.php
-        $next_priority = $this->last_priority() + 1;
-
-        foreach ($pictures as $pic) {
-            $pic->set_priority($next_priority);
-            $local_pictures[$next_priority] = $pic;
-            $next_priority++;
+        foreach ($bids as $bid) {
+            $local_bids[$bid->get_amount()] = $bid;
         }
     }
     public function set_latest_bid(): void {
-        !empty($this->db_bids)
-            ? $this->latest_bid = $this->db_bids[$this->first_priority()]
-            : null;
+        if (!empty($this->db_bids)) {
+            $last_key = max(array_keys($this->db_bids));
+            $this->last_bid = $this->db_bids[$last_key];
+        } 
+        else
+            $this->last_bid = null;
     }
 
 
 
     //DATABASE
-    public function persist(): void {
-        //doc: https://stackoverflow.com/questions/36766162/sql-query-insert-but-only-if-record-doesnt-already-exist
-
-        $params = ['item_id' => $this->item->get_id()];
-        $placeholders = [];
-
-        foreach ($this->local_pictures as $priority => $pic) {
-            $placeholders[] = "(:item_id, :priority_$priority, :pic_path_$priority)";
-            $params["priority_$priority"] = $priority;
-            $params["pic_path_$priority"] = $pic->get_picture_path();
-        }
-
+    public function persist(): array {
         self::execute(
             "INSERT INTO item_pictures(item, priority, picture_path)
             VALUES " . implode(',', $placeholders) . ";",

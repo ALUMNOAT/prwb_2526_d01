@@ -7,47 +7,47 @@ require_once "model/ItemPicture.php";
 
 class Item extends Model {
     //ATTRIBUTES
+    private ItemPicturesCollection $pictures;
+    private ItemBidsCollection $bids = new ItemBidsCollection();
+
 
     //__CONSTRUCT
     public function __construct(
         private ?int $id, // id nullable pour la création d'item
         private string $title,
         private Member $owner,
-        private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
+        private string $created_at,
         private int $duration_days,
-        private array $pictures = [],
         private ?string $description = null,
         private ?float $buy_now_price = null,
         private ?float $starting_bid = null,
     ) {
+        if ($this->id !== null)
+            $this->pictures = new ItemPicturesCollection($this);
     }
 
 
     //BOOL
     public function has_single_picture(): bool {
-        return $this->get_picture_count() === 1;
+        return $this->pictures->has_single_picture();
     }
     public function has_no_picture(): bool {
-        return $this->get_picture_count() === 0;
+        return $this->pictures->has_no_pictures();
     }
     public function has_many_pictures(): bool {
-        return count($this->pictures) > 1;
+        return $this->pictures->has_many_pictures();
     }
     public function has_pictures(): bool {
-        return count($this->pictures) > 0;
+        return $this->pictures->has_pictures();
     }
     public function is_owner(Member $user): bool {
         return $this->owner->get_id() == $user->get_id();
     }
     public function is_first_priority(ItemPicture $pic): bool {
-        $item_pictures_priorities = array_keys($this->pictures);
-        $first_priority = min($item_pictures_priorities);
-        return $pic->get_priority() == $first_priority;
+        return $this->pictures->is_first_priority($pic);
     }
     public function is_last_priority(ItemPicture $pic): bool {
-        $item_pictures_priorities = array_keys($this->pictures);
-        $first_priority = max($item_pictures_priorities);
-        return $pic->get_priority() == $first_priority;
+        return $this->pictures->is_last_priority($pic);
     }
     public function equal($other_item): bool {
         return $this->id === $$other_item->get_id();
@@ -68,7 +68,7 @@ class Item extends Model {
         return $this->starting_bid;
     }
     public function get_picture_count(): int {
-        return count($this->pictures);
+        return $this->pictures->get_picture_count();
     }
     public function get_next_priority(): int {
         $next_priority = 1;
@@ -88,7 +88,7 @@ class Item extends Model {
         return $this->created_at;
     }
     public function get_pictures(): array {
-        return $this->pictures;
+        return $this->pictures->get_all_pictures();
     }
     public function get_description(): ?string {
         return $this->description;
@@ -113,10 +113,7 @@ class Item extends Model {
         return $this->pictures[$priority] ?? false;
     }
     private function get_main_picture(): ItemPicture|false {
-        if (empty($this->pictures))
-            return false;
-        $first = min(array_keys($this->pictures));
-        return $this->pictures[$first];
+        return $this->pictures->get_main_picture();
     }
     public static function get_items(array $ids): array {
         $items = [];
@@ -149,7 +146,6 @@ class Item extends Model {
                     $owners[$row['owner']],
                     $row['created_at'],
                     $row['duration_days'],
-                    [],
                     $row['description'],
                     $row['buy_now_price'],
                     $row['starting_bid']
