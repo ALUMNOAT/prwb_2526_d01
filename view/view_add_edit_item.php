@@ -48,7 +48,7 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
                 <input type="text" id="title" name="title" class="input" value="<?= Tools::sanitize($item?->get_title() ?? '') ?>" placeholder="Ex: iPhone 13 Pro Max 256GB" required>
 
                 <label for="description" class="label">Description</label>
-                <input type="text" id="description" name="description" class="input" value="<?= Tools::sanitize($item->get_description()) ?? '' ?>" placeholder="Describe your item in detail ...">
+                <input type="text" id="description" name="description" class="input" value="<?= /** @var Item $item */ Tools::sanitize($item?->get_description() ?? '') ?>" placeholder="Describe your item in detail ...">
 
                 <label for="days" class="label">Sale Duration (days) *</label>
                 <input type="text" id="days" name="days" class="input" value="<?= $item?->get_duration_days() ?? '7' ?>">
