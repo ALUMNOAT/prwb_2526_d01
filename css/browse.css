@@ -1,5 +1,5 @@
-/* 
-doc: https://www.w3schools.com/css/css_navbar_horizontal.asp 
+/*
+doc: https://www.w3schools.com/css/css_navbar_horizontal.asp
 doc: https://www.w3schools.com/csS/css3_flexbox_items.asp
 doc: https://www.w3schools.com/howto/howto_css_cards.asp
 
@@ -78,7 +78,7 @@ img {
 }
 
 .pagination li a.active {
-    background-color: #4CAF50;
+    background-color: #4caf50;
     color: white;
 }
 
@@ -90,4 +90,14 @@ img {
 
 .pagination li a:hover:not(.active) {
     background-color: lightgray;
+}
+
+/* javascript */
+.search-bar input[type="text"] {
+    float: right;
+    padding: 5px;
+    border: none;
+    margin-top: 3px;
+    margin-right: 16px;
+    font-size: 20px;
 }

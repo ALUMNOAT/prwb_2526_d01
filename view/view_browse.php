@@ -1,6 +1,6 @@
 <?php
-/* 
-doc: https: //www.w3schools.com/howto/howto_css_image_text.asp 
+/*
+doc: https: //www.w3schools.com/howto/howto_css_image_text.asp
 doc: https: //www.w3schools.com/icons/tryit.asp?filename=tryicons_google-collections
 doc: https: //www.w3docs.com/snippets/css/how-to-make-a-div-a-clickable-link.html
 doc: https://stackoverflow.com/questions/796087/make-a-div-into-a-link
@@ -13,7 +13,7 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
 doc: https://www.w3schools.com/css/css3_pagination.asp
 */
 
-/** 
+/**
  * @var Member $user
  * @var Bid $bid
  * @var Item $item
@@ -42,6 +42,8 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/time.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="lib/jquery-4.0.0.min.js" type="text/javascript"></script>
+    <script src="scripts/recherche_fulltext.js" type="text/javascript"></script>
 </head>
 
 <body>
@@ -57,7 +59,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
                     require 'item_card.php';
                 }
 
-                unset($bid); //necessary otherwise the last bid will show in available items (weird !) 
+                unset($bid); //necessary otherwise the last bid will show in available items (weird !)
                 ?>
             </div>
 
