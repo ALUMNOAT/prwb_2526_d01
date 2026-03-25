@@ -65,4 +65,5 @@ cookies.txt
 database/**/*private_dump.sql
 database/**/*private_image_backup/
 
-
+# ignore lib
+/lib/*
