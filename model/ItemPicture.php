@@ -8,6 +8,8 @@ require_once "model/Item.php";
 
 
 class ItemPicture extends Model {
+    private ?ItemPicturesCollection $pictures_ = null;
+
     public function __construct(
         private Item $item,
         private int $priority,
@@ -16,6 +18,7 @@ class ItemPicture extends Model {
     ) {
         if (file_exists($this->get_thumbnail_path()))
             $this->thumbnail_path = $this->get_thumbnail_path();
+        $this->pictures_ = $item->get_pictures_();
     }
 
     public function get_item(): Item {
@@ -51,10 +54,10 @@ class ItemPicture extends Model {
         return $this->item->is_owner($user);
     }
     public function is_first_priority(): bool {
-        return $this->item->is_first_priority($this);
+        return $this->pictures_->is_first_priority($this);
     }
     public function is_last_priority(): bool {
-        return $this->item->is_last_priority($this);
+        return $this->pictures_->is_last_priority($this);
     }
 
     public static function get_main_picture(Item $item): ItemPicture|false {

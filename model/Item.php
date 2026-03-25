@@ -3,6 +3,8 @@ require_once "framework/Model.php";
 require_once "utils/AppTime.php";
 require_once "model/Member.php";
 require_once "model/ItemPicture.php";
+require_once "model/ItemPicturesCollection.php";
+
 
 
 
@@ -17,7 +19,6 @@ class Item extends Model {
         private ?float $buy_now_price,
         private int $duration_days,
         private ?float $starting_bid,
-        private array $pictures = [],
         private ?ItemStatus $status = null,
         private ?ItemPicturesCollection $pictures_ = null,
         private ?ItemBidsCollection $bids = null
@@ -48,13 +49,10 @@ class Item extends Model {
     public function get_starting_bid(): ?float {
         return $this->starting_bid;
     }
-    public function get_pictures(): array {
-        return $this->pictures;
-    }
     public function get_status(): ItemStatus {
         return $this->status;
     }
-    public function get_pictures_(): ItemPicturesCollection {
+    public function get_pictures_(): ?ItemPicturesCollection {
         return $this->pictures_;
     }
     public function get_bids(): ItemBidsCollection {
@@ -85,9 +83,6 @@ class Item extends Model {
     public function set_starting_bid(?float $new_starting_bid): void {
         $this->starting_bid = $new_starting_bid;
     }
-    public function set_pictures(array $pictures): void {
-        $this->pictures = $pictures;
-    }
     public function set_status(ItemStatus $status): void {
         $this->status = $status;
     }
@@ -99,76 +94,8 @@ class Item extends Model {
     }
 
 
-    public function get_picture_count(): int {
-        return count($this->pictures);
-    }
-    public function has_single_picture(): bool {
-        return $this->get_picture_count() === 1;
-    }
-    public function has_no_picture(): bool {
-        return $this->get_picture_count() === 0;
-    }
-    public function has_many_pictures(): bool {
-        return count($this->pictures) > 1;
-    }
-    public function add_picture(ItemPicture $picture): void {
-        $priority = $picture->get_priority();
-        $this->pictures[$priority] = $picture;
-    }
     public function is_owner(Member $user): bool {
         return $this->owner->get_id() == $user->get_id();
-    }
-    public function is_first_priority(ItemPicture $pic): bool {
-        $item_pictures_priorities = array_keys($this->pictures);
-        $first_priority = min($item_pictures_priorities);
-        return $pic->get_priority() == $first_priority;
-    }
-    public function is_last_priority(ItemPicture $pic): bool {
-        $item_pictures_priorities = array_keys($this->pictures);
-        $first_priority = max($item_pictures_priorities);
-        return $pic->get_priority() == $first_priority;
-    }
-    public function get_picture(int $priority): ItemPicture|false {
-        return $this->pictures[$priority] ?? false;
-    }
-    public function get_next_priority(): int {
-        $next_priority = 1;
-        $priorities = array_keys($this->db_get_pictures());
-
-        if (!empty($priorities))
-            $next_priority = max($priorities) + 1;
-
-        return $next_priority;
-    }
-
-    private function get_main_picture(): ItemPicture|false {
-        if (empty($this->pictures))
-            return false;
-        $first = min(array_keys($this->pictures));
-        return $this->pictures[$first];
-    }
-
-
-    public function get_main_picture_path(): string|false {
-        $main_picture = $this->get_main_picture();
-
-        if ($main_picture)
-            $picture_path = $main_picture->get_picture_path();
-        else
-            $picture_path = false;
-
-        return $picture_path;
-    }
-
-    public function get_main_thumbnail_path(): string|false {
-        $main_thumbnail = $this->get_main_picture();
-
-        if ($main_thumbnail)
-            $thumbnail_path = $main_thumbnail->get_picture_path();
-        else
-            $thumbnail_path = false;
-
-        return $thumbnail_path;
     }
 
     public static function get_item(int $id): Item|false {
@@ -178,26 +105,20 @@ class Item extends Model {
         doc 'C' : https://www.php.net/manual/en/backedenum.from.php
         */
         $query = self::execute(
-            "SELECT items.id AS item_id, items.title, items.created_at, items.duration_days, items.description,
-            items.buy_now_price, items.starting_bid,
+            "SELECT v.id AS item_id, v.title, v.description, v.created_at, v.buy_now_price, v.duration_days, v.starting_bid, 
+            v.end_at, v.bid_count, v.max_bid, v.is_direct_sale, v.is_auction, 
+            v.has_buy_now, v.has_bids, v.buy_now_reached, v.not_purchased_direct_sale,
             users.id AS user_id, users.full_name, users.email, users.pseudo, users.password, users.role, users.picture_path AS user_picture, users.iban,
-            item_pictures.priority, item_pictures.picture_path AS item_picture
-                FROM items
-                LEFT JOIN item_pictures ON items.id = item_pictures.item
-                JOIN users ON items.owner = users.id
-                WHERE items.id = :id",
+                FROM v_items_status AS v
+                JOIN users ON v.owner = users.id
+                WHERE v.id = :id",
             ["id" => $id]
         );
-
 
         if ($query->rowCount() == 0)
             return false;
         else {
-            $data = $query->fetchAll();
-
-            // On prend la première ligne pour construire l'Item (les données sont les mêmes pour l'item)
-            $row = $data[0];
-
+            $row = $query->fetch();
             //OWNER
             $owner = new Member(
                 $row['user_id'],
@@ -219,23 +140,23 @@ class Item extends Model {
                 $row['buy_now_price'],
                 $row['duration_days'],
                 $row['starting_bid'],
-                [],
             );
 
-            // Maintenant on peut créer les images en passant l'objet $item
-            $item_pictures = [];
-            foreach ($data as $row) {
-                if ($row['item_picture'] !== null) {
-                    $item_pictures[$row['priority']] = new ItemPicture(
-                        $item,
-                        $row['priority'],
-                        $row['item_picture']
-                    );
-                }
-            }
+            $status = new ItemStatus(
+                $item,
+                $row['end_at'],
+                $row['bid_count'],
+                $row['max_bid'] ?? null,
+                $row['is_direct_sale'] == 1,
+                $row['is_auction'] == 1,
+                $row['has_buy_now'] == 1,
+                $row['has_bids'] == 1,
+                $row['buy_now_reached'] == 1,
+                $row['not_purchased_direct_sale'] == 1,
+            );
+            $item->set_status($status);
 
-            // On attache les images à l'item
-            $item->set_pictures($item_pictures);
+            $item->set_pictures_(ItemPicturesCollection::get_item_pictures_from_db($item));
 
             return $item;
         }
@@ -252,31 +173,6 @@ class Item extends Model {
             DELETE FROM items WHERE items.id = :item_id;
             DELETE FROM v_items_status AS v WHERE v.id = :item_id;",
             ['item_id' => $this->id]
-        );
-    }
-
-    public function persist_item_pictures(): void {
-        /*
-        doc: https://stackoverflow.com/questions/36766162/sql-query-insert-but-only-if-record-doesnt-already-exist
-        */
-        $params = ['item' => $this->id];
-        $placeholders = [];
-
-        $db_pictures_priorities = array_keys($this->db_get_pictures());
-
-        foreach ($this->pictures as $priority => $pic) {
-            /** @var ItemPicture $pic */
-            if (!in_array($priority, $db_pictures_priorities)) {
-                $placeholders[] = "(:item, :priority$priority, :pic_path$priority)";
-                $params["priority$priority"] = $priority;
-                $params["pic_path$priority"] = $pic->get_picture_path();
-            }
-        }
-
-        self::execute(
-            "INSERT INTO item_pictures(item, priority, picture_path)
-            VALUES " . implode(',', $placeholders) . ";",
-            $params
         );
     }
 
@@ -314,11 +210,14 @@ class Item extends Model {
                     $row['buy_now_price'],
                     $row['duration_days'],
                     $row['starting_bid'],
-                    [],
                 );
             }
 
-            Item::set_items_pictures($items);
+            $items_pictures = ItemPicturesCollection::get_items_pictures_from_db($items);
+            foreach ($items as $id => $item) {
+                $item->set_pictures_($items_pictures[$id]);
+            }
+
         }
 
         return $items;
@@ -356,7 +255,6 @@ class Item extends Model {
                 $row['buy_now_price'],
                 $row['duration_days'],
                 $row['starting_bid'],
-                [],
             );
 
             $items[$row['id']] = $item;
@@ -375,46 +273,12 @@ class Item extends Model {
             );
         }
 
-        $items_pictures = ItemPicture::get_items_picture($items);
+        $items_pictures = ItemPicturesCollection::get_items_pictures_from_db($items);
         foreach ($items as $id => $item) {
-            if (isset($items_pictures[$id]))
-                $item->set_pictures($items_pictures[$id]);
+            $item->set_pictures_($items_pictures[$id]);
         }
 
         return $available_items;
-    }
-
-    private static function set_items_pictures(array $items): void {
-        /*
-        doc: https://www.php.net/manual/en/function.array-keys.php
-        doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
-        */
-        $placeholders = [];
-        $params = [];
-        foreach ($items as $i => $u) {
-            $placeholders[] = ":u$i";
-            $params[":u$i"] = $u->get_id();
-        }
-
-        $query = self::execute(
-            "SELECT *
-            FROM item_pictures
-            WHERE item IN ("
-                . implode(',', $placeholders) .
-                ")",
-            $params
-        );
-
-        $data = $query->fetchAll();
-        foreach ($data as $row) {
-            $picture = new ItemPicture(
-                $items[$row['item']],
-                $row['priority'],
-                $row['picture_path']
-            );
-
-            $items[$row['item']]->add_picture($picture);
-        }
     }
 
     public function validate_title(): array {
@@ -499,30 +363,6 @@ class Item extends Model {
         }
 
         return $this;
-    }
-
-    public function db_get_pictures(): array {
-        $pictures = [];
-
-        $query = self::execute(
-            "SELECT p.item, p.priority, p.picture_path
-            FROM item_pictures AS p
-            WHERE p.item = :item_id
-            ORDER BY p.priority ASC",
-            ["item_id" => $this->id]
-        );
-
-        $data = $query->fetchAll();
-
-        foreach ($data as $row) {
-            $pictures[$row['priority']] = new ItemPicture(
-                $this,
-                $row['priority'],
-                $row['picture_path']
-            );
-        }
-
-        return $pictures;
     }
 
     public function unicity(): array {
