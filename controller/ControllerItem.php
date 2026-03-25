@@ -207,13 +207,13 @@ class ControllerItem extends Controller {
             $item = new Item(
                 null,
                 $title,
+                $description,
                 $member,            // owner
                 AppTime::get_current_datetime(), // created_at
-                $duration_days,
-                [],                 // pictures
-                $description,
                 $buy_now_price,
-                $starting_bid
+                $duration_days,
+                $starting_bid,
+                [],                 // pictures
             );
 
             // Validate

@@ -11,13 +11,16 @@ class Item extends Model {
     public function __construct(
         private ?int $id, // id nullable pour la création d'item
         private string $title,
+        private ?string $description,
         private Member $owner,
         private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
+        private ?float $buy_now_price,
         private int $duration_days,
+        private ?float $starting_bid,
         private array $pictures = [],
-        private ?string $description = null,
-        private ?float $buy_now_price = null,
-        private ?float $starting_bid = null,
+        private ?ItemStatus $status = null,
+        private ?ItemPicturesCollection $pictures_ = null,
+        private ?ItemBidsCollection $bids = null
     ) {
     }
 
@@ -27,26 +30,35 @@ class Item extends Model {
     public function get_title(): string {
         return $this->title;
     }
+    public function get_description(): ?string {
+        return $this->description;
+    }
     public function get_owner(): Member {
         return $this->owner;
     }
     public function get_created_at(): string { // /!\
         return $this->created_at;
     }
+    public function get_buy_now_price(): ?float {
+        return $this->buy_now_price;
+    }
     public function get_duration_days(): int {
         return $this->duration_days;
+    }
+    public function get_starting_bid(): ?float {
+        return $this->starting_bid;
     }
     public function get_pictures(): array {
         return $this->pictures;
     }
-    public function get_description(): ?string {
-        return $this->description;
+    public function get_status(): ItemStatus {
+        return $this->status;
     }
-    public function get_buy_now_price(): ?float {
-        return $this->buy_now_price;
+    public function get_pictures_(): ItemPicturesCollection {
+        return $this->pictures_;
     }
-    public function get_starting_bid(): ?float {
-        return $this->starting_bid;
+    public function get_bids(): ItemBidsCollection {
+        return $this->bids;
     }
 
     public function set_id(int $new_id): void {
@@ -55,27 +67,37 @@ class Item extends Model {
     public function set_title(string $new_title): void {
         $this->title = $new_title;
     }
+    public function set_description(?string $new_description): void {
+        $this->description = $new_description;
+    }
     public function set_owner(Member $new_owner): void {
         $this->owner = $new_owner;
     }
     public function set_created_at(string $new_created_at): void { // /!\
         $this->created_at = $new_created_at;
     }
-    public function set_duration_days(int $new_duration_day): void {
-        $this->duration_days = $new_duration_day;
-    }
-    public function set_pictures(array $pictures): void {
-        $this->pictures = $pictures;
-    }
-    public function set_description(?string $new_description): void {
-        $this->description = $new_description;
-    }
     public function set_buy_now_price(?float $new_buy_now_price): void {
         $this->buy_now_price = $new_buy_now_price;
+    }
+    public function set_duration_days(int $new_duration_day): void {
+        $this->duration_days = $new_duration_day;
     }
     public function set_starting_bid(?float $new_starting_bid): void {
         $this->starting_bid = $new_starting_bid;
     }
+    public function set_pictures(array $pictures): void {
+        $this->pictures = $pictures;
+    }
+    public function set_status(ItemStatus $status): void {
+        $this->status = $status;
+    }
+    public function set_pictures_(ItemPicturesCollection $pictures_): void {
+        $this->pictures_ = $pictures_;
+    }
+    public function set_bids(ItemBidsCollection $bids): void {
+        $this->bids = $bids;
+    }
+
 
     public function get_picture_count(): int {
         return count($this->pictures);
@@ -191,13 +213,13 @@ class Item extends Model {
             $item = new Item(
                 $row['item_id'],
                 $row['title'],
+                $row['description'] ?? "",
                 $owner,
                 $row['created_at'],
-                $row['duration_days'],
-                [],
-                $row['description'],
                 $row['buy_now_price'],
-                $row['starting_bid']
+                $row['duration_days'],
+                $row['starting_bid'],
+                [],
             );
 
             // Maintenant on peut créer les images en passant l'objet $item
@@ -286,13 +308,13 @@ class Item extends Model {
                 $items[$row['id']] = new Item(
                     $row['id'],
                     $row['title'],
+                    $row['description'] ?? "",
                     $owners[$row['owner']],
                     $row['created_at'],
-                    $row['duration_days'],
-                    [],
-                    $row['description'],
                     $row['buy_now_price'],
-                    $row['starting_bid']
+                    $row['duration_days'],
+                    $row['starting_bid'],
+                    [],
                 );
             }
 
@@ -328,13 +350,13 @@ class Item extends Model {
             $item = new Item(
                 $row['id'],
                 $row['title'],
+                $row['description'] ?? "",
                 $owner[$row['owner']],
                 $row['created_at'],
-                $row['duration_days'],
-                [],
-                $row['description'] ?? "",
                 $row['buy_now_price'],
-                $row['starting_bid']
+                $row['duration_days'],
+                $row['starting_bid'],
+                [],
             );
 
             $items[$row['id']] = $item;

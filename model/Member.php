@@ -477,13 +477,13 @@ class Member extends Model {
             $item = new Item(
                 $row['id'],
                 $row['title'],
+                $row['description'] ?? "",
                 $owner[$row['owner']],
                 $row['created_at'],
-                $row['duration_days'],
-                [],
-                $row['description'] ?? "",
                 $row['buy_now_price'],
-                $row['starting_bid']
+                $row['duration_days'],
+                $row['starting_bid'],
+                [],
             );
 
             $items[$row['id']] = $item;  //ça marche bien
@@ -650,13 +650,13 @@ class Member extends Model {
                 $item = new Item(
                     $row['id'],
                     $row['title'],
+                    $row['description'],
                     $this,
                     $row['created_at'],
-                    $row['duration_days'],
-                    [],
-                    $row['description'],
                     $row['buy_now_price'],
-                    $row['starting_bid']
+                    $row['duration_days'],
+                    $row['starting_bid'],
+                    [],
                 );
                 $items[$row['id']] = $item;
 
@@ -725,13 +725,13 @@ class Member extends Model {
                 $item = new Item(
                     $row['id'],
                     $row['title'],
+                    $row['description'] ?? "",
                     $this,
                     $row['created_at'],
-                    $row['duration_days'],
-                    [],
-                    $row['description'],
                     $row['buy_now_price'],
-                    $row['starting_bid']
+                    $row['duration_days'],
+                    $row['starting_bid'],
+                    [],
                 );
                 $items[$row['id']] = $item;
 
@@ -826,13 +826,13 @@ class Member extends Model {
                 $item = new Item(
                     $row['id'],
                     $row['title'],
+                    $row['description'],
                     $seller[$row['u_id']],
                     $row['created_at'],
-                    $row['duration_days'],
-                    [],
-                    $row['description'],
                     $row['buy_now_price'],
-                    $row['starting_bid']
+                    $row['duration_days'],
+                    $row['starting_bid'],
+                    [],
                 );
                 $items[$row['id']] = $item;
 
