@@ -68,19 +68,16 @@ class ItemPicture extends Model {
             ["id" => $item->get_id()]
         );
 
-        if ($query->rowCount() == 0)
-            return false;
-        else {
-            $row = $query->fetch();
-            $item_picture = new ItemPicture(
-                $item, //should I use the variable $item or call the static method ?
-                $row['priority'],
-                $row['picture_path']
-            );
-            return $item_picture;
-        }
-    }
+        $item_picture = false;
 
+        if ($query->rowCount() > 0) {
+            $row = $query->fetch();
+            $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
+        }
+        
+        return $item_picture;
+        
+    }
     public static function get_items_picture(array $items): array {
         /*
         doc: https://www.php.net/manual/en/function.array-keys.php
@@ -108,16 +105,13 @@ class ItemPicture extends Model {
         $data = $query->fetchAll();
         $items_pictures = [];
         foreach ($data as $row) {
-            $items_pictures[$row['item']][$row['priority']] = new ItemPicture(
-                $items[$row['item']],
-                $row['priority'],
-                $row['picture_path']
-            );
+            $item = $items[$row['item']];
+            $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
+            $items_pictures[$row['item']][$row['priority']] = $item_picture;
         }
 
         return $items_pictures;
     }
-
     public static function get_item_picture(Item $item, int $priority): ItemPicture|false {
         $query = self::execute(
             "SELECT picture_path
@@ -128,15 +122,17 @@ class ItemPicture extends Model {
             ["item_id" => $item->get_id(), "priority" => $priority]
         );
 
-        if ($query->rowCount() === 0)
-            return false;
+        $item_picture = false;
 
-        else {
+        if ($query->rowCount() > 0) {
             $row = $query->fetch();
-            $item_picture = new ItemPicture($item, $priority, $row['picture_path']);
-
-            return $item_picture;
+            $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
         }
+
+        return $item_picture;
+    }
+    public static function get_item_picture_from_row(array $row, Item $item, String $priority = "priority", String $picture_path = "picture_path"): ItemPicture {
+        return new ItemPicture($item, $row[$priority], $row[$picture_path]);
     }
 
     public function persist(): void {
@@ -254,7 +250,7 @@ class ItemPicture extends Model {
 
             $mime = mime_content_type($file['tmp_name'][$key]);
 
-            if(!in_array($mime, self::$valid_types, true))
+            if (!in_array($mime, self::$valid_types, true))
                 $errors[$name][] = "Format d'image non supporté.";
         }
 

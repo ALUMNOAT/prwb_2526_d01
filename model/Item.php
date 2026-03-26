@@ -6,23 +6,23 @@ require_once "model/ItemPicture.php";
 require_once "model/ItemPicturesCollection.php";
 
 
-
-
 class Item extends Model {
+    private ?ItemStatus $status = null;
+    private ?ItemPicturesCollection $pictures_;
+    private ?ItemBidsCollection $bids = null;
 
     public function __construct(
-        private ?int $id, // id nullable pour la création d'item
+        private ?int $id,
         private string $title,
         private ?string $description,
         private Member $owner,
-        private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
+        private string $created_at,
         private ?float $buy_now_price,
         private int $duration_days,
         private ?float $starting_bid,
-        private ?ItemStatus $status = null,
-        private ?ItemPicturesCollection $pictures_ = null,
-        private ?ItemBidsCollection $bids = null
     ) {
+        $pictures_ = new ItemPicturesCollection($this);
+        $bids = new ItemBidsCollection($this);
     }
 
     public function get_id(): ?int {
@@ -119,40 +119,12 @@ class Item extends Model {
         else {
             $row = $query->fetch();
             //OWNER
-            $owner = new Member(
-                $row['user_id'],
-                $row['full_name'],
-                $row['email'],
-                $row['pseudo'],
-                $row['password'],
-                Role::from($row['role']),
-                $row['user_picture'],
-                $row['iban']
-            );
+            $owner = Member::get_member_from_row($row, $id = "user_id");
+            
             //ITEM
-            $item = new Item(
-                $row['item_id'],
-                $row['title'],
-                $row['description'] ?? "",
-                $owner,
-                $row['created_at'],
-                $row['buy_now_price'],
-                $row['duration_days'],
-                $row['starting_bid'],
-            );
+            $item = Item::get_item_from_row($row, $owner, $id = "item_id");
+            $status = ItemStatus::get_item_status_from_row($row, $item);
 
-            $status = new ItemStatus(
-                $item,
-                $row['end_at'],
-                $row['bid_count'],
-                $row['max_bid'] ?? null,
-                $row['is_direct_sale'] == 1,
-                $row['is_auction'] == 1,
-                $row['has_buy_now'] == 1,
-                $row['has_bids'] == 1,
-                $row['buy_now_reached'] == 1,
-                $row['not_purchased_direct_sale'] == 1,
-            );
             $item->set_status($status);
             $pictures_ = ItemPicturesCollection::get_item_pictures_from_db($item);
             $bids = ItemBidsCollection::get_item_bids_from_db($item);
@@ -187,16 +159,8 @@ class Item extends Model {
             $owners = Member::get_members($owners_id);
 
             foreach ($data as $row) {
-                $items[$row['id']] = new Item(
-                    $row['id'],
-                    $row['title'],
-                    $row['description'] ?? "",
-                    $owners[$row['owner']],
-                    $row['created_at'],
-                    $row['buy_now_price'],
-                    $row['duration_days'],
-                    $row['starting_bid'],
-                );
+                $owner = $owners[$row['owner']];
+                $item = Item::get_item_from_row($row, $owner);
             }
 
             $items_pictures = ItemPicturesCollection::get_items_pictures_from_db($items);
@@ -226,36 +190,18 @@ class Item extends Model {
 
         $data = $query->fetchAll();
 
-        $owner = Member::get_members(array_column($data, 'owner'));
+        $owners = Member::get_members(array_column($data, 'owner'));
         $items = [];
         $available_items = [];
 
         foreach ($data as $row) {
-            $item = new Item(
-                $row['id'],
-                $row['title'],
-                $row['description'] ?? "",
-                $owner[$row['owner']],
-                $row['created_at'],
-                $row['buy_now_price'],
-                $row['duration_days'],
-                $row['starting_bid'],
-            );
+            $owner = $owners[$row['owner']];
+            $item = Item::get_item_from_row($row, $owner);
 
             $items[$row['id']] = $item;
+            $status = ItemStatus::get_item_status_from_row($row, $item);
 
-            $available_items[$row['id']] = new ItemStatus(
-                $item,
-                $row['end_at'],
-                $row['bid_count'],
-                $row['max_bid'],
-                $row['is_direct_sale'] === 1,
-                $row['is_auction'] === 1,
-                $row['has_buy_now'] === 1,
-                $row['has_bids'] === 1,
-                $row['buy_now_reached'] === 1,
-                $row['not_purchased_direct_sale'] === 1
-            );
+            $available_items[$row['id']] = $status;
         }
 
         $items_pictures = ItemPicturesCollection::get_items_pictures_from_db($items);
@@ -264,6 +210,20 @@ class Item extends Model {
         }
 
         return $available_items;
+    }
+    public static function get_item_from_row(array $row, Member $owner, 
+        String $id = "id", String $title = "title",String $description = "description",String $created_at = "created_at", 
+        String $buy_now_price = "buy_now_price", String $duration_days = "duration_days", String $starting_bid = "starting_bid"): Item {
+        return new Item(
+                $row[$id],
+                $row[$title],
+                $row[$description] ?? null,
+                $owner,
+                $row[$created_at],
+                $row[$buy_now_price] ?? null,
+                $row[$duration_days],
+                $row[$starting_bid] ?? null,
+            );
     }
 
     public function delete(): void {
@@ -279,7 +239,6 @@ class Item extends Model {
             ['item_id' => $this->id]
         );
     }
-
     public function validate_title(): array {
         $errors = [];
 
@@ -292,7 +251,6 @@ class Item extends Model {
 
         return $errors;
     }
-
     public function validate_ipp(): array {
         $errors = [];
 
@@ -307,7 +265,6 @@ class Item extends Model {
 
         return $errors;
     }
-
     public function validate_bid(): array {
         $errors = [];
 

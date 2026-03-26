@@ -4,9 +4,12 @@ require_once "model/Bid.php";
 require_once "utils/Role.php";
 require_once "model/UserBidsCollection.php";
 require_once "model/UserItemsCollection.php";
+require_once "model/ItemPicturesCollection.php";
 
 
 class Member extends Model {
+    private ?UserBidsCollection $bids;
+    private ?UserItemsCollection $items;
 
     public function __construct(
         private ?int $id,
@@ -17,9 +20,9 @@ class Member extends Model {
         private Role $role,
         private ?string $picture_path = null,
         private ?string $iban = null,
-        private ?UserBidsCollection $bids = null,
-        private ?UserItemsCollection $items = null,
     ) {
+        $this->bids = new UserBidsCollection($this);
+        $this->items = new UserItemsCollection($this);
     }
 
     public function get_id(): ?int {
@@ -116,13 +119,12 @@ class Member extends Model {
             [":pseudo" => $pseudo]
         );
 
-        $data = $query->fetch();
+        $row = $query->fetch();
         if ($query->rowCount() === 0)
             return false;
         else {
-            // On transforme la string en enum
-            $role = Role::from($data["role"]);
-            return new Member($data["id"], $data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["iban"]);
+            $member = Member::get_member_from_row($row);
+            return $member;
         }
     }
     public static function get_member_by_email(string $email): Member|false {
@@ -131,13 +133,12 @@ class Member extends Model {
             [":email" => $email]
         );
 
-        $data = $query->fetch();
+        $row = $query->fetch();
         if ($query->rowCount() === 0)
             return false;
         else {
-            // On transforme la string en enum
-            $role = Role::from($data["role"]);
-            return new Member($data["id"], $data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["iban"]);
+            $member = Member::get_member_from_row($row);
+            return $member;
         }
     }
     public static function get_member_by_full_name(string $full_name): Member|false {
@@ -146,14 +147,28 @@ class Member extends Model {
             [":full_name" => $full_name]
         );
 
-        $data = $query->fetch();
+        $row = $query->fetch();
         if ($query->rowCount() === 0)
             return false;
         else {
-            // On transforme la string en enum
-            $role = Role::from($data["role"]);
-            return new Member($data["id"], $data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["iban"]);
+            $member = Member::get_member_from_row($row);
+            return $member;
         }
+    }
+    public static function get_member_from_row(array $row, String $id = "id", String $full_name = "full_name", 
+        String $email = "email",String $pseudo = "pseudo", String $password = "password", String $role = "role", 
+        String $picture_path = "picture_path", String $iban = "iban"): Member {
+            return new Member(
+                $row[$id],
+                $row[$full_name],
+                $row[$email],
+                $row[$pseudo],
+                $row[$password],
+                Role::from($row[$role]),
+                $row[$picture_path] ?? null,
+                $row[$iban] ?? null,
+            );
+
     }
 
     private static function validate_password(string $password): array {
@@ -176,7 +191,6 @@ class Member extends Model {
 
         return $errors;
     }
-
     public static function validate_passwords(string $password, string $password_confirm): array {
         $errors = Member::validate_password($password);
         if ($password !== $password_confirm) {
@@ -184,7 +198,6 @@ class Member extends Model {
         }
         return $errors;
     }
-
     public static function validate_unicity(string $pseudo, string $email, string $full_name, ?int $exclude_id = null): array {
         $errors = [];
         //TODO: do only one SQL query to verify unicity !
@@ -203,16 +216,9 @@ class Member extends Model {
         }
         return $errors;
     }
-
     private static function check_password(string $clear_password, string $hash): bool {
         return password_verify($clear_password, $hash);
     }
-
-    /**
-     * Règles métiers Pseudo :
-     *
-     * [3;30] charactères
-     */
     public function validate_pseudo(): array {
         $errors = [];
 
@@ -228,12 +234,6 @@ class Member extends Model {
             */
         return $errors;
     }
-
-    /**
-     * Règles métiers full_name :
-     *
-     * Minimum 3 charactères
-     */
     public function validate_full_name(): array {
         $errors = [];
 
@@ -246,7 +246,6 @@ class Member extends Model {
 
         return $errors;
     }
-
     public function validate_email(): array {
         $errors = [];
 
@@ -255,7 +254,6 @@ class Member extends Model {
 
         return $errors;
     }
-
     public static function validate_login(string $email, string $password): array {
         $errors = [];
 
@@ -269,7 +267,6 @@ class Member extends Model {
 
         return $errors;
     }
-
     /**
      * An IBAN is validated by converting it into an integer and performing a basic mod-97 operation (as described in ISO 7064) on it.
      * If the IBAN is valid, the remainder equals 1. The algorithm of IBAN validation is as follows:
@@ -334,7 +331,6 @@ class Member extends Model {
         }
         return $errors;
     }
-
     public static function validate_photo(array $file): array {
         $errors = [];
 
@@ -377,16 +373,7 @@ class Member extends Model {
             return false;
 
         $row = $query->fetch();
-        $member = new Member(
-            $row['id'],
-            $row['full_name'],
-            $row['email'],
-            $row['pseudo'],
-            $row['password'],
-            Role::from($row['role']),
-            $row['picture_path'],
-            $row['iban']
-        );
+        $member = Member::get_member_from_row($row);
 
         return $member;
     }
@@ -405,16 +392,7 @@ class Member extends Model {
             return false;
 
         $row = $query->fetch();
-        $member = new Member(
-            $row['id'],
-            $row['full_name'],
-            $row['email'],
-            $row['pseudo'],
-            $row['password'],
-            Role::from($row['role']),
-            $row['picture_path'],
-            $row['iban']
-        );
+        $member = Member::get_member_from_row($row);
 
         return $member;
     }
@@ -450,42 +428,22 @@ class Member extends Model {
 
         $data = $query->fetchAll();
 
-        $owner = Member::get_members(array_column($data, 'owner'));
+        $owners = Member::get_members(array_column($data, 'owner'));
         $items = [];
         $my_bidded_items = [];
 
         foreach ($data as $row) {
-            $item = new Item(
-                $row['id'],
-                $row['title'],
-                $row['description'] ?? "",
-                $owner[$row['owner']],
-                $row['created_at'],
-                $row['buy_now_price'],
-                $row['duration_days'],
-                $row['starting_bid'],
-                [],
-            );
-
+            $owner = $owners[$row['owner']];
+            $item = Item::get_item_from_row($row, $owner);
             $items[$row['id']] = $item;  //ça marche bien
-
-            $my_bidded_items[$row['id']] = new ItemStatus(
-                $item,
-                $row['end_at'],
-                $row['bid_count'],
-                $row['max_bid'],
-                $row['is_direct_sale'] === 1,
-                $row['is_auction'] === 1,
-                $row['has_buy_now'] === 1,
-                $row['has_bids'] === 1,
-                $row['buy_now_reached'] === 1,
-                $row['not_purchased_direct_sale'] === 1
-            );
+            $status = ItemStatus::get_item_status_from_row($row, $item);
+            $my_bidded_items[$row['id']] = $status;
+            $item->set_status($status);
         }
 
-        $items_pictures = ItemPicture::get_items_picture($items);
+        $items_pictures = ItemPicturesCollection::get_items_pictures_from_db($items);
         foreach ($items as $item) {
-            $item->set_pictures($items_pictures[$item->get_id()]);
+            $item->set_pictures_($items_pictures[$item->get_id()]);
         }
 
         return $my_bidded_items;
@@ -522,16 +480,8 @@ class Member extends Model {
         foreach ($data as $row) {
             //see 'doc A' for '??='
             //it assigns a value if there are none already
-            $users[$row['id']] ??= new Member(
-                $row['id'],
-                $row['full_name'],
-                $row['email'],
-                $row['pseudo'],
-                $row['password'],
-                Role::from($row['role']),
-                $row['picture_path'],
-                $row['iban']
-            );
+            $member = Member::get_member_from_row($row);
+            $users[$row['id']] ??= $member;
         }
 
         return $users;
@@ -582,31 +532,16 @@ class Member extends Model {
             $items_id = array_column($data, 'item');
             $items = Item::get_items($items_id);
 
-            $items_status = ItemStatus::get_items_status($items);
-
             $owners_id = array_column($data, 'owner');
             $owners = Member::get_members($owners_id);
 
             foreach ($data as $row) {
-                $highest_bid = $row['global_max'];
                 $owner = $owners[$row['owner']];
-                $item_status = $items_status[$row['item']];
+                $item = $items[$row['item']];
+                $bid = Bid::get_bid_from_row($row, $owner, $item);
 
-                $my_bids[$row['item']] = new Bid(
-                    $owner,
-                    $item_status,
-                    $row['created_at'],
-                    $row['amount'],
-                    $highest_bid
-                );
+                $my_bids[$row['item']] = $bid;
             }
-
-            /*
-            //If needs be to sort in PHP, I could use usort with an anonymous function :)
-            usort($my_bids, function ($a, $b) {
-                return [bool]
-            })
-                */
         }
 
         return $my_bids;
@@ -628,31 +563,9 @@ class Member extends Model {
             $data = $query->fetchAll();
 
             foreach ($data as $row) {
-                $item = new Item(
-                    $row['id'],
-                    $row['title'],
-                    $row['description'],
-                    $this,
-                    $row['created_at'],
-                    $row['buy_now_price'],
-                    $row['duration_days'],
-                    $row['starting_bid'],
-                    [],
-                );
+                $item = Item::get_item_from_row($row, $this);
                 $items[$row['id']] = $item;
-
-                $item_status = new ItemStatus(
-                    $item,
-                    $row['end_at'],
-                    $row['bid_count'],
-                    $row['max_bid'],
-                    $row['is_direct_sale'] == '1',
-                    $row['is_auction'] == '1',
-                    $row['has_buy_now'] == '1',
-                    $row['has_bids'] == '1',
-                    $row['buy_now_reached'] == '1',
-                    $row['not_purchased_direct_sale'] == '1',
-                );
+                $item_status = ItemStatus::get_item_status_from_row($row, $item);
 
                 if ($item_status->has_sold())
                     $my_items_status['closed_sold_items'][$item->get_id()] = $item_status;
@@ -703,50 +616,18 @@ class Member extends Model {
             $data = $query->fetchAll();
 
             foreach ($data as $row) {
-                $item = new Item(
-                    $row['id'],
-                    $row['title'],
-                    $row['description'] ?? "",
-                    $this,
-                    $row['created_at'],
-                    $row['buy_now_price'],
-                    $row['duration_days'],
-                    $row['starting_bid'],
-                    [],
-                );
+                $item = Item::get_item_from_row($row, $this);
+                $item_status = ItemStatus::get_item_status_from_row($row, $item);
+                $item->set_status($item_status);
                 $items[$row['id']] = $item;
 
-                $item_status = new ItemStatus(
-                    $item,
-                    $row['end_at'],
-                    $row['bid_count'],
-                    $row['max_bid'],
-                    $row['is_direct_sale'] == '1',
-                    $row['is_auction'] == '1',
-                    $row['has_buy_now'] == '1',
-                    $row['has_bids'] == '1',
-                    $row['buy_now_reached'] == '1',
-                    $row['not_purchased_direct_sale'] == '1',
-                );
-
-                if (!isset($bid_owner[$row['u_id']]))
-                    $bid_owner[$row['u_id']] = new Member(
-                        $row['u_id'],
-                        $row['full_name'],
-                        $row['email'],
-                        $row['pseudo'],
-                        $row['password'],
-                        Role::from($row['role']),
-                        $row['picture_path'],
-                        $row['iban']
-                    );
-
-                $bid = new Bid(
-                    $bid_owner[$row['u_id']],
-                    $item_status,
-                    $row['b_created_at'],
-                    $row['b_amount'],
-                );
+                if (!isset($bid_owner[$row['u_id']])) {
+                    $member = Member::get_member_from_row($row, $id = "u_id");
+                    $bid_owner[$row['u_id']] = $member;
+                }
+                
+                $owner = $bid_owner[$row['u_id']];
+                $bid = Bid::get_bid_from_row($row, $owner, $item);
 
                 $sales[] = $bid;
             }
@@ -785,57 +666,24 @@ class Member extends Model {
         );
 
         $purchases = [];
-        $seller = [];
+        $sellers = [];
         $items = [];
 
         if ($query->rowCount() > 0) {
             $data = $query->fetchAll();
 
             foreach ($data as $row) {
-                if (!isset($seller[$row['u_id']]))
-                    $seller[$row['u_id']] = new Member(
-                        $row['u_id'],
-                        $row['full_name'],
-                        $row['email'],
-                        $row['pseudo'],
-                        $row['password'],
-                        Role::from($row['role']),
-                        $row['picture_path'],
-                        $row['iban']
-                    );
+                if (!isset($sellers[$row['u_id']]))
+                    $member = Member::get_member_from_row($row, $id = "u_id");
+                    $sellers[$row['u_id']] = $member;
 
-                $item = new Item(
-                    $row['id'],
-                    $row['title'],
-                    $row['description'],
-                    $seller[$row['u_id']],
-                    $row['created_at'],
-                    $row['buy_now_price'],
-                    $row['duration_days'],
-                    $row['starting_bid'],
-                    [],
-                );
+                $seller = $sellers[$row['u_id']];
+                $item = Item::get_item_from_row($row, $seller);
+
                 $items[$row['id']] = $item;
+                $item_status = ItemStatus::get_item_status_from_row($row, $item);
 
-                $item_status = new ItemStatus(
-                    $item,
-                    $row['end_at'],
-                    $row['bid_count'],
-                    $row['max_bid'],
-                    $row['is_direct_sale'] == '1',
-                    $row['is_auction'] == '1',
-                    $row['has_buy_now'] == '1',
-                    $row['has_bids'] == '1',
-                    $row['buy_now_reached'] == '1',
-                    $row['not_purchased_direct_sale'] == '1',
-                );
-
-                $bid = new Bid(
-                    $this,
-                    $item_status,
-                    $row['b_created_at'],
-                    $row['b_amount'],
-                );
+                $bid = Bid::get_bid_from_row($row, $this, $item, $created_at = "b_created_at", $amount = "b_amount");
 
                 $purchases[] = $bid;
             }

@@ -116,7 +116,8 @@ class ItemPicturesCollection extends Model {
 
         $data = $query->fetchAll();
         foreach ($data as $row) {
-            $pictures->add(new ItemPicture($item, $row['priority'], $row['picture_path']));
+            $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
+            $pictures->add($item_picture);
         }
 
         return $pictures;
@@ -149,11 +150,9 @@ class ItemPicturesCollection extends Model {
 
             $data = $query->fetchAll();
             foreach ($data as $row) {
-                $items_pictures[$row['item']]->add(new ItemPicture(
-                    $items[$row['item']],
-                    $row['priority'],
-                    $row['picture_path']
-                ));
+                $item = $items[$row['item']];
+                $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
+                $items_pictures[$row['item']]->add($item_picture);
             }
         }
 

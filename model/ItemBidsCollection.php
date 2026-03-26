@@ -51,16 +51,53 @@ class ItemBidsCollection extends Model {
         $owners = Member::get_members($owners_ids);
 
         foreach ($data as $row) {
-            $bid = new Bid(
-                $owners[$row["owner"]],
-                $item,
-                $row["created_at"],
-                $row["amount"],
-            );
+            $owner = $owners[$row["owner"]];
+            $bid = Bid::get_bid_from_row($row, $owner, $item);
             $bids->add($bid);
         }
 
         return $bids;
     }
-    
+    public static function get_items_bids_from_db(array $items): array {
+        $bids = [];
+
+        if (!empty($items)) {
+            $placeholders = [];
+            $params = [];
+            foreach ($items as $id => $item) {
+                $placeholders[] = ":u$id";
+                $params[":u$id"] = $item->get_id();
+                $bids[$id] = new ItemBidsCollection($item);
+            }
+
+            $query = self::execute(
+                "SELECT * 
+                FROM bids
+                WHERE item IN ("
+                    . implode(',', $placeholders) .
+                    ")",
+                $params
+            );
+            $data = $query->fetchAll();
+            
+            $owners_ids = array_column($data, 'owner');
+            $owners = Member::get_members($owners_ids);
+
+            foreach ($data as $row) {
+                $owner = $owners[$row["owner"]];
+                $item = $items[$row["item"]];
+                $bid = Bid::get_bid_from_row($row, $owner, $item);
+                $bids[$row['item']]->add($bid);
+            }
+        }
+
+        return $bids;
+    }
+
+
+    public static function set_item_bids_from_db(Item $item): void {
+        $bids = ItemBidsCollection::get_item_bids_from_db($item);
+        $item->set_bids($bids);
+    }
+
 }

@@ -10,9 +10,8 @@ class Bid extends Model {
     public function __construct(
         private Member $owner,
         private Item $item,
-        private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
+        private string $created_at,
         private float $amount,
-        private ?float $highest_bid = null
     ) {
     }
 
@@ -31,12 +30,6 @@ class Bid extends Model {
     public function get_amount(): float {
         return $this->amount;
     }
-    public function get_highest_bid(): ?float {
-        return $this->highest_bid;
-    }
-    public function get_is_highest_bid(): bool {
-        return $this->highest_bid == $this->amount;
-    }
 
     public function set_owner(Member $new_owner): void {
         $this->owner = $new_owner;
@@ -49,9 +42,6 @@ class Bid extends Model {
     }
     public function set_amount(float $new_amount): void {
         $this->amount = $new_amount;
-    }
-    public function set_highest_bid(?float $highest_bid): void {
-        $this->highest_bid = $highest_bid;
     }
 
     public static function get_bids_for_item(int $item_id): array {
@@ -74,34 +64,22 @@ class Bid extends Model {
             ["item_id" => $item_id]
         );
 
-        $rows = $query->fetchAll();
+        $data = $query->fetchAll();
 
-        $item_status = ItemStatus::get_item_status($item_id);
-        $max_bid = $item_status ? $item_status->get_max_bid() : null;
+        $item = Item::get_item($item_id);
 
         $bids = [];
-        foreach ($rows as $row) {
-            $owner = new Member(
-                $row['user_id'],
-                $row['full_name'],
-                $row['email'],
-                $row['pseudo'],
-                $row['password'],
-                Role::from($row['role']),
-                $row['picture_path'],
-                $row['iban']
-            );
+        foreach ($data as $row) {
+            $owner = Member::get_member_from_row($row, $id = "user_id");
 
-            $bids[] = new Bid(
-                $owner,
-                $item_status,
-                $row['created_at'],
-                (float)$row['amount'],
-                $max_bid ?? 0
-            );
+            $bid = Bid::get_bid_from_row($row, $owner, $item);
+            $bids[] = $bid;
         }
 
         return $bids;
+    }
+    public static function get_bid_from_row(array $row, Member $owner, Item $item, String $created_at = "created_at", String $amount = "amount"): Bid {
+        return new Bid($owner, $item, $row[$created_at], (float)$row[$amount]);
     }
 
     public static function validate_bid(Member $member, ItemStatus $item_status, ?float $amount): array {
