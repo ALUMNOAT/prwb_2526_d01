@@ -10,6 +10,8 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
  * @var ItemPicturesCollection $pictures_
  * @var ItemStatus $item_status 
  */
+
+$pictures_ = $item->get_pictures_();
 ?>
 
 <div class="card">

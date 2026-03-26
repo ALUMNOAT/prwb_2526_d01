@@ -6,23 +6,21 @@ require_once "model/ItemStatus.php";
 
 
 class Bid extends Model {
-    private Item $item;
 
     public function __construct(
         private Member $owner,
-        private ItemStatus $item_status,
+        private Item $item,
         private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
         private float $amount,
         private ?float $highest_bid = null
     ) {
-        $this->item = $item_status->get_item();
     }
 
     public function get_owner(): Member {
         return $this->owner;
     }
     public function get_item_status(): ItemStatus {
-        return $this->item_status;
+        return $this->item->get_status();
     }
     public function get_item(): Item {
         return $this->item;
@@ -43,8 +41,8 @@ class Bid extends Model {
     public function set_owner(Member $new_owner): void {
         $this->owner = $new_owner;
     }
-    public function set_item_status(ItemStatus $new_item_status): void {
-        $this->item_status = $new_item_status;
+    public function set_item(Item $new_item): void {
+        $this->item = $new_item;
     }
     public function set_created_at(string $new_created_at): void {
         $this->created_at = $new_created_at;

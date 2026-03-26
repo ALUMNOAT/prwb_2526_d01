@@ -2,60 +2,55 @@
 require_once "framework/Model.php";
 require_once "model/Bid.php";
 require_once "utils/Role.php";
+require_once "model/UserBidsCollection.php";
+require_once "model/UserItemsCollection.php";
 
 
 class Member extends Model {
 
-    /**
-     * ID nullable :
-     *
-     * Un nouveau utilisateur n'a pas d'ID (la base de données lui en donne un).
-     *
-     * Un utilisateur existant a déjà un ID.
-     *
-     * On fait comme ça pour ne pas avoir d'insertions vides quand on inscrit quelqu’un.
-     */
-
     public function __construct(
         private ?int $id,
         private string $full_name,
-        private ?string $email,     //Luca: guests don't have emails
+        private ?string $email,
         private string $pseudo,
-        private ?string $password,   //Luca: guests don't have passwords
+        private ?string $password,
         private Role $role,
         private ?string $picture_path = null,
         private ?string $iban = null,
+        private ?UserBidsCollection $bids = null,
+        private ?UserItemsCollection $items = null,
     ) {
     }
 
     public function get_id(): ?int {
         return $this->id;
     }
-
     public function get_full_name(): string {
         return $this->full_name;
     }
     public function get_email(): ?string {
         return $this->email;
     }
-
     public function get_pseudo(): string {
         return $this->pseudo;
     }
     public function get_password(): ?string {
         return $this->password;
     }
-
     public function get_role(): Role {
         return $this->role;
     }
-
     public function get_picture_path(): ?string {
         return $this->picture_path;
     }
-
     public function get_iban(): ?string {
         return $this->iban;
+    }
+    public function get_bids() : ?UserBidsCollection {
+        return $this->bids;
+    }
+    public function get_items() : ?UserItemsCollection {
+        return $this->items;
     }
 
     public function set_id(?int $new_id): void {
@@ -64,19 +59,15 @@ class Member extends Model {
     public function set_full_name(string $new_full_name): void {
         $this->full_name = $new_full_name;
     }
-
     public function set_email(string $new_email): void {
         $this->email = $new_email;
     }
-
     public function set_pseudo(string $new_pseudo): void {
         $this->pseudo = $new_pseudo;
     }
-
     public function set_password(string $new_password): void {
         $this->password = $new_password;
     }
-
     public function set_role(Role $new_role): void {
         $this->role = $new_role;
     }
@@ -85,6 +76,12 @@ class Member extends Model {
     }
     public function set_iban(?string $new_iban): void {
         $this->iban = $new_iban;
+    }
+    public function set_bids(UserBidsCollection $bids) : void {
+        $this->bids = $bids;
+    }
+    public function set_items(UserItemsCollection $items) : void {
+        $this->items = $items;
     }
 
     public function is_guest(): bool {
@@ -128,7 +125,6 @@ class Member extends Model {
             return new Member($data["id"], $data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["iban"]);
         }
     }
-
     public static function get_member_by_email(string $email): Member|false {
         $query = self::execute(
             "SELECT * FROM users WHERE email = :email",
@@ -144,7 +140,6 @@ class Member extends Model {
             return new Member($data["id"], $data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["iban"]);
         }
     }
-
     public static function get_member_by_full_name(string $full_name): Member|false {
         $query = self::execute(
             "SELECT * FROM users WHERE full_name = :full_name",
@@ -160,14 +155,6 @@ class Member extends Model {
             return new Member($data["id"], $data["full_name"], $data["email"], $data["pseudo"], $data["password"], $role, $data["picture_path"], $data["iban"]);
         }
     }
-
-    /**
-     * Règles metiers du Password :
-     *
-     * Minimum 8 charactères
-     *
-     * Doit contenir un chiffre, une Maj, une min, un symbole
-     */
 
     private static function validate_password(string $password): array {
         $errors = [];
@@ -197,12 +184,6 @@ class Member extends Model {
         }
         return $errors;
     }
-
-    /**
-     * Règles metiers de l'unique :
-     *
-     * email, full_name et pseudo doivent etre unique
-     */
 
     public static function validate_unicity(string $pseudo, string $email, string $full_name, ?int $exclude_id = null): array {
         $errors = [];

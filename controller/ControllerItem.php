@@ -81,6 +81,7 @@ class ControllerItem extends Controller {
         }
 
         $bids = Bid::get_bids_for_item($item_id);
+        $bids = $item->get_bids();
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
         (new View("item"))->show([

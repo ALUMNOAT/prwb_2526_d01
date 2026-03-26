@@ -13,7 +13,6 @@ class ItemPicturesCollection extends Model {
     public function __construct(
         private Item $item
     ) {
-        $this->set_pictures();
     }
 
 
@@ -159,27 +158,5 @@ class ItemPicturesCollection extends Model {
         }
 
         return $items_pictures;
-    }
-
-
-    //PRIVATE
-    private function set_pictures(): void {
-        $query = self::execute(
-            "SELECT p.priority, p.picture_path
-            FROM item_pictures AS p
-            WHERE p.item = :item_id
-            ORDER BY p.priority ASC",
-            ["item_id" => $this->item->get_id()]
-        );
-
-        $data = $query->fetchAll();
-
-        foreach ($data as $row) {
-            $this->db_pictures[$row['priority']] = new ItemPicture(
-                $this->item,
-                $row['priority'],
-                $row['picture_path']
-            );
-        }
     }
 }

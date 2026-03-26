@@ -76,6 +76,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
             <div class="browse">
                 <?php foreach ($available_items as $item_status) {
                     $item = $item_status->get_item();
+                    $pictures_ = $item->get_pictures_();
                     require 'item_card.php';
                 } ?>
             </div>

@@ -93,7 +93,6 @@ class Item extends Model {
         $this->bids = $bids;
     }
 
-
     public function is_owner(Member $user): bool {
         return $this->owner->get_id() == $user->get_id();
     }
@@ -155,27 +154,14 @@ class Item extends Model {
                 $row['not_purchased_direct_sale'] == 1,
             );
             $item->set_status($status);
+            $pictures_ = ItemPicturesCollection::get_item_pictures_from_db($item);
+            $bids = ItemBidsCollection::get_item_bids_from_db($item);
 
             $item->set_pictures_(ItemPicturesCollection::get_item_pictures_from_db($item));
 
             return $item;
         }
     }
-
-    public function delete(): void {
-        /*
-        doc: https://www.w3schools.com/mysql/mysql_delete.asp
-        doc: https://dba.stackexchange.com/questions/232987/deleting-multiple-tables-in-a-single-delete-query-in-mysql
-        doc: https://stackoverflow.com/questions/31136434/mysql-deleting-rows-based-on-a-condition-with-data-from-another-table-and-no-jo
-        */
-        $query = self::execute(
-            "DELETE FROM item_pictures AS p WHERE p.item = :item_id;
-            DELETE FROM items WHERE items.id = :item_id;
-            DELETE FROM v_items_status AS v WHERE v.id = :item_id;",
-            ['item_id' => $this->id]
-        );
-    }
-
     public static function get_items(array $ids): array {
         $items = [];
 
@@ -222,7 +208,6 @@ class Item extends Model {
 
         return $items;
     }
-
     public static function get_all_available_items(Member $user): array {
         $query = self::execute(
             "SELECT *
@@ -279,6 +264,20 @@ class Item extends Model {
         }
 
         return $available_items;
+    }
+
+    public function delete(): void {
+        /*
+        doc: https://www.w3schools.com/mysql/mysql_delete.asp
+        doc: https://dba.stackexchange.com/questions/232987/deleting-multiple-tables-in-a-single-delete-query-in-mysql
+        doc: https://stackoverflow.com/questions/31136434/mysql-deleting-rows-based-on-a-condition-with-data-from-another-table-and-no-jo
+        */
+        $query = self::execute(
+            "DELETE FROM item_pictures AS p WHERE p.item = :item_id;
+            DELETE FROM items WHERE items.id = :item_id;
+            DELETE FROM v_items_status AS v WHERE v.id = :item_id;",
+            ['item_id' => $this->id]
+        );
     }
 
     public function validate_title(): array {
