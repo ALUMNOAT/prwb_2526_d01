@@ -69,11 +69,11 @@ class ControllerItem extends Controller {
 
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
+        $pictures_ = $item->get_pictures_();
 
         $main_pic = null;
-        $picture = $item->get_pictures();
-        if (!empty($picture)) {
-            $main_pic = $item->get_picture($main_pic_priority);
+        if ($pictures_->has_many_pictures()) {
+            $main_pic = $pictures_->get_picture($main_pic_priority);
             // If specific priority doesn't exist, fall back to first picture
             if (!$main_pic) {
                 $main_pic = reset($picture); // Get first picture
@@ -81,6 +81,7 @@ class ControllerItem extends Controller {
         }
 
         $bids = Bid::get_bids_for_item($item_id);
+        $bids = $item->get_bids();
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
         (new View("item"))->show([
@@ -106,10 +107,8 @@ class ControllerItem extends Controller {
 
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
-
-        $main_pic = $main_pic_priority
-            ? $this->get_item_picture_or_default($item, $main_pic_priority, 'item', 'show')
-            : null;
+        $pictures_ = $item->get_pictures_();
+        $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
         if (!$item_status->is_biddable($user))
@@ -132,7 +131,7 @@ class ControllerItem extends Controller {
             "currentBid" => $current_bid,
             "bids" => Bid::get_bids_for_item($item_id),
             "main_pic" => $main_pic,
-            "pictures" => $item->get_pictures(),
+            "pictures" => $pictures_,
             "errors" => $errors,
             "bid_path" => $this->bid_path($item, $main_pic),
             "buy_path" => $this->buy_path($item, $main_pic)
@@ -149,9 +148,8 @@ class ControllerItem extends Controller {
         //item, picture and bid
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
-        $main_pic = $main_pic_priority
-            ? $this->get_item_picture_or_default($item, $main_pic_priority, 'item', 'show')
-            : null;
+        $pictures_ = $item->get_pictures_();
+        $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
         if (!$item_status->is_buyable($user))
@@ -173,7 +171,7 @@ class ControllerItem extends Controller {
             "currentBid" => $current_bid,
             "bids" => Bid::get_bids_for_item($item_id),
             "main_pic" => $main_pic,
-            "pictures" => $item->get_pictures(),
+            "pictures" => $pictures_->get_pictures(),
             "errors" => $errors,
             "bid_path" => $this->bid_path($item, $main_pic),
             "buy_path" => $this->buy_path($item, $main_pic),
@@ -213,13 +211,13 @@ class ControllerItem extends Controller {
             $item = new Item(
                 null,
                 $title,
+                $description,
                 $member,            // owner
                 AppTime::get_current_datetime(), // created_at
-                $duration_days,
-                [],                 // pictures
-                $description,
                 $buy_now_price,
-                $starting_bid
+                $duration_days,
+                $starting_bid,
+                [],                 // pictures
             );
 
             // Validate
@@ -337,6 +335,7 @@ class ControllerItem extends Controller {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $item = $this->get_item_or_redirect($item_id, $user);
+        $pictures_ = $item->get_pictures_();
         $errors = [];
 
         if (isset($_POST['upload']) && isset($_FILES['images']) && !empty($_FILES['images']['type'][0])) {
@@ -349,7 +348,7 @@ class ControllerItem extends Controller {
                     // Permission : owner peut r-w-x, group peut r-x, reste peut r-x
                     mkdir($items_dir, 0755, true);
 
-                $priority = $item->get_next_priority();
+                $priority = $pictures_->get_next_priority();
 
                 foreach ($files['tmp_name'] as $tmp_name) {
                     //IMAGE
@@ -364,13 +363,13 @@ class ControllerItem extends Controller {
                     Image::resizeToJpeg($tmp_name, $final_thumb_path, Configuration::get("THUMB_MAX_WIDTH"), Configuration::get("THUMB_MAX_HEIGHT"), Configuration::get("JPEG_QUALITY"));
 
                     $pic = new ItemPicture($item, $priority, $final_image_path);
-                    $item->add_picture($pic);
+                    $pictures_->add($pic);
 
                     $priority++;
                 }
 
-
-                $item->persist_item_pictures();
+                $pictures_->persist();
+                //$item->persist_item_pictures();
                 $this->redirect('item', 'manage_images', strval($item_id));
             }
         }
@@ -458,7 +457,7 @@ class ControllerItem extends Controller {
     }
 
     private function get_item_picture_or_redirect(Item $item, int $pic_priority, string $controller = 'item', string $action = 'manage_images'): ItemPicture {
-        $pic = $item->get_picture($pic_priority);
+        $pic = $item->get_pictures_()->get_picture($pic_priority);
         if (!$pic)
             $this->redirect($controller, $action, strval($item->get_id()));
         return $pic;

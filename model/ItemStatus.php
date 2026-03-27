@@ -78,28 +78,18 @@ class ItemStatus extends Model {
             WHERE id = :id",
             ["id" => $id]
         );
+        $status = false;
 
-        if ($query->rowCount() == 0)
-            return false;
-        else {
+        if ($query->rowCount() > 0) {
             $row = $query->fetch();
-            $item_status = new ItemStatus(
-                Item::get_item($row['id']),
-                $row['end_at'],
-                $row['bid_count'],
-                $row['max_bid'],
-                $row['is_direct_sale'] === 1,
-                $row['is_auction'] === 1,
-                $row['has_buy_now'] === 1,
-                $row['has_bids'] === 1,
-                $row['buy_now_reached'] === 1,
-                $row['not_purchased_direct_sale'] === 1
-            );
-
-            return $item_status;
+            $owner = Member::get_member($row["owner"]);
+            $item = Item::get_item_from_row($row, $owner);
+            $status = ItemStatus::get_item_status_from_row($row, $item);
         }
-    }
 
+        return $status;
+        
+    }
     public static function get_items_status(array $items): array {
         $items_status = [];
 
@@ -123,24 +113,14 @@ class ItemStatus extends Model {
             $data = $query->fetchAll();
 
             foreach ($data as $row) {
-                $items_status[$row['id']] = new ItemStatus(
-                    $items[$row['id']],
-                    $row['end_at'],
-                    $row['bid_count'],
-                    $row['max_bid'],
-                    $row['is_direct_sale'],
-                    $row['is_auction'],
-                    $row['has_buy_now'],
-                    $row['has_bids'],
-                    $row['buy_now_reached'],
-                    $row['not_purchased_direct_sale']
-                );
+                $item = $items[$row['id']];
+                $status = ItemStatus::get_item_status_from_row($row, $item);
+                $items_status[$row['id']] = $status;
             }
         }
 
         return $items_status;
     }
-
     public static function get_all_available_items(): array {
         $query = self::execute(
             "SELECT * FROM v_items_status
@@ -151,20 +131,29 @@ class ItemStatus extends Model {
         $data = $query->fetchAll();
         $available_items = [];
         foreach ($data as $row) {
-            $available_items[] = new ItemStatus(
-                Item::get_item($row['id']),
-                $row['end_at'],
-                $row['bid_count'],
-                $row['max_bid'],
-                $row['is_direct_sale'],
-                $row['is_auction'],
-                $row['has_buy_now'],
-                $row['has_bids'],
-                $row['buy_now_reached'],
-                $row['not_purchased_direct_sale']
-            );
+            $owner = Member::get_member($row["owner"]);
+            $item = Item::get_item_from_row($row, $owner);
+            $status = ItemStatus::get_item_status_from_row($row, $item);
+            $available_items[] = $status;
         }
         return $available_items;
+    }
+    public static function get_item_status_from_row(array $row, Item $item, 
+        String $end_at = "end_at", String $bid_count = "bid_count", String $max_bid = "max_bid", String $is_direct_sale = "is_direct_sale", 
+        String $is_auction = "is_auction", String $has_buy_now = "has_buy_now", String $has_bids = "has_bids", 
+        String $buy_now_reached = "buy_now_reached", $not_purchased_direct_sale = "not_purchased_direct_sale"): ItemStatus {
+        return new ItemStatus(
+            $item,
+            $row[$end_at],
+            (int)$row[$bid_count],
+            (float)$row[$max_bid] ?? null,
+            $row[$is_direct_sale] == 1,
+            $row[$is_auction] == 1,
+            $row[$has_buy_now] == 1,
+            $row[$has_bids] == 1,
+            $row[$buy_now_reached] == 1,
+            $row[$not_purchased_direct_sale] == 1,
+        );
     }
 
     public function ends_in(int $precision = 2): string {

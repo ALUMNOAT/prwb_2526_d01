@@ -48,7 +48,7 @@
             <div class="item-card">
                 <!-- MAIN PIC -->
                 <div class='img'>
-                    <?php if ($item->has_no_picture()): ?>
+                    <?php if ($item->get_pictures_()->has_no_pictures()): ?>
                         <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Question_mark_alternate.png" />
                     <?php else: ?>
                         <img src="<?= $main_pic->get_picture_path() ?>" alt="Item picture">
@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            <?php if ($item->has_many_pictures()): ?>
+            <?php if ($item->get_pictures_()->has_many_pictures()): ?>
                 <!-- THUMBNAILS -->
                 <div>
                     <p>Additional Images</p>

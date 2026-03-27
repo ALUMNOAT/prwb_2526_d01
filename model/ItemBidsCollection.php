@@ -6,35 +6,19 @@ require_once "model/ItemPicture.php";
 
 class ItemBidsCollection extends Model {
     //ATTRIBUTES
-    private array $db_bids = [];
-    private ?Bid $new_bid = null;
-    private ?Bid $last_bid = null;
-
+    private array $bids = [];
 
     //__CONSTRUCT
     public function __construct(
-        private ?Item $item = null
+        private Item $item
     ) {
-        if ($item !== null) {
-            $this->set_bids();
-            $this->set_latest_bid();
-        }
     }
 
-
-    //BOOL
-    public function has_no_bids(): bool {
-        return $this->get_bids_count() === 0;
+    public function get_bids(): array {
+        return $this->bids;
     }
-    public function is_latest_bid(Bid $bid): bool {
-        return $bid->get_amount() === $this->last_bid->get_amount()
-            && $bid->get_created_at();
-    }
-
-
-    //NUMBERS
     public function get_bids_count(): int {
-        return count($this->db_bids);
+        return count($this->bids);
     }
     public function last_bid_amount(): ?int {
         return !empty($db_pictures)
@@ -42,79 +26,78 @@ class ItemBidsCollection extends Model {
             : null;
     }
 
-
-    //OBJECT
-    public function get_last_bid(): ?Bid {
-        return $this->last_bid;
+    public function has_no_bids(): bool {
+        return count($this->bids) === 0;
     }
 
-
-    //ADD / SET
     public function add(Bid ...$bids): void {
-        //doc: https://stackoverflow.com/questions/16823611/passing-multiple-arguments-to-function-php
-        //doc: https://www.php.net/manual/en/functions.arguments.php
         foreach ($bids as $bid) {
-            $local_bids[$bid->get_amount()] = $bid;
+            $bids[$bid->get_amount()] = $bid;
         }
     }
-    public function set_latest_bid(): void {
-        if (!empty($this->db_bids)) {
-            $last_key = max(array_keys($this->db_bids));
-            $this->last_bid = $this->db_bids[$last_key];
-        } 
-        else
-            $this->last_bid = null;
-    }
 
 
-
-    //DATABASE
-    public function persist(): array {
-        self::execute(
-            "INSERT INTO item_pictures(item, priority, picture_path)
-            VALUES " . implode(',', $placeholders) . ";",
-            $params
-        );
-
-        array_merge($this->db_pictures, $this->local_pictures);
-        $this->local_pictures = [];
-    }
-
-
-    //PRIVATE
-    private function set_bids(): void {
+    public static function get_item_bids_from_db(Item $item): ItemBidsCollection {
+        $bids = new ItemBidsCollection($item);
         $query = self::execute(
-            "SELECT b.owner, b.created_at, b.amount
-            FROM bids AS b
-            JOIN users AS u ON b.owner = u.id
-            WHERE b.item = :item_id
-            ORDER BY b.amount ASC",
-            ["item_id" => $this->item->get_id()]
+            "SELECT *
+            FROM bids
+            WHERE bids.item = :id",
+            ["id" => $item->get_id()]
         );
 
         $data = $query->fetchAll();
-        $members = [];
+        $owners_ids = array_column($data, 'owner');
+        $owners = Member::get_members($owners_ids);
 
         foreach ($data as $row) {
-            if (!array_key_exists($row['id'], $members)) {
-                $members[$row['id']] = new Member(
-                    $row['id'],
-                    $row['full_name'],
-                    $row['email'],
-                    $row['pseudo'],
-                    $row['password'],
-                    Role::from($row['role']),
-                    $row['picture_path'],
-                    $row['iban']
-                );
+            $owner = $owners[$row["owner"]];
+            $bid = Bid::get_bid_from_row($row, $owner, $item);
+            $bids->add($bid);
+        }
+
+        return $bids;
+    }
+    public static function get_items_bids_from_db(array $items): array {
+        $bids = [];
+
+        if (!empty($items)) {
+            $placeholders = [];
+            $params = [];
+            foreach ($items as $id => $item) {
+                $placeholders[] = ":u$id";
+                $params[":u$id"] = $item->get_id();
+                $bids[$id] = new ItemBidsCollection($item);
             }
 
-            $this->db_bids[$row['amount']] = new Bid(
-                $members['id'],
-                $this->item_status,
-                $row['created_at'],
-                $row['amount']
+            $query = self::execute(
+                "SELECT * 
+                FROM bids
+                WHERE item IN ("
+                    . implode(',', $placeholders) .
+                    ")",
+                $params
             );
+            $data = $query->fetchAll();
+            
+            $owners_ids = array_column($data, 'owner');
+            $owners = Member::get_members($owners_ids);
+
+            foreach ($data as $row) {
+                $owner = $owners[$row["owner"]];
+                $item = $items[$row["item"]];
+                $bid = Bid::get_bid_from_row($row, $owner, $item);
+                $bids[$row['item']]->add($bid);
+            }
         }
+
+        return $bids;
     }
+
+
+    public static function set_item_bids_from_db(Item $item): void {
+        $bids = ItemBidsCollection::get_item_bids_from_db($item);
+        $item->set_bids($bids);
+    }
+
 }

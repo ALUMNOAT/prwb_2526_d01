@@ -3,117 +3,137 @@ require_once "framework/Model.php";
 require_once "utils/AppTime.php";
 require_once "model/Member.php";
 require_once "model/ItemPicture.php";
+require_once "model/ItemPicturesCollection.php";
 
 
 class Item extends Model {
-    //ATTRIBUTES
-    private ItemPicturesCollection $pictures;
-    private ItemBidsCollection $bids = new ItemBidsCollection();
-
+    private ?ItemStatus $status = null;
+    private ?ItemPicturesCollection $pictures_;
+    private ?ItemBidsCollection $bids = null;
 
     //__CONSTRUCT
     public function __construct(
-        private ?int $id, // id nullable pour la création d'item
+        private ?int $id,
         private string $title,
+        private ?string $description,
         private Member $owner,
         private string $created_at,
+        private ?float $buy_now_price,
         private int $duration_days,
-        private ?string $description = null,
-        private ?float $buy_now_price = null,
-        private ?float $starting_bid = null,
+        private ?float $starting_bid,
     ) {
-        if ($this->id !== null)
-            $this->pictures = new ItemPicturesCollection($this);
+        $pictures_ = new ItemPicturesCollection($this);
+        $bids = new ItemBidsCollection($this);
     }
 
-
-    //BOOL
-    public function has_single_picture(): bool {
-        return $this->pictures->has_single_picture();
-    }
-    public function has_no_picture(): bool {
-        return $this->pictures->has_no_pictures();
-    }
-    public function has_many_pictures(): bool {
-        return $this->pictures->has_many_pictures();
-    }
-    public function has_pictures(): bool {
-        return $this->pictures->has_pictures();
-    }
-    public function is_owner(Member $user): bool {
-        return $this->owner->get_id() == $user->get_id();
-    }
-    public function is_first_priority(ItemPicture $pic): bool {
-        return $this->pictures->is_first_priority($pic);
-    }
-    public function is_last_priority(ItemPicture $pic): bool {
-        return $this->pictures->is_last_priority($pic);
-    }
-    public function equal($other_item): bool {
-        return $this->id === $$other_item->get_id();
-    }
-
-
-    //NUMBERS
     public function get_id(): ?int {
         return $this->id;
     }
-    public function get_duration_days(): int {
-        return $this->duration_days;
-    }
-    public function get_buy_now_price(): ?float {
-        return $this->buy_now_price;
-    }
-    public function get_starting_bid(): ?float {
-        return $this->starting_bid;
-    }
-    public function get_picture_count(): int {
-        return $this->pictures->get_picture_count();
-    }
-    public function get_next_priority(): int {
-        $next_priority = 1;
-        $priorities = array_keys($this->db_get_pictures());
-
-        if (!empty($priorities))
-            $next_priority = max($priorities) + 1;
-
-        return $next_priority;
-    }
-
-    //STRING
     public function get_title(): string {
         return $this->title;
-    }
-    public function get_created_at(): string { // /!\
-        return $this->created_at;
-    }
-    public function get_pictures(): array {
-        return $this->pictures->get_all_pictures();
     }
     public function get_description(): ?string {
         return $this->description;
     }
-    public function get_main_thumbnail_path(): string|false {
-        $main_thumbnail = $this->get_main_picture();
-
-        if ($main_thumbnail)
-            $thumbnail_path = $main_thumbnail->get_picture_path();
-        else
-            $thumbnail_path = false;
-
-        return $thumbnail_path;
-    }
-
-
-    //OBJECT
     public function get_owner(): Member {
         return $this->owner;
     }
-    public function get_picture(int $priority): ItemPicture|false {
-        return $this->pictures[$priority] ?? false;
+    public function get_created_at(): string { // /!\
+        return $this->created_at;
     }
-    private function get_main_picture(): ItemPicture|false {
-        return $this->pictures->get_main_picture();
+    public function get_buy_now_price(): ?float {
+        return $this->buy_now_price;
+    }
+    public function get_duration_days(): int {
+        return $this->duration_days;
+    }
+    public function get_starting_bid(): ?float {
+        return $this->starting_bid;
+    }
+    public function get_status(): ItemStatus {
+        return $this->status;
+    }
+    public function get_pictures_(): ?ItemPicturesCollection {
+        return $this->pictures_;
+    }
+    public function get_bids(): ItemBidsCollection {
+        return $this->bids;
+    }
+
+    public function set_id(int $new_id): void {
+        $this->id = $new_id;
+    }
+    public function set_title(string $new_title): void {
+        $this->title = $new_title;
+    }
+    public function set_description(?string $new_description): void {
+        $this->description = $new_description;
+    }
+    public function set_owner(Member $new_owner): void {
+        $this->owner = $new_owner;
+    }
+    public function set_created_at(string $new_created_at): void { // /!\
+        $this->created_at = $new_created_at;
+    }
+    public function set_buy_now_price(?float $new_buy_now_price): void {
+        $this->buy_now_price = $new_buy_now_price;
+    }
+    public function set_duration_days(int $new_duration_day): void {
+        $this->duration_days = $new_duration_day;
+    }
+    public function set_starting_bid(?float $new_starting_bid): void {
+        $this->starting_bid = $new_starting_bid;
+    }
+    public function set_status(ItemStatus $status): void {
+        $this->status = $status;
+    }
+    public function set_pictures_(ItemPicturesCollection $pictures_): void {
+        $this->pictures_ = $pictures_;
+    }
+    public function set_bids(ItemBidsCollection $bids): void {
+        $this->bids = $bids;
+    }
+
+    public function is_owner(Member $user): bool {
+        return $this->owner->get_id() == $user->get_id();
+    }
+
+    public static function get_item(int $id): Item|false {
+        /*
+        doc 'A' : https://www.reddit.com/r/SQL/comments/10ytngc/how_do_i_join_two_tables_with_all_fields_from/
+        doc 'B' : https://stackoverflow.com/questions/1921421/get-the-first-element-of-an-array
+        doc 'C' : https://www.php.net/manual/en/backedenum.from.php
+        */
+        $query = self::execute(
+            "SELECT v.id AS item_id, v.title, v.description, v.created_at, v.buy_now_price, v.duration_days, v.starting_bid, 
+            v.end_at, v.bid_count, v.max_bid, v.is_direct_sale, v.is_auction, 
+            v.has_buy_now, v.has_bids, v.buy_now_reached, v.not_purchased_direct_sale,
+            users.id AS user_id, users.full_name, users.email, users.pseudo, users.password, users.role, users.picture_path AS user_picture, users.iban,
+                FROM v_items_status AS v
+                JOIN users ON v.owner = users.id
+                WHERE v.id = :id",
+            ["id" => $id]
+        );
+
+        if ($query->rowCount() == 0)
+            return false;
+        else {
+            $row = $query->fetch();
+            //OWNER
+            $owner = Member::get_member_from_row($row, $id = "user_id");
+            
+            //ITEM
+            $item = Item::get_item_from_row($row, $owner, $id = "item_id");
+            $status = ItemStatus::get_item_status_from_row($row, $item);
+
+            $item->set_status($status);
+            $pictures_ = ItemPicturesCollection::get_item_pictures_from_db($item);
+            $bids = ItemBidsCollection::get_item_bids_from_db($item);
+
+            $item->set_pictures_(ItemPicturesCollection::get_item_pictures_from_db($item));
+
+            return $item;
+        }
     }
     public static function get_items(array $ids): array {
         $items = [];
@@ -140,19 +160,15 @@ class Item extends Model {
             $owners = Member::get_members($owners_id);
 
             foreach ($data as $row) {
-                $items[$row['id']] = new Item(
-                    $row['id'],
-                    $row['title'],
-                    $owners[$row['owner']],
-                    $row['created_at'],
-                    $row['duration_days'],
-                    $row['description'],
-                    $row['buy_now_price'],
-                    $row['starting_bid']
-                );
+                $owner = $owners[$row['owner']];
+                $item = Item::get_item_from_row($row, $owner);
             }
 
-            Item::set_items_pictures($items);
+            $items_pictures = ItemPicturesCollection::get_items_pictures_from_db($items);
+            foreach ($items as $id => $item) {
+                $item->set_pictures_($items_pictures[$id]);
+            }
+
         }
 
         return $items;
@@ -175,208 +191,42 @@ class Item extends Model {
 
         $data = $query->fetchAll();
 
-        $owner = Member::get_members(array_column($data, 'owner'));
+        $owners = Member::get_members(array_column($data, 'owner'));
         $items = [];
         $available_items = [];
 
         foreach ($data as $row) {
-            $item = new Item(
-                $row['id'],
-                $row['title'],
-                $owner[$row['owner']],
-                $row['created_at'],
-                $row['duration_days'],
-                [],
-                $row['description'] ?? "",
-                $row['buy_now_price'],
-                $row['starting_bid']
-            );
+            $owner = $owners[$row['owner']];
+            $item = Item::get_item_from_row($row, $owner);
 
             $items[$row['id']] = $item;
+            $status = ItemStatus::get_item_status_from_row($row, $item);
 
-            $available_items[$row['id']] = new ItemStatus(
-                $item,
-                $row['end_at'],
-                $row['bid_count'],
-                $row['max_bid'],
-                $row['is_direct_sale'] === 1,
-                $row['is_auction'] === 1,
-                $row['has_buy_now'] === 1,
-                $row['has_bids'] === 1,
-                $row['buy_now_reached'] === 1,
-                $row['not_purchased_direct_sale'] === 1
-            );
+            $available_items[$row['id']] = $status;
         }
 
-        $items_pictures = ItemPicture::get_items_picture($items);
+        $items_pictures = ItemPicturesCollection::get_items_pictures_from_db($items);
         foreach ($items as $id => $item) {
-            if (isset($items_pictures[$id]))
-                $item->set_pictures($items_pictures[$id]);
+            $item->set_pictures_($items_pictures[$id]);
         }
 
         return $available_items;
     }
-    private static function set_items_pictures(array $items): void {
-        /*
-        doc: https://www.php.net/manual/en/function.array-keys.php
-        doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
-        */
-        $placeholders = [];
-        $params = [];
-        foreach ($items as $i => $u) {
-            $placeholders[] = ":u$i";
-            $params[":u$i"] = $u->get_id();
-        }
-
-        $query = self::execute(
-            "SELECT *
-            FROM item_pictures
-            WHERE item IN ("
-                . implode(',', $placeholders) .
-                ")",
-            $params
-        );
-
-        $data = $query->fetchAll();
-        foreach ($data as $row) {
-            $picture = new ItemPicture(
-                $items[$row['item']],
-                $row['priority'],
-                $row['picture_path']
-            );
-
-            $items[$row['item']]->add_picture($picture);
-        }
-    }
-    public function db_get_pictures(): array {
-        $pictures = [];
-
-        $query = self::execute(
-            "SELECT p.item, p.priority, p.picture_path
-            FROM item_pictures AS p
-            WHERE p.item = :item_id
-            ORDER BY p.priority ASC",
-            ["item_id" => $this->id]
-        );
-
-        $data = $query->fetchAll();
-
-        foreach ($data as $row) {
-            $pictures[$row['priority']] = new ItemPicture(
-                $this,
-                $row['priority'],
-                $row['picture_path']
-            );
-        }
-
-        return $pictures;
-    }
-    public static function get_item(int $id): Item|false {
-        /*
-        doc 'A' : https://www.reddit.com/r/SQL/comments/10ytngc/how_do_i_join_two_tables_with_all_fields_from/
-        doc 'B' : https://stackoverflow.com/questions/1921421/get-the-first-element-of-an-array
-        doc 'C' : https://www.php.net/manual/en/backedenum.from.php
-        */
-        $query = self::execute(
-            "SELECT items.id AS item_id, items.title, items.created_at, items.duration_days, items.description,
-            items.buy_now_price, items.starting_bid,
-            users.id AS user_id, users.full_name, users.email, users.pseudo, users.password, users.role, users.picture_path AS user_picture, users.iban,
-            item_pictures.priority, item_pictures.picture_path AS item_picture
-                FROM items
-                LEFT JOIN item_pictures ON items.id = item_pictures.item
-                JOIN users ON items.owner = users.id
-                WHERE items.id = :id",
-            ["id" => $id]
-        );
-
-
-        if ($query->rowCount() == 0)
-            return false;
-        else {
-            $data = $query->fetchAll();
-
-            // On prend la première ligne pour construire l'Item (les données sont les mêmes pour l'item)
-            $row = $data[0];
-
-            //OWNER
-            $owner = new Member(
-                $row['user_id'],
-                $row['full_name'],
-                $row['email'],
-                $row['pseudo'],
-                $row['password'],
-                Role::from($row['role']),
-                $row['user_picture'],
-                $row['iban']
-            );
-            //ITEM
-            $item = new Item(
-                $row['item_id'],
-                $row['title'],
+    public static function get_item_from_row(array $row, Member $owner, 
+        String $id = "id", String $title = "title",String $description = "description",String $created_at = "created_at", 
+        String $buy_now_price = "buy_now_price", String $duration_days = "duration_days", String $starting_bid = "starting_bid"): Item {
+        return new Item(
+                $row[$id],
+                $row[$title],
+                $row[$description] ?? null,
                 $owner,
-                $row['created_at'],
-                $row['duration_days'],
-                [],
-                $row['description'],
-                $row['buy_now_price'],
-                $row['starting_bid']
+                $row[$created_at],
+                $row[$buy_now_price] ?? null,
+                $row[$duration_days],
+                $row[$starting_bid] ?? null,
             );
-
-            // Maintenant on peut créer les images en passant l'objet $item
-            $item_pictures = [];
-            foreach ($data as $row) {
-                if ($row['item_picture'] !== null) {
-                    $item_pictures[$row['priority']] = new ItemPicture(
-                        $item,
-                        $row['priority'],
-                        $row['item_picture']
-                    );
-                }
-            }
-
-            // On attache les images à l'item
-            $item->set_pictures($item_pictures);
-
-            return $item;
-        }
     }
 
-
-    //ADD / SET
-    public function set_id(int $new_id): void {
-        $this->id = $new_id;
-    }
-    public function set_title(string $new_title): void {
-        $this->title = $new_title;
-    }
-    public function set_owner(Member $new_owner): void {
-        $this->owner = $new_owner;
-    }
-    public function set_created_at(string $new_created_at): void { // /!\
-        $this->created_at = $new_created_at;
-    }
-    public function set_duration_days(int $new_duration_day): void {
-        $this->duration_days = $new_duration_day;
-    }
-    public function set_pictures(array $pictures): void {
-        $this->pictures = $pictures;
-    }
-    public function set_description(?string $new_description): void {
-        $this->description = $new_description;
-    }
-    public function set_buy_now_price(?float $new_buy_now_price): void {
-        $this->buy_now_price = $new_buy_now_price;
-    }
-    public function set_starting_bid(?float $new_starting_bid): void {
-        $this->starting_bid = $new_starting_bid;
-    }
-    public function add_picture(ItemPicture $picture): void {
-        $priority = $picture->get_priority();
-        $this->pictures[$priority] = $picture;
-    }
-
-
-    //MODIFY DATABASE
     public function delete(): void {
         /*
         doc: https://www.w3schools.com/mysql/mysql_delete.asp
@@ -390,6 +240,42 @@ class Item extends Model {
             ['item_id' => $this->id]
         );
     }
+    public function validate_title(): array {
+        $errors = [];
+
+        if (
+            mb_strlen($this->title) < Configuration::get("title_min_length", 3)
+            || mb_strlen($this->title) > Configuration::get("title_max_length", 255)
+        ) {
+            $errors[] = "Title length must be between 3 and 255 characters";
+        }
+
+        return $errors;
+    }
+    public function validate_ipp(): array {
+        $errors = [];
+
+        if ($this->buy_now_price !== null && $this->starting_bid !== null) {
+            if ($this->buy_now_price < $this->starting_bid) {
+                $errors[] = "Buy now price must be greater than the starting bid.";
+            }
+            if ($this->buy_now_price < 0) {
+                $errors[] = "Buy now price must be greater than 0.";
+            }
+        }
+
+        return $errors;
+    }
+    public function validate_bid(): array {
+        $errors = [];
+
+        if ($this->starting_bid !== null && $this->starting_bid < 0) {
+            $errors[] = "Starting bid must be positive.";
+        }
+
+        return $errors;
+    }
+
     public function persist(): Item {
         if ($this->id !== null) {
             // Mise à jour d'un item existant
@@ -435,67 +321,7 @@ class Item extends Model {
 
         return $this;
     }
-    public function persist_item_pictures(): void {
-        /*
-        doc: https://stackoverflow.com/questions/36766162/sql-query-insert-but-only-if-record-doesnt-already-exist
-        */
-        $params = ['item' => $this->id];
-        $placeholders = [];
 
-        $db_pictures_priorities = array_keys($this->db_get_pictures());
-
-        foreach ($this->pictures as $priority => $pic) {
-            /** @var ItemPicture $pic */
-            if (!in_array($priority, $db_pictures_priorities)) {
-                $placeholders[] = "(:item, :priority$priority, :pic_path$priority)";
-                $params["priority$priority"] = $priority;
-                $params["pic_path$priority"] = $pic->get_picture_path();
-            }
-        }
-
-        self::execute(
-            "INSERT INTO item_pictures(item, priority, picture_path)
-            VALUES " . implode(',', $placeholders) . ";",
-            $params
-        );
-    }
-
-    //VALIDATE
-    public function validate_title(): array {
-        $errors = [];
-
-        if (
-            mb_strlen($this->title) < Configuration::get("title_min_length", 3)
-            || mb_strlen($this->title) > Configuration::get("title_max_length", 255)
-        ) {
-            $errors[] = "Title length must be between 3 and 255 characters";
-        }
-
-        return $errors;
-    }
-    public function validate_ipp(): array {
-        $errors = [];
-
-        if ($this->buy_now_price !== null && $this->starting_bid !== null) {
-            if ($this->buy_now_price < $this->starting_bid) {
-                $errors[] = "Buy now price must be greater than the starting bid.";
-            }
-            if ($this->buy_now_price < 0) {
-                $errors[] = "Buy now price must be greater than 0.";
-            }
-        }
-
-        return $errors;
-    }
-    public function validate_bid(): array {
-        $errors = [];
-
-        if ($this->starting_bid !== null && $this->starting_bid < 0) {
-            $errors[] = "Starting bid must be positive.";
-        }
-
-        return $errors;
-    }
     public function unicity(): array {
         $errors = [];
 

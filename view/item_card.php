@@ -7,8 +7,11 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
 /** 
  * @var Bid $bid
  * @var Item $item
+ * @var ItemPicturesCollection $pictures_
  * @var ItemStatus $item_status 
  */
+
+$pictures_ = $item->get_pictures_();
 ?>
 
 <div class="card">
@@ -20,10 +23,10 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
     <!-- IMAGE & LABEL -->
     <div class="container-image">
         <!-- IMAGE -->
-        <?php if ($item->has_no_picture()): ?>
+        <?php if ($pictures_->has_no_pictures()): ?>
             <img src="https://upload.wikimedia.org/wikipedia/commons/f/f3/Question_mark_alternate.png"/>
         <?php else: ?>
-            <img src="<?= $item->get_main_picture_path() ?>" alt="Avatar">
+            <img src="<?= $item->get_pictures_()->get_main_picture()->get_picture_path() ?>" alt="Avatar">
         <?php endif; ?>
         <!-- LABEL -->
         <div class="container-label">
@@ -56,10 +59,10 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
                 <?php endif; ?>
 
                 <!-- IMAGE COUNT -->
-                <?php if (count($item->get_pictures()) > 1): ?>
+                <?php if ($item->get_pictures_()->has_many_pictures()): ?>
                     <div class="image-count">
                         <span class="material-symbols-outlined size-20">filter</span>
-                        <?= count($item->get_pictures()) ?> images
+                        <?= $item->get_pictures_()->get_picture_count() ?> images
                     </div>
                 <?php endif; ?>
             </div>

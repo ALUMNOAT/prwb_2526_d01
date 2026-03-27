@@ -93,16 +93,16 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             <?php //doc: https://github.com/bigskysoftware/htmx/issues/1541
             ?>
 
-            <h2>Current Image<?= $item->has_single_picture() ? "" : "s" ?></h2>
+            <h2>Current Image<?= $item->get_pictures_()->has_single_picture() ? "" : "s" ?></h2>
 
             <form method="POST" id="remove_image" action="item/remove_image/<?= $item->get_id() ?>"></form>
 
             <form method="POST" id="move_image" action="item/move_image/<?= $item->get_id() ?>"></form>
 
-            <?php $image_count = $item->get_picture_count(); ?>
+            <?php $image_count = $item->get_pictures_()->get_picture_count(); ?>
 
             <div class="images_container">
-                <?php foreach ($item->get_pictures() as $item_picture): ?>
+                <?php foreach ($item->get_pictures_()->get as $item_picture): ?>
                     <div>
                         <?php /** @var ItemPicture $item_picture */ ?>
                         <?php $priority = $item_picture->get_priority() ?>

@@ -6,31 +6,45 @@ require_once "model/ItemPicture.php";
 
 class ItemPicturesCollection extends Model {
     //ATTRIBUTES
+    private array $db_pictures = [];
     private array $local_pictures = [];
-    private ?ItemPicture $main_picture = null;
-    private ?ItemPicture $selected_picture = null;
-
 
     //__CONSTRUCT
     public function __construct(
         private Item $item,
         private array $db_pictures = [],
     ) {
-        $this->set_main_picture();
-        $this->set_selected_picture($this->main_picture);
     }
 
 
-    //OBJECT
+    //GET
+    public function get_pictures() : array {
+        return $this->db_pictures;
+    }
     public function get_picture(int $priority): ItemPicture|false {
         return $this->db_pictures[$priority] ?? false;
     }
     public function get_main_picture(): ?ItemPicture {
-        $this->set_main_picture();
-        return $this->main_picture;
+        return $this->get_first_priority() === 0 
+            ? null
+            : $this->db_pictures[$this->get_first_priority()];
     }
-    public function get_selected_picture(): ?ItemPicture {
-        return $this->selected_picture;
+    public function get_picture_count(): int {
+        //no local pictures since they're not validated yet
+        return count($this->db_pictures);
+    }
+    public function get_next_priority(): int {
+        return $this->get_last_priority() + 1;
+    }
+    public function get_first_priority(): int {
+        return !empty($db_pictures)
+            ? min(array_keys($db_pictures))
+            : 0;
+    }
+    public function get_last_priority(): int {
+        return !empty($db_pictures)
+            ? max(array_keys($db_pictures))
+            : 0;
     }
     public function get_all_pictures(): array {
         return $this->db_pictures;
@@ -44,114 +58,30 @@ class ItemPicturesCollection extends Model {
     public function has_single_picture(): bool {
         return $this->get_picture_count() === 1;
     }
-    public function has_many_pictures(): bool {
-        return $this->get_picture_count() > 1;
-    }
     public function has_pictures(): bool {
         return $this->get_picture_count() >= 1;
     }
+    public function has_many_pictures(): bool {
+        return $this->get_picture_count() > 1;
+    }
     public function is_first_priority(ItemPicture $pic): bool {
-        return $pic->get_priority() === $this->first_priority();
+        return $pic->get_priority() === $this->get_first_priority();
     }
     public function is_last_priority(ItemPicture $pic): bool {
-        return $pic->get_priority() === $this->last_priority();
+        return $pic->get_priority() === $this->get_last_priority();
     }
 
 
-    //NUMBERS
-    public function get_picture_count(): int {
-        //no local pictures since they're not validated yet
-        return count($this->db_pictures);
-    }
-    public function first_priority(): int {
-        return !empty($db_pictures)
-            ? min(array_keys($db_pictures))
-            : 0;
-    }
-    public function last_priority(): int {
-        return !empty($db_pictures)
-            ? max(array_keys($db_pictures))
-            : 0;
-    }
-
-
-    //ADD / SET
+    //ADD
     public function add(ItemPicture ...$pictures): void {
         //doc: https://stackoverflow.com/questions/16823611/passing-multiple-arguments-to-function-php
         //doc: https://www.php.net/manual/en/functions.arguments.php
-        $next_priority = $this->last_priority() + 1;
+        $next_priority = $this->get_last_priority() + 1;
 
         foreach ($pictures as $pic) {
             $pic->set_priority($next_priority);
             $local_pictures[$next_priority] = $pic;
             $next_priority++;
-        }
-    }
-    public function set_main_picture(): void {
-        !empty($this->db_pictures)
-            ? $this->main_picture = $this->db_pictures[$this->first_priority()]
-            : null;
-    }
-    public function set_selected_picture(ItemPicture $pic): bool {
-        if (in_array($pic, $this->db_pictures)) {
-            $this->selected_picture = $pic;
-            return true;
-        }
-        return false;
-    }
-    public function update(): void {
-        $this->set_db_pictures();
-        $this->set_main_picture();
-        $this->set_selected_picture($this->main_picture);
-    }
-    private function set_db_pictures(): void {
-        if ($this->item->get_id() !== null) {
-
-            $query = self::execute(
-                "SELECT p.priority, p.picture_path
-                FROM item_pictures AS p
-                WHERE p.item = :item_id
-                ORDER BY p.priority ASC",
-                ["item_id" => $this->item->get_id()]
-            );
-
-            $data = $query->fetchAll();
-
-            foreach ($data as $row) {
-                $this->db_pictures[$row['priority']] = new ItemPicture(
-                    $this->item,
-                    $row['priority'],
-                    $row['picture_path']
-                );
-            }
-        }
-    }
-    public static function set_pictures_for_items(array $items): void {
-        $placeholders = [];
-        $params = [];
-        foreach ($items as $item_id => $item) {
-            $placeholders[] = ":u$item_id";
-            $params[":u$item_id"] = $item->get_id();
-        }
-
-        $query = self::execute(
-            "SELECT *
-            FROM item_pictures
-            WHERE item IN ("
-                . implode(',', $placeholders) .
-                ")",
-            $params
-        );
-
-        $data = $query->fetchAll();
-        foreach ($data as $row) {
-            $pictures[$row['item']] = new ItemPicture(
-                $items[$row['item']],
-                $row['priority'],
-                $row['picture_path']
-            );
-
-            $items[$row['item']]->add_picture($picture);
         }
     }
 
@@ -177,5 +107,59 @@ class ItemPicturesCollection extends Model {
 
         array_merge($this->db_pictures, $this->local_pictures);
         $this->local_pictures = [];
+    }
+
+    public static function get_item_pictures_from_db(Item $item): ItemPicturesCollection {
+        $pictures = new ItemPicturesCollection($item);
+        $query = self::execute(
+            "SELECT *
+            FROM item_pictures AS p
+            WHERE p.item = :id",
+            ["id" => $item->get_id()]
+        );
+
+        $data = $query->fetchAll();
+        foreach ($data as $row) {
+            $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
+            $pictures->add($item_picture);
+        }
+
+        return $pictures;
+    }
+
+    public static function get_items_pictures_from_db(array $items): array {
+        /*
+        doc: https://www.php.net/manual/en/function.array-keys.php
+        doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
+        */
+        $items_pictures = [];
+
+        if (!empty($items)) {
+            $placeholders = [];
+            $params = [];
+            foreach ($items as $id => $item) {
+                $placeholders[] = ":u$id";
+                $params[":u$id"] = $item->get_id();
+                $items_pictures[$id] = new ItemPicturesCollection($item);
+            }
+
+            $query = self::execute(
+                "SELECT * 
+                FROM item_pictures
+                WHERE item IN ("
+                    . implode(',', $placeholders) .
+                    ")",
+                $params
+            );
+
+            $data = $query->fetchAll();
+            foreach ($data as $row) {
+                $item = $items[$row['item']];
+                $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
+                $items_pictures[$row['item']]->add($item_picture);
+            }
+        }
+
+        return $items_pictures;
     }
 }

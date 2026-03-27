@@ -8,29 +8,8 @@ require_once "model/Item.php";
 
 
 class ItemPicture extends Model {
-    //ATTRIBUTES
-    private static $phpFileUploadErrors = array(
-        /* 
-        doc: https://www.php.net/manual/en/features.file-upload.errors.php <-- see @Viktor's note
-        */
-        0 => 'There is no error, the file uploaded with success',
-        1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
-        2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
-        3 => 'The uploaded file was only partially uploaded',
-        4 => 'No file was uploaded',
-        6 => 'Missing a temporary folder',
-        7 => 'Failed to write file to disk.',
-        8 => 'A PHP extension stopped the file upload.',
-    );
-    private static $valid_types = [
-        'jpg' => 'image/jpeg',
-        'png' => 'image/png',
-        'gif' => 'image/gif',
-        'webp' => 'image/webp',
-    ];
+    private ?ItemPicturesCollection $pictures_ = null;
 
-
-    //__CONSTRUCT
     public function __construct(
         private Item $item,
         private int $priority,
@@ -39,18 +18,11 @@ class ItemPicture extends Model {
     ) {
         if (file_exists($this->get_thumbnail_path()))
             $this->thumbnail_path = $this->get_thumbnail_path();
+        $this->pictures_ = $item->get_pictures_();
     }
 
-
-    //BOOL
-    public function is_owner(Member $user): bool {
-        return $this->item->is_owner($user);
-    }
-    public function is_first_priority(): bool {
-        return $this->item->is_first_priority($this);
-    }
-    public function is_last_priority(): bool {
-        return $this->item->is_last_priority($this);
+    public function get_item(): Item {
+        return $this->item;
     }
 
 
@@ -74,10 +46,24 @@ class ItemPicture extends Model {
         return $thumbnail_path;
     }
 
+    public function set_item(Item $new_item): void {
+        $this->item = $new_item;
+    }
+    public function set_priority(int $new_priority): void {
+        $this->priority = $new_priority;
+    }
+    public function set_picture_path(string $new_picture_path): void {
+        $this->picture_path = $new_picture_path;
+    }
 
-    //OBJECT
-    public function get_item(): Item {
-        return $this->item;
+    public function is_owner(Member $user): bool {
+        return $this->item->is_owner($user);
+    }
+    public function is_first_priority(): bool {
+        return $this->pictures_->is_first_priority($this);
+    }
+    public function is_last_priority(): bool {
+        return $this->pictures_->is_last_priority($this);
     }
     public static function get_main_picture(Item $item): ItemPicture|false {
         $query = self::execute(
@@ -87,17 +73,15 @@ class ItemPicture extends Model {
             ["id" => $item->get_id()]
         );
 
-        if ($query->rowCount() == 0)
-            return false;
-        else {
+        $item_picture = false;
+
+        if ($query->rowCount() > 0) {
             $row = $query->fetch();
-            $item_picture = new ItemPicture(
-                $item, //should I use the variable $item or call the static method ?
-                $row['priority'],
-                $row['picture_path']
-            );
-            return $item_picture;
+            $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
         }
+        
+        return $item_picture;
+        
     }
     public static function get_items_picture(array $items): array {
         /*
@@ -126,11 +110,9 @@ class ItemPicture extends Model {
         $data = $query->fetchAll();
         $items_pictures = [];
         foreach ($data as $row) {
-            $items_pictures[$row['item']][$row['priority']] = new ItemPicture(
-                $items[$row['item']],
-                $row['priority'],
-                $row['picture_path']
-            );
+            $item = $items[$row['item']];
+            $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
+            $items_pictures[$row['item']][$row['priority']] = $item_picture;
         }
 
         return $items_pictures;
@@ -145,31 +127,19 @@ class ItemPicture extends Model {
             ["item_id" => $item->get_id(), "priority" => $priority]
         );
 
-        if ($query->rowCount() === 0)
-            return false;
+        $item_picture = false;
 
-        else {
+        if ($query->rowCount() > 0) {
             $row = $query->fetch();
-            $item_picture = new ItemPicture($item, $priority, $row['picture_path']);
-
-            return $item_picture;
+            $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
         }
+
+        return $item_picture;
+    }
+    public static function get_item_picture_from_row(array $row, Item $item, String $priority = "priority", String $picture_path = "picture_path"): ItemPicture {
+        return new ItemPicture($item, $row[$priority], $row[$picture_path]);
     }
 
-
-    //ADD / SET
-    public function set_item(Item $new_item): void {
-        $this->item = $new_item;
-    }
-    public function set_priority(int $new_priority): void {
-        $this->priority = $new_priority;
-    }
-    public function set_picture_path(string $new_picture_path): void {
-        $this->picture_path = $new_picture_path;
-    }
-
-
-    //MODIFY DATABASE
     public function persist(): void {
         self::execute(
             "INSERT INTO item_pictures(item,priority,picture_path) 
