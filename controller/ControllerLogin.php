@@ -7,19 +7,10 @@ require_once 'utils/Role.php';
 
 
 class ControllerLogin extends Controller {
-    //Luca: if we have a __construct() we can check if a user is logged before anything else
-    /*
-    public function __construct() {
-        //before anything, check first if a user is already logged in
-        if ($this->user_logged())
-            $this->redirect("testy");
-    }
-    */
-
     public function index(): void {
-        if ($this->user_logged()) {   //already connected, redirect
+        if ($this->user_logged()) {
             $this->redirect('item', 'browse');
-        } else {                       //nobody connected, or trying connection
+        } else {
             $email = "";
             $password = "";
             $errors = [];

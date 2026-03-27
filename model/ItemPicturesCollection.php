@@ -12,7 +12,6 @@ class ItemPicturesCollection extends Model {
     //__CONSTRUCT
     public function __construct(
         private Item $item,
-        private array $db_pictures = [],
     ) {
     }
 
@@ -127,12 +126,12 @@ class ItemPicturesCollection extends Model {
         return $pictures;
     }
 
-    public static function get_items_pictures_from_db(array $items): array {
+    public static function set_items_pictures_from_db(array $items): void {
         /*
         doc: https://www.php.net/manual/en/function.array-keys.php
         doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
         */
-        $items_pictures = [];
+        //$items_pictures = [];
 
         if (!empty($items)) {
             $placeholders = [];
@@ -140,7 +139,7 @@ class ItemPicturesCollection extends Model {
             foreach ($items as $id => $item) {
                 $placeholders[] = ":u$id";
                 $params[":u$id"] = $item->get_id();
-                $items_pictures[$id] = new ItemPicturesCollection($item);
+                //$items_pictures[$id] = $item->get_picture_();
             }
 
             $query = self::execute(
@@ -156,10 +155,8 @@ class ItemPicturesCollection extends Model {
             foreach ($data as $row) {
                 $item = $items[$row['item']];
                 $item_picture = ItemPicture::get_item_picture_from_row($row, $item);
-                $items_pictures[$row['item']]->add($item_picture);
+                $item->get_pictures_()->add($item_picture);
             }
         }
-
-        return $items_pictures;
     }
 }

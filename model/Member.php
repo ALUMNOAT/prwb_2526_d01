@@ -91,28 +91,6 @@ class Member extends Model {
         return $this->id === null;
     }
 
-    public function persist(): Member {
-        // Si l'ID existe (utilisateur existe), on update
-        if ($this->id !== null) {
-            // On met à jour l'utilisateur existant (un ID attribué déjà)
-            self::execute(
-                "UPDATE users
-                SET full_name=:full_name, email=:email, pseudo=:pseudo, password=:password, role=:role, picture_path=:picture_path, iban=:iban WHERE id=:id",
-                ["id" => $this->id, "full_name" => $this->full_name, "email" => $this->email, "pseudo" => $this->pseudo, "password" => $this->password, "role" => $this->role->value, "picture_path" => $this->picture_path, "iban" => $this->iban]
-            );
-        } else {
-            // Insertion nouveau utilisateur (pas d'ID)
-            self::execute(
-                "INSERT INTO users(full_name,email,pseudo,password,role,picture_path,iban) VALUES(:full_name, :email, :pseudo, :password, :role, :picture_path, :iban)",
-                ["full_name" => $this->full_name, "email" => $this->email, "pseudo" => $this->pseudo, "password" => $this->password, "role" => $this->role->value, "picture_path" => $this->picture_path, "iban" => $this->iban]
-            );
-            // Récupère l'id auto-incrémenté généré par MySQL
-            $this->id = self::lastInsertId();
-        }
-
-        return $this;
-    }
-
     public static function get_member_by_pseudo(string $pseudo): Member|false {
         $query = self::execute(
             "SELECT * FROM users WHERE pseudo = :pseudo",
@@ -368,6 +346,28 @@ class Member extends Model {
         return $errors;
     }
 
+    public function persist(): Member {
+        // Si l'ID existe (utilisateur existe), on update
+        if ($this->id !== null) {
+            // On met à jour l'utilisateur existant (un ID attribué déjà)
+            self::execute(
+                "UPDATE users
+                SET full_name=:full_name, email=:email, pseudo=:pseudo, password=:password, role=:role, picture_path=:picture_path, iban=:iban WHERE id=:id",
+                ["id" => $this->id, "full_name" => $this->full_name, "email" => $this->email, "pseudo" => $this->pseudo, "password" => $this->password, "role" => $this->role->value, "picture_path" => $this->picture_path, "iban" => $this->iban]
+            );
+        } else {
+            // Insertion nouveau utilisateur (pas d'ID)
+            self::execute(
+                "INSERT INTO users(full_name,email,pseudo,password,role,picture_path,iban) VALUES(:full_name, :email, :pseudo, :password, :role, :picture_path, :iban)",
+                ["full_name" => $this->full_name, "email" => $this->email, "pseudo" => $this->pseudo, "password" => $this->password, "role" => $this->role->value, "picture_path" => $this->picture_path, "iban" => $this->iban]
+            );
+            // Récupère l'id auto-incrémenté généré par MySQL
+            $this->id = self::lastInsertId();
+        }
+
+        return $this;
+    }
+
     public static function get_member(int $id): Member|false {
         $query = self::execute(
             "SELECT *
@@ -450,10 +450,7 @@ class Member extends Model {
             $item->set_status($status);
         }
 
-        $items_pictures = ItemPicturesCollection::get_items_pictures_from_db($items);
-        foreach ($items as $item) {
-            $item->set_pictures_($items_pictures[$item->get_id()]);
-        }
+        $items_pictures = ItemPicturesCollection::set_items_pictures_from_db($items);
 
         return $my_bidded_items;
     }

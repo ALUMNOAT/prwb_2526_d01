@@ -35,7 +35,8 @@ class ControllerItem extends Controller {
             /** @var Member $user */
             $user = $this->get_user_or_redirect();
 
-            $my_bids = $user->get_my_bids();    //returns '[]' for guests
+            $my_bids = $user->get_bids()->get_bids();
+            $available_items = 
             $available_items = Item::get_all_available_items($user);
             $my_available_items = array_diff_key($available_items, $my_bids);   // set theory: 'A - B' on keys (here it's item id)
 

@@ -4,7 +4,7 @@ require_once "model/Member.php";
 
 class UserItemsCollection extends Model {
     //ATTRIBUTES
-    private array $items = [];
+    private array $my_items = [];
 
     //__CONSTRUCT
     public function __construct(
@@ -23,7 +23,7 @@ class UserItemsCollection extends Model {
         $data = $query->fetchAll();
 
         $items_status = [];
-        $items = [];
+        $my_items = [];
 
     
         $data = $query->fetchAll();
@@ -31,7 +31,7 @@ class UserItemsCollection extends Model {
         foreach ($data as $row) {
             $item = Item::get_item_from_row($row, $this->user);
 
-            $items[$row['id']] = $item;
+            $my_items[$row['id']] = $item;
             $item_status = ItemStatus::get_item_status_from_row($row, $item);
 
             if ($item_status->has_sold())
@@ -42,8 +42,8 @@ class UserItemsCollection extends Model {
                 $my_items_status['active_items'][$item->get_id()] = $item_status;
         }
 
-        $items_pictures = ItemPicture::get_items_picture($items);
-        foreach ($items as $item) {
+        $items_pictures = ItemPicture::get_items_picture($my_items);
+        foreach ($my_items as $item) {
             /** @var Item $item */
             $item_id = $item->get_id();
             $item->set_pictures($items_pictures[$item_id] ?? []);

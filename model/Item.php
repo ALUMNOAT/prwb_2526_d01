@@ -4,11 +4,12 @@ require_once "utils/AppTime.php";
 require_once "model/Member.php";
 require_once "model/ItemPicture.php";
 require_once "model/ItemPicturesCollection.php";
+require_once "model/ItemBidsCollection.php";
 
 
 class Item extends Model {
     private ?ItemStatus $status = null;
-    private ?ItemPicturesCollection $pictures_;
+    private ?ItemPicturesCollection $pictures_ = null;
     private ?ItemBidsCollection $bids = null;
 
     //__CONSTRUCT
@@ -22,8 +23,8 @@ class Item extends Model {
         private int $duration_days,
         private ?float $starting_bid,
     ) {
-        $pictures_ = new ItemPicturesCollection($this);
-        $bids = new ItemBidsCollection($this);
+        $this->pictures_ = new ItemPicturesCollection($this);
+        $this->bids = new ItemBidsCollection($this);
     }
 
     public function get_id(): ?int {
@@ -50,13 +51,13 @@ class Item extends Model {
     public function get_starting_bid(): ?float {
         return $this->starting_bid;
     }
-    public function get_status(): ItemStatus {
+    public function get_status(): ?ItemStatus {
         return $this->status;
     }
     public function get_pictures_(): ?ItemPicturesCollection {
         return $this->pictures_;
     }
-    public function get_bids(): ItemBidsCollection {
+    public function get_bids(): ?ItemBidsCollection {
         return $this->bids;
     }
 
@@ -164,11 +165,7 @@ class Item extends Model {
                 $item = Item::get_item_from_row($row, $owner);
             }
 
-            $items_pictures = ItemPicturesCollection::get_items_pictures_from_db($items);
-            foreach ($items as $id => $item) {
-                $item->set_pictures_($items_pictures[$id]);
-            }
-
+            $items_pictures = ItemPicturesCollection::set_items_pictures_from_db($items);
         }
 
         return $items;
@@ -205,17 +202,14 @@ class Item extends Model {
             $available_items[$row['id']] = $status;
         }
 
-        $items_pictures = ItemPicturesCollection::get_items_pictures_from_db($items);
-        foreach ($items as $id => $item) {
-            $item->set_pictures_($items_pictures[$id]);
-        }
+        $items_pictures = ItemPicturesCollection::set_items_pictures_from_db($items);
 
         return $available_items;
     }
     public static function get_item_from_row(array $row, Member $owner, 
         String $id = "id", String $title = "title",String $description = "description",String $created_at = "created_at", 
         String $buy_now_price = "buy_now_price", String $duration_days = "duration_days", String $starting_bid = "starting_bid"): Item {
-        return new Item(
+            return new Item(
                 $row[$id],
                 $row[$title],
                 $row[$description] ?? null,
