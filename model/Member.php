@@ -148,6 +148,16 @@ class Member extends Model {
             );
 
     }
+    public static function get_members_from_rows(array $rows, String $id = "id", String $full_name = "full_name", 
+        String $email = "email",String $pseudo = "pseudo", String $password = "password", String $role = "role", 
+        String $picture_path = "picture_path", String $iban = "iban"): array {
+            //https://stackoverflow.com/questions/64441592/double-question-mark-and-an-equal-sign-what-does-that-operator-do
+            $members = [];
+            foreach($rows as $row) {
+                $members[$row[$id]] ??= Member::get_member_from_row($row);
+            }
+            return $members;
+    }
 
     private static function validate_password(string $password): array {
         $errors = [];
@@ -461,36 +471,30 @@ class Member extends Model {
         doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
         doc A: https://www.codestudy.net/blog/default-array-values-if-key-doesn-t-exist/#method-4-null-coalescing-assignment-
         */
-        if (empty($users_id))
-            return [];
 
-        $placeholders = [];
-        $params = [];
-        foreach ($users_id as $i => $u) {
-            $placeholders[] = ":u$i";
-            $params[":u$i"] = $u;
+        $members = [];
+
+        if (!empty($users_id)) {
+            $placeholders = [];
+            $params = [];
+            foreach ($users_id as $i => $u) {
+                $placeholders[] = ":u$i";
+                $params[":u$i"] = $u;
+            }
+            $query = self::execute(
+                "SELECT *
+                FROM users
+                WHERE users.id IN ("
+                    . implode(',', $placeholders) .
+                    ")",
+                $params
+            );
+
+            $data = $query->fetchAll();
+            $members = Member::get_members_from_rows($data);
         }
 
-        $query = self::execute(
-            "SELECT *
-            FROM users
-            WHERE users.id IN ("
-                . implode(',', $placeholders) .
-                ")",
-            $params
-        );
-
-        $data = $query->fetchAll();
-
-        $users = [];
-        foreach ($data as $row) {
-            //see 'doc A' for '??='
-            //it assigns a value if there are none already
-            $member = Member::get_member_from_row($row);
-            $users[$row['id']] ??= $member;
-        }
-
-        return $users;
+        return $members;
     }
 
     public function get_my_bids(): array {
@@ -615,11 +619,11 @@ class Member extends Model {
         );
 
         $sales = [];
-        $bidder = [];
         $items = [];
 
         if ($query->rowCount() > 0) {
             $data = $query->fetchAll();
+            $bidders = Member::get_members_from_rows($data, id: "u_id");
 
             foreach ($data as $row) {
                 $item = Item::get_item_from_row($row, $this);

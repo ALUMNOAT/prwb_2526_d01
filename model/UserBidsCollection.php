@@ -57,4 +57,14 @@ class UserBidsCollection extends Model {
 
         return $bids;
     }
+
+    public static function get_user_bids_from_rows(array $rows, Member $owner, array $items, String $item = "item", String $created_at = "created_at", String $amount = "amount"): array {
+        $user_bids = [];
+        foreach($rows as $row) {
+            $item_id = $row[$item];
+            $item = $items[$item_id];
+            $user_bids[$item_id][$row[$amount]] = Bid::get_bid_from_row($row, $owner, $item);
+        }
+        return $user_bids;
+    }
 }

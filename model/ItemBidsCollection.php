@@ -93,6 +93,14 @@ class ItemBidsCollection extends Model {
 
         return $bids;
     }
+    public static function get_item_bids_from_rows(array $rows, array $owners, Item $item, String $owner = "owner", String $created_at = "created_at", String $amount = "amount"): array {
+        $item_bids = [];
+        foreach($rows as $row) {
+            $owner = $owners[$row[$owner]];
+            $item_bids[$row[$amount]] = Bid::get_bid_from_row($row, $owner, $item);
+        }
+        return $item_bids;
+    }
 
 
     public static function set_item_bids_from_db(Item $item): void {

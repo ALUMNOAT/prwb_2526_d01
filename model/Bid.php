@@ -69,12 +69,8 @@ class Bid extends Model {
         $item = Item::get_item($item_id);
 
         $bids = [];
-        foreach ($data as $row) {
-            $owner = Member::get_member_from_row($row, $id = "user_id");
-
-            $bid = Bid::get_bid_from_row($row, $owner, $item);
-            $bids[] = $bid;
-        }
+        $owners = Member::get_members_from_rows($data, id: "user_id");
+        $bids = ItemBidsCollection::get_item_bids_from_rows($data, $owners, $item);
 
         return $bids;
     }
@@ -107,7 +103,6 @@ class Bid extends Model {
         return $errors;
     }
 
-
     public static function place_bid(Member $member, ItemStatus $item_status, float $amount): void {
         $created_at = date("Y-m-d H:i:s"); // timestamp
 
@@ -127,7 +122,6 @@ class Bid extends Model {
             throw $e; // or handle it gracefully
         }
     }
-
 
     public function equal(Bid $other_bid): bool {
         return $this->owner->equal($other_bid->get_owner())
