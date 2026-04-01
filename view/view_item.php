@@ -5,6 +5,8 @@
  * @var Item $item 
  * @var Member $member
  * @var ItemPicture $main_pic
+ * @var string $bid_path
+ * @var string $buy_path
  * */
 ?>
 
@@ -52,11 +54,11 @@
                         <img src="<?= $main_pic->get_picture_path() ?>" alt="Item picture">
                     <?php endif; ?>
                 </div>
-                
+
                 <!-- INFO -->
                 <div class='item-details'>
-                    <h1><?= $item->get_title() ?></h1>
-                    <p class="desc"><?= $item->get_description() ?? "No description" ?></p>
+                    <h1><?= Tools::sanitize($item->get_title()) ?></h1>
+                    <p class="desc"><?= Tools::sanitize($item->get_description()) ?? "No description" ?></p>
                     <p class="desc"><strong>Start:</strong> <?= $item->get_created_at() ?></p>
                     <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
                 </div>
@@ -79,7 +81,14 @@
 
             <!-- BIDS HISTORY -->
             <div class="bid-history">
-                <h3>Bid History</h3>
+                <div class='row'>
+                    <h3>Bid History</h3>
+                    <?php if (!empty($bids)): ?>
+                        <div class='entries'>
+                            <b><?= count($bids); ?> entries</b>
+                        </div>
+                    <?php endif; ?>
+                </div>
 
                 <?php if (empty($bids)): ?>
                     <p>No bids yet.</p>
@@ -95,7 +104,7 @@
                         <tbody>
                             <?php foreach ($bids as $bid): ?>
                                 <tr <?= $bid->get_is_highest_bid() ? "class='highlight'" : '' ?>>
-                                    <td><?= $bid->get_owner()->get_pseudo() ?></td>
+                                    <td><?= Tools::sanitize($bid->get_owner()->get_pseudo()) ?></td>
                                     <td><?= $bid->get_created_at() ?></td>
                                     <td>
                                         € <?= number_format($bid->get_amount(), 2, ",", ".") ?>
@@ -133,8 +142,8 @@
 
                 <!-- is the item biddable (by the connected member) ? -->
                 <?php if ($item_status->is_biddable($member)): ?>
-                    <form method="POST" action="item/bid/<?= $item->get_id() ?>/<?= $main_pic->get_priority() ?>" class="form-box">
-                        €<input type="text" id="bid_amount" name="bid_amount" class="input" value="<?= $currentBid + 1 ?>">
+                    <form method="POST" action=<?= $bid_path ?> class="form-box">
+                        €<input type="text" id="bid_amount" name="bid_amount" class="input" value="<?= ($currentBid + 1) ?>">
                         <br>
                         <br>
                         <button type="submit">Place Bid</button>
@@ -143,7 +152,7 @@
 
                 <!-- is the item buyable (by the connected member) ? -->
                 <?php if ($item_status->is_buyable($member)): ?>
-                    <form method="POST" action="item/buy/<?= $item->get_id() ?>/<?= $main_pic->get_priority() ?>" class="form-box">
+                    <form method="POST" action=<?= $buy_path ?> class="form-box">
                         <button type="submit" name="buy" class="buy">Buy now at € <?= $buyNowPrice ?></button>
                     </form>
                 <?php endif; ?>
@@ -155,9 +164,9 @@
                 <?php if (!$item->get_owner()->get_picture_path()): ?>
                     <span class="material-symbols-outlined size-120">account_circle</span>
                 <?php else: ?>
-                    <img src="<?= $item->get_owner()->get_picture_path() ?>" width="100" alt="<?= $member->get_pseudo() ?>&apos;s photo!">
+                    <img src="<?= $item->get_owner()->get_picture_path() ?>" width="100" alt="<?= Tools::sanitize($item->get_owner()->get_pseudo()) ?>&apos;s photo!">
                 <?php endif; ?>
-                <label class="label"><?= $item->get_owner()->get_pseudo() ?></label>
+                <label class="label"><?= Tools::sanitize($item->get_owner()->get_pseudo()) ?></label>
                 <p class="desc">Member</p>
             </div>
 
@@ -166,17 +175,15 @@
                 <div class="manage-item">
                     <h3>Manage Your Item</h3>
                     <?php if (!$item_status->get_has_bids()): ?>
-                    <a href="item/edit/<?= $item->get_id() ?>" class="row">
-                        <div class="row-title">Edit Item Details</div>
-                    </a>
-                    <?php endif; ?>
+                        <a href="item/edit/<?= $item->get_id() ?>" class="row">
+                            <div class="row-title">Edit Item Details</div>
+                        </a>
 
                     <a href="item/manage_images/<?= $item->get_id() ?>" class="row">
                         <div class="row-title">Manage Images</div>
                     </a>
 
-                    <?php /** @var ItemStatus $item_status */
-                    if (!$item_status->get_has_bids()): ?>
+                    <?php /** @var ItemStatus $item_status */ ?>
                         <a href="my_items/delete/<?= $item->get_id() ?>" class="row">
                             <div class="row-title">Delete Item</div>
                         </a>

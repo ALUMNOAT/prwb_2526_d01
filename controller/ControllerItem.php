@@ -48,7 +48,7 @@ class ControllerItem extends Controller {
 
             if ($page > $bids_pages && $page > $items_pages) {   //user entered a big number ? go to last page
                 $page = strval(max($bids_pages, $items_pages));
-                $this->redirect('browse', 'page', $page);
+                $this->redirect('item', 'browse', $page);
             }
 
             (new View("browse"))->show([
@@ -92,18 +92,24 @@ class ControllerItem extends Controller {
             "main_pic" => $main_pic,
             "pictures" => $picture,
             "errors" => [],
-            "success" => ""
+            "success" => "",
+            "bid_path" => $this->bid_path($item, $main_pic),
+            "buy_path" => $this->buy_path($item, $main_pic)
         ]);
     }
 
     public function bid(): void {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
+        $main_pic_priority = $this->get_priority_or_false($_GET['param2']);
+        $errors = [];
 
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
-        $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
+
+        $main_pic = $main_pic_priority
+            ? $this->get_item_picture_or_default($item, $main_pic_priority, 'item', 'show')
+            : null;
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
         if (!$item_status->is_biddable($user))
@@ -128,6 +134,8 @@ class ControllerItem extends Controller {
             "main_pic" => $main_pic,
             "pictures" => $item->get_pictures(),
             "errors" => $errors,
+            "bid_path" => $this->bid_path($item, $main_pic),
+            "buy_path" => $this->buy_path($item, $main_pic)
         ]);
     }
 
@@ -135,12 +143,15 @@ class ControllerItem extends Controller {
         //user and IDs
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $main_pic_priority = $this->get_priority_or_redirect($_GET['param2']);
+        $main_pic_priority = $this->get_priority_or_false($_GET['param2']);
+        $errors = [];
 
         //item, picture and bid
         $item_status = $this->get_item_status_or_redirect($item_id);
         $item = $item_status->get_item();
-        $main_pic = $this->get_item_picture_or_redirect($item, $main_pic_priority, 'item', 'show');
+        $main_pic = $main_pic_priority
+            ? $this->get_item_picture_or_default($item, $main_pic_priority, 'item', 'show')
+            : null;
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
 
         if (!$item_status->is_buyable($user))
@@ -148,7 +159,6 @@ class ControllerItem extends Controller {
 
         if (isset($_POST["buy"])) {
             $buy_now_price = $item->get_buy_now_price();
-            $errors = Bid::validate_bid($user, $item_status, $buy_now_price);
 
             if (empty($errors)) {
                 Bid::place_bid($user, $item_status, $buy_now_price);
@@ -165,6 +175,8 @@ class ControllerItem extends Controller {
             "main_pic" => $main_pic,
             "pictures" => $item->get_pictures(),
             "errors" => $errors,
+            "bid_path" => $this->bid_path($item, $main_pic),
+            "buy_path" => $this->buy_path($item, $main_pic),
         ]);
     }
 
@@ -191,11 +203,43 @@ class ControllerItem extends Controller {
             $sale_price = isset($_POST['sale_price']) && $_POST['sale_price'] !== ''
                 ? (float)$_POST['sale_price']
                 : null;
+                
+            // VALIDATIONS DES COMBINAISONS
+                
+            // 1) starting_bid ET sale_price interdit  
+            // bid = on
+            // ipp = null
+            // sale price = on  
+            if ($starting_bid !== null && $sale_price !== null) {
+                $errors[] = "You cannot use both 'Starting Bid' and 'Sale Price'. Choose 'Instant Purchase Price' instead.";
+            }
+            
+            // 2) buy_now_price sans starting_bid interdit
+            // bid = null
+            // ipp = on
+            // starting bid = on
+            if ($buy_now_price !== null && $starting_bid === null && $sale_price === null) {
+                $errors[] = "Instant Purchase Price requires a Starting Bid for auctions.";
+            }
+            
+            // 3) buy_now_price ET sale_price interdit
+            // ipp = on
+            // starting bid = on
+            if ($buy_now_price !== null && $sale_price !== null) {
+                $errors[] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
+            }
+            
+            // 4) Pas de prix interdit
+            if ($starting_bid === null && $buy_now_price === null && $sale_price === null) {
+                $errors[] = "You must specify at least one price (Starting Bid or Sale Price).";
+            }
 
-            // Si sale_price existe et reste est null, alors pas de bid et buy_now_price = $sale_price
+            // Conversion : si sale_price seul => buy only
+            // bid = null
+            // ipp = null
+            // sale price = on
             if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
                 $buy_now_price = $sale_price;
-                $starting_bid = null;
             }
 
             $item = new Item(
@@ -211,12 +255,15 @@ class ControllerItem extends Controller {
             );
 
             // Validate
-            $errors = array_merge(
-                $item->validate_title(),
-                $item->validate_bid(),
-                $item->validate_ipp(),
-                $item->unicity()
-            );
+            if (empty($errors)) {
+                $errors = array_merge(
+                    $errors,
+                    $item->validate_title(),
+                    $item->validate_prices(),
+                    $item->validate_description(),
+                    $item->unicity()
+                );
+            }
 
             // If valid, persist and redirect
             if (empty($errors)) {
@@ -254,7 +301,7 @@ class ControllerItem extends Controller {
         if (!empty($_POST)) {
             // Fetch data
             $title = html_entity_decode($_POST['title'], ENT_QUOTES, 'UTF-8') ?? '';
-            $description = html_entity_decode($_POST['description'], ENT_QUOTES, 'UTF-8') ?? null;
+            $description = html_entity_decode($_POST['description'], ENT_QUOTES, 'UTF-8') ?? '';
             $duration_days = isset($_POST['days']) ? (int)$_POST['days'] : 7;
 
             $starting_bid = isset($_POST['starting_bid']) && $_POST['starting_bid'] !== ''
@@ -268,13 +315,45 @@ class ControllerItem extends Controller {
             $sale_price = isset($_POST['sale_price']) && $_POST['sale_price'] !== ''
                 ? (float)$_POST['sale_price']
                 : null;
-
-            // Si sale_price existe et reste est null, alors pas de bid et buy_now_price = $sale_price
+            
+            // VALIDATIONS DES COMBINAISONS
+                    
+            // 1) starting_bid ET sale_price interdit  
+            // bid = on
+            // ipp = null
+            // sale price = on  
+            if ($starting_bid !== null && $sale_price !== null) {
+                $errors[] = "You cannot use both 'Starting Bid' and 'Sale Price'. Choose 'Instant Purchase Price' instead.";
+            }
+                
+            // 2) buy_now_price sans starting_bid interdit
+            // bid = null
+            // ipp = on
+            // starting bid = on
+            if ($buy_now_price !== null && $starting_bid === null && $sale_price === null) {
+                $errors[] = "Instant Purchase Price requires a Starting Bid for auctions.";
+            }
+                
+            // 3) buy_now_price ET sale_price interdit
+            // ipp = on
+            // starting bid = on
+            if ($buy_now_price !== null && $sale_price !== null) {
+                $errors[] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
+            }
+                
+            // 4) Pas de prix interdit
+            if ($starting_bid === null && $buy_now_price === null && $sale_price === null) {
+                $errors[] = "You must specify at least one price (Starting Bid or Sale Price).";
+            }
+    
+            // Conversion : si sale_price seul => buy only
+            // bid = null
+            // ipp = null
+            // sale price = on 
             if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
                 $buy_now_price = $sale_price;
-                $starting_bid = null;
             }
-
+            
             // set the modified values
             $item->set_title($title);
             $item->set_description($description);
@@ -283,12 +362,15 @@ class ControllerItem extends Controller {
             $item->set_buy_now_price($buy_now_price);
 
             // Validate
-            $errors = array_merge(
-                $item->validate_title(),
-                $item->validate_bid(),
-                $item->validate_ipp(),
-                $item->unicity()
-            );
+            if (empty($errors)) {
+                $errors = array_merge(
+                    $errors,
+                    $item->validate_title(),
+                    $item->validate_description(),
+                    $item->validate_prices(),
+                    $item->unicity()
+                );
+            }
 
             // If valid, persist and redirect
             if (empty($errors)) {
@@ -308,9 +390,13 @@ class ControllerItem extends Controller {
     public function manage_images(): void {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $item = $this->get_item_or_redirect($item_id, $user);
+        $item_status = $this->get_item_status_or_redirect($item_id, $user);
 
-        (new View("manage_images"))->show(["user" => $user, "item" => $item]);
+        if ($item_status->get_has_bids() || $item_status->has_sold()) {
+            $this->redirect("item", "show", $item_id);
+        }
+
+        (new View("manage_images"))->show(["user" => $user, "item" => $item_status->get_item()]);
     }
 
     public function add_images(): void {
@@ -324,7 +410,13 @@ class ControllerItem extends Controller {
         */
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $item = $this->get_item_or_redirect($item_id, $user);
+        $item_status = $this->get_item_status_or_redirect($item_id, $user);
+        $item = $item_status->get_item();
+
+        if ($item_status->get_has_bids() || $item_status->has_sold()) {
+            $this->redirect("item", "show", $item_id);
+        }
+
         $errors = [];
 
         if (isset($_POST['upload']) && isset($_FILES['images']) && !empty($_FILES['images']['type'][0])) {
@@ -369,7 +461,13 @@ class ControllerItem extends Controller {
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $picture_priority = $this->get_priority_or_redirect($_POST['delete'], 'item', 'manage_images', $item_id);
-        $item = $this->get_item_or_redirect($item_id, $user);
+        $item_status = $this->get_item_status_or_redirect($item_id, $user);
+        $item = $item_status->get_item();
+
+        if ($item_status->get_has_bids() || $item_status->has_sold()) {
+            $this->redirect("item", "show", $item_id);
+        }
+        
         $item_picture = $this->get_item_picture_or_redirect($item, $picture_priority);
 
         if ($item_picture->is_owner($user))
@@ -422,6 +520,15 @@ class ControllerItem extends Controller {
         return $priority;
     }
 
+    private function get_priority_or_false(mixed $priority): int|false {
+        if (!NumberConverter::is_id($priority))
+            $priority = false;
+        else
+            $priority = NumberConverter::get_id_or_false($priority);
+
+        return $priority;
+    }
+
     private function get_item_or_redirect(int $item_id, ?Member $owner = null): Item {
         $item = Item::get_item($item_id);
         if (!$item || $owner !== null && !$item->is_owner($owner))
@@ -443,6 +550,15 @@ class ControllerItem extends Controller {
         return $pic;
     }
 
+    private function get_item_picture_or_default(Item $item, int $pic_priority, string $controller = 'item', string $action = 'manage_images'): ?ItemPicture {
+        $pic = $item->get_picture($pic_priority);
+        if (!$pic && $item->has_no_picture())
+            $pic = null;
+        else
+            $pic = $item->get_picture(1);
+        return $pic;
+    }
+
     private function append_count_if_it_already_exist(string &$path): void {
         $pathinfo = pathinfo($path);
         $temp_path = $pathinfo['dirname'] . "/" . $pathinfo['filename'] . ".jpg";
@@ -456,5 +572,19 @@ class ControllerItem extends Controller {
         }
 
         $path = $temp_path;
+    }
+
+    private function bid_path(Item $item, ?ItemPicture $main_pic): string {
+        $bid_path = 'item/bid/' . $item->get_id();
+        if (!is_null($main_pic))
+            $bid_path = $bid_path . "/" . $main_pic->get_priority();
+        return $bid_path;
+    }
+
+    private function buy_path(Item $item, ?ItemPicture $main_pic): string {
+        $buy_path = 'item/buy/' . $item->get_id();
+        if (!is_null($main_pic))
+            $buy_path = $buy_path . "/" . $main_pic->get_priority();
+        return $buy_path;
     }
 }
