@@ -24,6 +24,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse</title>
     <base href="<?= $web_root ?>">
     <link rel="stylesheet" href="css/colors.css">
@@ -32,7 +33,29 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
     <link rel="stylesheet" href="css/top_navbar.css">
     <link rel="stylesheet" href="css/manage_images.css">
     <link rel="stylesheet" href="css/menu.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
+    <script>
+        var middle_width, middle_height;
+
+        $( document ).ready(function() {
+            middle_width = $("#sortable div:first").width()/2;
+            middle_height = $("#sortable div:first img").height()/2;
+        });
+         
+        $(function() {
+            $("#sortable").sortable({
+                opacity: 0.4,
+                cursor: "move",
+                cursorAt: { top: middle_height, left: middle_width },
+                stop: function( event, ui ) {
+                    console.log(ui.item.width());
+                }
+            });
+        } );
+
+        
+  </script>
 </head>
 
 <body>
@@ -101,7 +124,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
             <?php $image_count = $item->get_picture_count(); ?>
 
-            <div class="images_container">
+            <div class="images_container" id="sortable">
                 <?php foreach ($item->get_pictures() as $item_picture): ?>
                     <div>
                         <?php /** @var ItemPicture $item_picture */ ?>
