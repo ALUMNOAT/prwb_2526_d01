@@ -36,12 +36,17 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
     <script>
-        let middle_width, middle_height, item_id;
+        let middle_width, middle_height, item_id, photos;
 
         $(document).ready(function() {
             set_variables();
             remove_non_ajax();
+            add_ajax();
+            //refresh_priority();
+            make_it_sortable();
+        });
 
+        function make_it_sortable() {
             $("#sortable").sortable({
                 opacity: 0.4,
                 cursor: "move",
@@ -50,20 +55,55 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                     console.log(ui.item.width());
                 }
             });
-        });
-
-         
-        function remove_non_ajax() {
-           $("#move_image").remove();
-           $("#remove_image").remove();
         }
 
         function set_variables() {
             //https://stackoverflow.com/questions/5873810/how-can-i-get-last-characters-of-a-string <-- see Jamon answer's
             //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
+            //https://api.jquery.com/children/
+            //https://html.spec.whatwg.org/#embedding-custom-non-visible-data-with-the-data-*-attributes
             middle_width = $("#sortable div:first").width()/2;
             middle_height = $("#sortable div:first img").height()/2;
             item_id = parseInt($("#input_images").attr("action").split("/").pop()); //Jamon + parseInt ^
+
+            photos = $("#sortable").children().each(function() {
+                priority = parseInt($(this).find("button[name='delete']").attr("value"));
+                $(this).attr("data-priority", priority);
+                $(this).find("button[name='move']").attr("data-priority", priority);
+            });
+        }
+
+        function remove_non_ajax() {
+            //https://api.jquery.com/removeAttr/
+            $("#move_image").remove();
+            $("#remove_image").remove();
+            $("#sortable button").removeAttr("formaction type form")
+        }
+
+        function add_ajax() {
+            //https://api.jquery.com/attribute-equals-selector/
+            //https://stackoverflow.com/questions/9122078/difference-between-onclick-vs-click
+            $("#sortable button[name='move']").on("click", function() {
+                move_image($(this).attr("data-priority"), $(this).attr("value"))
+            });
+            $("#sortable button[name='delete']").on("click", function() {delete_image()});
+        }
+
+        function refresh_priority() {
+            i = 1;
+            photos.each(function() {
+                $(this).attr("data-priority", i++);
+            })
+        }
+
+        function delete_image() {
+            //TODO: add ajax
+            console.log("it works");
+        }
+
+        function move_image(from_priority, to_priority) {
+            //TODO: add ajax
+            console.log(from_priority + " -> " + to_priority);
         }
 
   </script>
