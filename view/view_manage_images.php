@@ -42,17 +42,22 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             set_variables();
             remove_non_ajax();
             add_ajax();
-            //refresh_priority();
+            refresh_priority();
             make_it_sortable();
         });
 
         function make_it_sortable() {
+            //https://stackoverflow.com/questions/2754021/jquery-get-a-list-of-values-of-an-attribute-from-elements-of-a-class <-- See Kobi's answer
             $("#sortable").sortable({
                 opacity: 0.4,
                 cursor: "move",
                 cursorAt: { top: middle_height, left: middle_width },
-                stop: function( event, ui ) {
-                    console.log(ui.item.width());
+                stop: function(event, ui) {
+                    before_photos = photos;
+                    refresh_priority();
+                    priorities_before = before_photos.map(function(){return $(this).attr("data-priority");}).get();
+                    priorities_after = photos.map(function(){return $(this).attr("data-priority");}).get();
+                    db_update_priorities(priorities_before, priorities_after);
                 }
             });
         }
@@ -62,6 +67,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
             //https://api.jquery.com/children/
             //https://html.spec.whatwg.org/#embedding-custom-non-visible-data-with-the-data-*-attributes
+            //https://www.tutorialrepublic.com/faq/how-to-get-the-children-of-the-this-selector-in-jquery.php
             middle_width = $("#sortable div:first").width()/2;
             middle_height = $("#sortable div:first img").height()/2;
             item_id = parseInt($("#input_images").attr("action").split("/").pop()); //Jamon + parseInt ^
@@ -90,9 +96,12 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
         }
 
         function refresh_priority() {
+            photos = $("#sortable").children();
+
             i = 1;
             photos.each(function() {
                 $(this).attr("data-priority", i++);
+                $(this).find("button[name='move']").attr("data-priority", priority);
             })
         }
 
@@ -104,6 +113,14 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
         function move_image(from_priority, to_priority) {
             //TODO: add ajax
             console.log(from_priority + " -> " + to_priority);
+            $.post("item/move_image_ajax/"+item_id,
+                {source_priority: from_priority.toString(), target_priority: to_priority.toString() }
+            )
+        }
+
+        function db_update_priorities(priorities_before, priorities_after) {
+            //TODO: add ajax
+            console.log(priorities_before + " -> " + priorities_after);
         }
 
   </script>

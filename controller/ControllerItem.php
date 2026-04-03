@@ -496,6 +496,13 @@ class ControllerItem extends Controller {
         (new View("manage_images"))->show(["user" => $user, "item" => $item]);
     }
 
+    public function move_image_ajax() : void {
+        $user = $this->get_user_or_redirect_guess();
+        $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $source_priority = $_POST['source_priority'];
+        $target_priority = $_POST['target_priority'];
+    }
+
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {
         /** @var Member $user */
         $user = $this->get_user_or_redirect();
