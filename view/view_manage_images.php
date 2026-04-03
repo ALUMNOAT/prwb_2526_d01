@@ -36,14 +36,12 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
     <script>
-        var middle_width, middle_height;
+        let middle_width, middle_height, item_id;
 
-        $( document ).ready(function() {
-            middle_width = $("#sortable div:first").width()/2;
-            middle_height = $("#sortable div:first img").height()/2;
-        });
-         
-        $(function() {
+        $(document).ready(function() {
+            set_variables();
+            remove_non_ajax();
+
             $("#sortable").sortable({
                 opacity: 0.4,
                 cursor: "move",
@@ -52,9 +50,22 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                     console.log(ui.item.width());
                 }
             });
-        } );
+        });
 
-        
+         
+        function remove_non_ajax() {
+           $("#move_image").remove();
+           $("#remove_image").remove();
+        }
+
+        function set_variables() {
+            //https://stackoverflow.com/questions/5873810/how-can-i-get-last-characters-of-a-string <-- see Jamon answer's
+            //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
+            middle_width = $("#sortable div:first").width()/2;
+            middle_height = $("#sortable div:first img").height()/2;
+            item_id = parseInt($("#input_images").attr("action").split("/").pop()); //Jamon + parseInt ^
+        }
+
   </script>
 </head>
 
@@ -76,7 +87,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
         <div class="section">
             <h2>Add New Images</h2>
 
-            <form method="POST" action="item/add_images/<?= $item->get_id() ?>" enctype="multipart/form-data">
+            <form id="input_images" method="POST" action="item/add_images/<?= $item->get_id() ?>" enctype="multipart/form-data">
                 <h3>
                     <b>Select Images</b>
                 </h3>
