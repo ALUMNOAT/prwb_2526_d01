@@ -501,6 +501,25 @@ class ControllerItem extends Controller {
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $source_priority = $_POST['source_priority'];
         $target_priority = $_POST['target_priority'];
+        $item = $this->get_item_or_redirect($item_id, $user);
+        ItemPicture::db_update_priorities($item, $source_priority);
+    }
+
+    public function db_update_priorities_ajax() : void {
+        //https://reqbin.com/code/php/0uwqq41y/json-to-array-php-example#:~:text=Converting%20JSON%20to%20PHP%20Array,JSON%20to%20a%20PHP%20array.
+        //https://www.php.net/var_export
+        $user = $this->get_user_or_redirect_guess();
+        $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $source_priority = $_POST['source_priorities'];
+        $target_priority = $_POST['target_priorities'];
+        //echo var_export($source_priority, true) . var_export($target_priority, true);
+        $item = $this->get_item_or_redirect($item_id, $user);
+        echo ItemPicture::db_update_priorities($item, $source_priority);
+    }
+
+    public function test(): String {
+        echo "This is weird";
+        return "This is supposed to work";
     }
 
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {

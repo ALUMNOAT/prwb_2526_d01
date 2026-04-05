@@ -17,7 +17,6 @@ class ItemPicture extends Model {
         if (file_exists($this->get_thumbnail_path()))
             $this->thumbnail_path = $this->get_thumbnail_path();
     }
-
     public function get_item(): Item {
         return $this->item;
     }
@@ -256,5 +255,39 @@ class ItemPicture extends Model {
         }
 
         return $errors;
+    }
+
+    public static function db_update_priorities(Item $item, array $priorities_before): String {
+        //https://stackoverflow.com/questions/20255138/sql-update-multiple-records-in-one-query <-- see Camille's answer
+        //https://medium.com/geekculture/update-multiple-rows-in-sql-with-different-values-at-once-7d2eddb0b85f
+
+        $placeholders = [];
+        $params = ["item_id" => $item->get_id()];
+
+        foreach ($priorities_before as $index => $priority) {
+            $placeholders[] = "WHEN priority = -$index THEN :u$priority";
+            $params[":u$priority"] = $priority;
+        }
+
+        $test = "UPDATE item_pictures AS p
+            SET p.priority = -p.priority
+            WHERE p.item = :item_id;
+
+            UPDATE item_pictures AS p
+            SET priority = (CASE" . implode(' ', $placeholders) . " END)
+            WHERE p.item = :=item_id;";
+        
+        /*$query = self::execute(
+            "UPDATE item_pictures AS p
+            SET p.priority = -p.priority
+            WHERE p.item = :item_id;
+
+            UPDATE item_pictures AS p
+            SET priority = (CASE" . implode(' ', $placeholders) . " END)
+            WHERE p.item = :=item_id;",
+            $params
+        );*/
+        
+        return $test;
     }
 }

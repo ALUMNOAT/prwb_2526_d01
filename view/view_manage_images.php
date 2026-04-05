@@ -57,7 +57,10 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                     refresh_priority();
                     priorities_before = before_photos.map(function(){return $(this).attr("data-priority");}).get();
                     priorities_after = photos.map(function(){return $(this).attr("data-priority");}).get();
-                    db_update_priorities(priorities_before, priorities_after);
+                    
+                    console.log(priorities_before);
+                    console.log(priorities_after);
+                    db_update_priorities_ajax(priorities_before, priorities_after);
                 }
             });
         }
@@ -114,13 +117,34 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             //TODO: add ajax
             console.log(from_priority + " -> " + to_priority);
             $.post("item/move_image_ajax/"+item_id,
-                {source_priority: from_priority.toString(), target_priority: to_priority.toString() }
+                "{source_priority:" + from_priority.toString() + ", target_priority:" + to_priority.toString() + "}"
             )
         }
 
-        function db_update_priorities(priorities_before, priorities_after) {
+        async function db_update_priorities_ajax(priorities_before, priorities_after) {
             //TODO: add ajax
             console.log(priorities_before + " -> " + priorities_after);
+            console.log("####");
+
+            await $.post(
+                "item/test",
+                {test_var: 1},
+                function(data) {
+                    console.log(data);
+                }
+            );
+
+            console.log("####");
+
+            await $.post(
+                "item/db_update_priorities_ajax/"+item_id,
+                {source_priorities: priorities_before, target_priorities: priorities_after},
+                function(data) {
+                    console.log("@@@@");
+                    console.log(data);
+                    console.log("@@@@");
+                }
+            );
         }
 
   </script>
