@@ -510,11 +510,11 @@ class ControllerItem extends Controller {
         //https://www.php.net/var_export
         $user = $this->get_user_or_redirect_guess();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $source_priority = $_POST['source_priorities'];
-        $target_priority = $_POST['target_priorities'];
+        $priorities_before = $_POST['priorities_before'];
+        $priorities_after = $_POST['priorities_after'];
         //echo var_export($source_priority, true) . var_export($target_priority, true);
         $item = $this->get_item_or_redirect($item_id, $user);
-        echo ItemPicture::db_update_priorities($item, $source_priority);
+        ItemPicture::db_update_priorities($item, $priorities_after);
     }
 
     public function test(): String {

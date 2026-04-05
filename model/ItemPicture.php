@@ -257,37 +257,33 @@ class ItemPicture extends Model {
         return $errors;
     }
 
-    public static function db_update_priorities(Item $item, array $priorities_before): String {
+    public static function db_update_priorities(Item $item, array $priorities_after): void {
         //https://stackoverflow.com/questions/20255138/sql-update-multiple-records-in-one-query <-- see Camille's answer
         //https://medium.com/geekculture/update-multiple-rows-in-sql-with-different-values-at-once-7d2eddb0b85f
 
         $placeholders = [];
         $params = ["item_id" => $item->get_id()];
 
-        foreach ($priorities_before as $index => $priority) {
-            $placeholders[] = "WHEN priority = -$index THEN :u$priority";
-            $params[":u$priority"] = $priority;
+        $placeholders2 = [];
+        $params2 = ["item_id" => $item->get_id()];
+
+        foreach ($priorities_after as $index => $priority) {
+            $placeholders2[] = "SELECT -:u$priority AS priority, " . ($index+1) . " AS desired_priority";
+            $params2[":u$priority"] = intval($priority);
+            echo intval($priority);
         }
-
-        $test = "UPDATE item_pictures AS p
-            SET p.priority = -p.priority
-            WHERE p.item = :item_id;
-
-            UPDATE item_pictures AS p
-            SET priority = (CASE" . implode(' ', $placeholders) . " END)
-            WHERE p.item = :=item_id;";
         
-        /*$query = self::execute(
+        $query = self::execute(
             "UPDATE item_pictures AS p
             SET p.priority = -p.priority
             WHERE p.item = :item_id;
 
-            UPDATE item_pictures AS p
-            SET priority = (CASE" . implode(' ', $placeholders) . " END)
-            WHERE p.item = :=item_id;",
-            $params
-        );*/
-        
-        return $test;
+            UPDATE item_pictures AS pic
+            JOIN ( " . implode(' UNION ALL ', $placeholders2) . " ) AS temp
+            ON pic.priority = temp.priority SET pic.priority = temp.desired_priority;",
+            $params2
+        );
+
+        $query->debugDumpParams();
     }
 }

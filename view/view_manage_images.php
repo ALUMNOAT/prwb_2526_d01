@@ -48,21 +48,36 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
         function make_it_sortable() {
             //https://stackoverflow.com/questions/2754021/jquery-get-a-list-of-values-of-an-attribute-from-elements-of-a-class <-- See Kobi's answer
+            //https://www.freecodecamp.org/news/how-to-compare-arrays-in-javascript/
             $("#sortable").sortable({
                 opacity: 0.4,
                 cursor: "move",
                 cursorAt: { top: middle_height, left: middle_width },
-                stop: function(event, ui) {
-                    before_photos = photos;
-                    refresh_priority();
-                    priorities_before = before_photos.map(function(){return $(this).attr("data-priority");}).get();
-                    priorities_after = photos.map(function(){return $(this).attr("data-priority");}).get();
-                    
-                    console.log(priorities_before);
-                    console.log(priorities_after);
-                    db_update_priorities_ajax(priorities_before, priorities_after);
+                stop: function(/*event, ui*/) {
+                    console.log(priorities_changed());
+
+                    if(priorities_changed()) {
+                        priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get(); //1, 2, 3, 4
+                        photos_after = $("#sortable").children();
+                        priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get(); //2, 1, 3, 4
+                        refresh_priority();
+
+                        console.log("changed !");
+                        db_update_priorities_ajax(priorities_before, priorities_after);
+                        console.log(priorities_before + " --> " + priorities_after);
+                        refresh_arrows();
+                    }
                 }
             });
+        }
+
+        function priorities_changed() {
+            photos_after = $("#sortable").children();
+
+            priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get();
+            priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get();
+
+            return priorities_before.toString() !== priorities_after.toString();
         }
 
         function set_variables() {
@@ -71,6 +86,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             //https://api.jquery.com/children/
             //https://html.spec.whatwg.org/#embedding-custom-non-visible-data-with-the-data-*-attributes
             //https://www.tutorialrepublic.com/faq/how-to-get-the-children-of-the-this-selector-in-jquery.php
+            //https://stackoverflow.com/questions/2754021/jquery-get-a-list-of-values-of-an-attribute-from-elements-of-a-class <-- See Kobi's answer
             middle_width = $("#sortable div:first").width()/2;
             middle_height = $("#sortable div:first img").height()/2;
             item_id = parseInt($("#input_images").attr("action").split("/").pop()); //Jamon + parseInt ^
@@ -103,9 +119,31 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
             i = 1;
             photos.each(function() {
-                $(this).attr("data-priority", i++);
-                $(this).find("button[name='move']").attr("data-priority", priority);
+                $(this).attr("data-priority", i);
+                move_btn = $(this).find("button[name='move']");
+                move_btn.attr("data-priority", i);
+                move_btn.first().attr("value", i-1);
+                move_btn.last().attr("value", i+1);
+                i++;
             })
+        }
+
+        function refresh_arrows() {
+            //https://stackoverflow.com/questions/13207927/switch-statement-for-multiple-cases-in-javascript
+            priorities = photos.map(function(){return $(this).attr("data-priority");}).get();
+
+            min = 0;
+            max = priorities.length + 1;
+
+            $("button[name='move']").each(function() {
+                button = $(this);
+                target_priority = button.attr("value");
+                if(target_priority <= min || target_priority >= max) {
+                    button.prop("disabled", true);
+                } else {
+                    button.prop("disabled", false);
+                }
+            });
         }
 
         function delete_image() {
@@ -115,7 +153,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
         function move_image(from_priority, to_priority) {
             //TODO: add ajax
-            console.log(from_priority + " -> " + to_priority);
+            //console.log(from_priority + " -> " + to_priority);
             $.post("item/move_image_ajax/"+item_id,
                 "{source_priority:" + from_priority.toString() + ", target_priority:" + to_priority.toString() + "}"
             )
@@ -123,8 +161,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
         async function db_update_priorities_ajax(priorities_before, priorities_after) {
             //TODO: add ajax
-            console.log(priorities_before + " -> " + priorities_after);
-            console.log("####");
+            //console.log(priorities_before + " -> " + priorities_after);
 
             await $.post(
                 "item/test",
@@ -134,15 +171,11 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                 }
             );
 
-            console.log("####");
-
             await $.post(
                 "item/db_update_priorities_ajax/"+item_id,
-                {source_priorities: priorities_before, target_priorities: priorities_after},
+                {priorities_before: priorities_before, priorities_after: priorities_after},
                 function(data) {
-                    console.log("@@@@");
                     console.log(data);
-                    console.log("@@@@");
                 }
             );
         }
@@ -226,19 +259,17 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
                         <br>
 
-                        <?php if (!$item_picture->is_first_priority()): ?>
-                            <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>" 
-                            type="submit" name="move" id='move' form="move_image" value="<?= ($priority-1) ?>">
-                                <span class="material-symbols-outlined">arrow_left_alt</span>
-                            </button>
-                        <?php endif; ?>
+                        <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>"
+                        type="submit" name="move" id='move' form="move_image" value="<?= ($priority-1) ?>"
+                        <?= $item_picture->is_first_priority() ? "disabled" : "" ?>>
+                            <span class="material-symbols-outlined">arrow_left_alt</span>
+                        </button>
 
-                        <?php if (!$item_picture->is_last_priority()): ?>
-                            <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>" 
-                            type="submit" name="move" id='move' form="move_image" value="<?= ($priority+1) ?>">
-                                <span class="material-symbols-outlined">arrow_right_alt</span>
-                            </button>
-                        <?php endif; ?>
+                        <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>" 
+                        type="submit" name="move" id='move' form="move_image" value="<?= ($priority+1) ?>"
+                        <?= $item_picture->is_last_priority() ? "disabled" : "" ?>>
+                            <span class="material-symbols-outlined">arrow_right_alt</span>
+                        </button>
 
                         <button class="delete" type="submit" name="delete" id='delete' form="remove_image" value="<?= $priority ?>">
                             <span class="material-symbols-outlined">close_small</span>

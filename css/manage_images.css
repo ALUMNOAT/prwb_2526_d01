@@ -113,11 +113,11 @@ label {
             cursor: pointer;
         }
 
-        button:disabled {
-            border-color: black;
+        button[disabled] {
+            border-color: rgba(0, 0, 0, 0.4);
             cursor:default;
             span {
-                color: black;
+                color: rgba(0, 0, 0, 0.4);;
             }
         }
 
