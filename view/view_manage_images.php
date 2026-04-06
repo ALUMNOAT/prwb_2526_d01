@@ -41,9 +41,9 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
         $(document).ready(function() {
             set_variables();
             remove_non_ajax();
+            make_it_sortable();
             add_ajax();
             refresh_priority();
-            make_it_sortable();
         });
 
         function make_it_sortable() {
@@ -54,17 +54,13 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                 cursor: "move",
                 cursorAt: { top: middle_height, left: middle_width },
                 stop: function(/*event, ui*/) {
-                    console.log(priorities_changed());
-
                     if(priorities_changed()) {
                         priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get(); //1, 2, 3, 4
                         photos_after = $("#sortable").children();
                         priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get(); //2, 1, 3, 4
                         refresh_priority();
 
-                        console.log("changed !");
-                        db_update_priorities_ajax(priorities_before, priorities_after);
-                        console.log(priorities_before + " --> " + priorities_after);
+                        db_update_priorities_service(priorities_before, priorities_after);
                         refresh_arrows();
                     }
                 }
@@ -108,10 +104,29 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
         function add_ajax() {
             //https://api.jquery.com/attribute-equals-selector/
             //https://stackoverflow.com/questions/9122078/difference-between-onclick-vs-click
+            //https://stackoverflow.com/questions/698301/is-there-a-native-jquery-function-to-switch-elements <-- see User2820... 
+            //https://forum.jquery.com/portal/en/community/topic/swap-an-element-with-another-element
+            
             $("#sortable button[name='move']").on("click", function() {
-                move_image($(this).attr("data-priority"), $(this).attr("value"))
+                move_btn = $(this);
+                priority = move_btn.attr("data-priority");
+                target_priority = move_btn.attr("value");
+                move_image_service(priority, target_priority);
+
+                parent_node = move_btn.parent();
+                
+                if(target_priority > priority) {
+                    parent_node.insertAfter(parent_node.next());
+                } else if(target_priority < priority) {
+                    parent_node.insertBefore(parent_node.prev());
+                }
+                refresh_priority();
+                refresh_arrows();
             });
-            $("#sortable button[name='delete']").on("click", function() {delete_image()});
+
+            $("#sortable button[name='delete']").on("click", function() {
+                delete_image()
+            });
         }
 
         function refresh_priority() {
@@ -151,31 +166,29 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             console.log("it works");
         }
 
-        function move_image(from_priority, to_priority) {
+        function move_image_service(from_priority, to_priority) {
             //TODO: add ajax
-            //console.log(from_priority + " -> " + to_priority);
-            $.post("item/move_image_ajax/"+item_id,
-                "{source_priority:" + from_priority.toString() + ", target_priority:" + to_priority.toString() + "}"
+            $.post("item/move_image_service/"+item_id,
+                {source_priority:from_priority, target_priority:to_priority}
             )
         }
 
-        async function db_update_priorities_ajax(priorities_before, priorities_after) {
+        async function db_update_priorities_service(priorities_before, priorities_after) {
             //TODO: add ajax
-            //console.log(priorities_before + " -> " + priorities_after);
 
             await $.post(
                 "item/test",
                 {test_var: 1},
                 function(data) {
-                    console.log(data);
+                    //console.log(data);
                 }
             );
 
             await $.post(
-                "item/db_update_priorities_ajax/"+item_id,
+                "item/db_update_priorities_service/"+item_id,
                 {priorities_before: priorities_before, priorities_after: priorities_after},
                 function(data) {
-                    console.log(data);
+                    //console.log(data);
                 }
             );
         }

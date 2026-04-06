@@ -496,19 +496,20 @@ class ControllerItem extends Controller {
         (new View("manage_images"))->show(["user" => $user, "item" => $item]);
     }
 
-    public function move_image_ajax() : void {
-        $user = $this->get_user_or_redirect_guess();
+    public function move_image_service() : void {
+        $user = $this->get_user_or_false();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $source_priority = $_POST['source_priority'];
-        $target_priority = $_POST['target_priority'];
         $item = $this->get_item_or_redirect($item_id, $user);
-        ItemPicture::db_update_priorities($item, $source_priority);
+        $item_picture = $this->get_item_picture_or_false($item, $_POST['source_priority']);
+        $target_item_picture = $this->get_item_picture_or_false($item, $_POST['target_priority']);
+        $item = $this->get_item_or_redirect($item_id, $user);
+        $item_picture->swap_priority($target_item_picture);
     }
 
-    public function db_update_priorities_ajax() : void {
+    public function db_update_priorities_service() : void {
         //https://reqbin.com/code/php/0uwqq41y/json-to-array-php-example#:~:text=Converting%20JSON%20to%20PHP%20Array,JSON%20to%20a%20PHP%20array.
         //https://www.php.net/var_export
-        $user = $this->get_user_or_redirect_guess();
+        $user = $this->get_user_or_false();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $priorities_before = $_POST['priorities_before'];
         $priorities_after = $_POST['priorities_after'];
@@ -573,6 +574,13 @@ class ControllerItem extends Controller {
         $pic = $item->get_picture($pic_priority);
         if (!$pic)
             $this->redirect($controller, $action, strval($item->get_id()));
+        return $pic;
+    }
+
+    private function get_item_picture_or_false(Item $item, int $pic_priority, string $controller = 'item', string $action = 'manage_images'): ItemPicture|false {
+        $pic = $item->get_picture($pic_priority);
+        if (!$pic)
+            $pic = false;
         return $pic;
     }
 
