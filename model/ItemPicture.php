@@ -261,9 +261,6 @@ class ItemPicture extends Model {
         //https://stackoverflow.com/questions/20255138/sql-update-multiple-records-in-one-query <-- see Camille's answer
         //https://medium.com/geekculture/update-multiple-rows-in-sql-with-different-values-at-once-7d2eddb0b85f
 
-        $placeholders = [];
-        $params = ["item_id" => $item->get_id()];
-
         $placeholders2 = [];
         $params2 = ["item_id" => $item->get_id()];
 
@@ -284,6 +281,6 @@ class ItemPicture extends Model {
             $params2
         );
 
-        $query->debugDumpParams();
+        //$query->debugDumpParams();
     }
 }

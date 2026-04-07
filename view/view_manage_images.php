@@ -173,22 +173,13 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             )
         }
 
-        async function db_update_priorities_service(priorities_before, priorities_after) {
-            //TODO: add ajax
+        function db_update_priorities_service(priorities_before, priorities_after) {
 
-            await $.post(
-                "item/test",
-                {test_var: 1},
-                function(data) {
-                    //console.log(data);
-                }
-            );
-
-            await $.post(
+            $.post(
                 "item/db_update_priorities_service/"+item_id,
                 {priorities_before: priorities_before, priorities_after: priorities_after},
                 function(data) {
-                    //console.log(data);
+                    console.log(data);
                 }
             );
         }

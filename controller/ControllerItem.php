@@ -509,18 +509,56 @@ class ControllerItem extends Controller {
     public function db_update_priorities_service() : void {
         //https://reqbin.com/code/php/0uwqq41y/json-to-array-php-example#:~:text=Converting%20JSON%20to%20PHP%20Array,JSON%20to%20a%20PHP%20array.
         //https://www.php.net/var_export
+        //https://www.php.net/manual/en/function.gettype.php
         $user = $this->get_user_or_false();
         $item_id = $this->get_id_or_redirect($_GET['param1']);
         $priorities_before = $_POST['priorities_before'];
         $priorities_after = $_POST['priorities_after'];
         //echo var_export($source_priority, true) . var_export($target_priority, true);
+        //echo " ### La variable priorities_after est de type: " . gettype($priorities_after) . " ### ";
+
         $item = $this->get_item_or_redirect($item_id, $user);
         ItemPicture::db_update_priorities($item, $priorities_after);
     }
 
-    public function test(): String {
-        echo "This is weird";
-        return "This is supposed to work";
+    private function jsonResponse($data, $status = 200, $message = 'success'): void {
+        //https://webreference.com/php/web-development/ajax-json/
+        http_response_code($status);
+        
+        $response = [
+            'status' => $status < 400 ? 'success' : 'error',
+            'message' => $message,
+            'data' => $data,
+        ];
+        
+        echo json_encode($response, JSON_PRETTY_PRINT);
+        //exit;
+    }
+
+    private function errorResponse($message, $status = 400, $errors = []): void {
+        //https://webreference.com/php/web-development/ajax-json/
+        http_response_code($status);
+        
+        $response = [
+            'status' => 'error',
+            'message' => $message,
+            'errors' => $errors,
+        ];
+        
+        echo json_encode($response, JSON_PRETTY_PRINT);
+    }
+
+    private function get_user_or_error($guest_pass = true): Member {
+        /** @var Member $user */
+        $user = $this->get_user_or_false();
+
+        if(!$user) {
+            $this->errorResponse("Unauthorized", 401, ["error" => "You need to be connected to access this page"]);
+        } else if ($user->is_guest() && !$guest_pass) {
+            $this->errorResponse("Forbidden", 403, ["error" => "Guests do not have access to this page"]);
+        }
+
+        return $user;
     }
 
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {
