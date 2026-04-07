@@ -8,7 +8,6 @@ require_once "model/Item.php";
 
 
 class ItemPicture extends Model {
-
     public function __construct(
         private Item $item,
         private int $priority,
@@ -18,7 +17,6 @@ class ItemPicture extends Model {
         if (file_exists($this->get_thumbnail_path()))
             $this->thumbnail_path = $this->get_thumbnail_path();
     }
-
     public function get_item(): Item {
         return $this->item;
     }
@@ -50,6 +48,12 @@ class ItemPicture extends Model {
 
     public function is_owner(Member $user): bool {
         return $this->item->is_owner($user);
+    }
+    public function is_first_priority(): bool {
+        return $this->item->is_first_priority($this);
+    }
+    public function is_last_priority(): bool {
+        return $this->item->is_last_priority($this);
     }
 
     public static function get_main_picture(Item $item): ItemPicture|false {
@@ -100,7 +104,7 @@ class ItemPicture extends Model {
         $data = $query->fetchAll();
         $items_pictures = [];
         foreach ($data as $row) {
-            $items_pictures[$row['item']][] = new ItemPicture(
+            $items_pictures[$row['item']][$row['priority']] = new ItemPicture(
                 $items[$row['item']],
                 $row['priority'],
                 $row['picture_path']
@@ -129,6 +133,18 @@ class ItemPicture extends Model {
 
             return $item_picture;
         }
+    }
+
+    public function persist(): void {
+        self::execute(
+            "INSERT INTO item_pictures(item,priority,picture_path) 
+            VALUES(:item_id, :priority, :picture_path)",
+            [
+                "item_id" => $this->item->get_id(),
+                "priority" => $this->priority,
+                "picture_path" => $this->picture_path
+            ]
+        );
     }
 
     public function delete(): void {
@@ -193,31 +209,81 @@ class ItemPicture extends Model {
         }
     }
 
-    public static function validate_image(array $file): array {
+    private static $phpFileUploadErrors = array(
+        /* 
+        doc: https://www.php.net/manual/en/features.file-upload.errors.php <-- see @Viktor's note
+        */
+        0 => 'There is no error, the file uploaded with success',
+        1 => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
+        2 => 'The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form',
+        3 => 'The uploaded file was only partially uploaded',
+        4 => 'No file was uploaded',
+        6 => 'Missing a temporary folder',
+        7 => 'Failed to write file to disk.',
+        8 => 'A PHP extension stopped the file upload.',
+    );
+
+    private static $valid_types = [
+        'jpg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp',
+    ];
+
+    public static function validate_images(array $file): array {
+        /*
+        doc: https://stackoverflow.com/questions/1957629/how-to-access-a-private-member-inside-a-static-function-in-php
+        explanation: Files uploaded to PHP do not follow OOP, but instead is a list where each data is in its own array. 
+        Therefore, the error_code of each file is in a single list, the name of each file is in another list, etc... weird but ok
+
+        doc: https://www.php.net/manual/en/function.mime-content-type.php
+        */
         $errors = [];
 
-        if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
-            $errors["critical error"] = "Une erreur est survenue lors de l'upload.";
-            return $errors;
-        }
+        foreach ($file["error"] as $key => $error_code) {
+            $name = $file["name"][$key];
+            if ($error_code !== UPLOAD_ERR_OK)
+                $errors[$name][] = self::$phpFileUploadErrors[$error_code];
 
-        if ($file['size'] > Configuration::get("MAX_UPLOAD_SIZE")) {
-            $errors["file size"] = "Le fichier dépasse la taille maximale autorisée (5MB).";
-        }
+            if ($file['size'][$key] > Configuration::get("MAX_UPLOAD_SIZE"))
+                $errors[$name][] = "Le fichier dépasse la taille maximale autorisée (5MB).";
 
-        $mime = mime_content_type($file['tmp_name']);
-        $valid_types = [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp'
-        ];
+            $mime = mime_content_type($file['tmp_name'][$key]);
 
-        // Si j'envoye un fichier .mp3, ceci s'affiche
-        if (!in_array($mime, $valid_types, true)) {
-            $errors["unsupported"] = "Format d'image non supporté.";
+            if(!in_array($mime, self::$valid_types, true))
+                $errors[$name][] = "Format d'image non supporté.";
         }
 
         return $errors;
+    }
+
+    public static function db_update_priorities(Item $item, array $priorities_after): void {
+        //https://stackoverflow.com/questions/20255138/sql-update-multiple-records-in-one-query <-- see Camille's answer
+        //https://medium.com/geekculture/update-multiple-rows-in-sql-with-different-values-at-once-7d2eddb0b85f
+
+        $placeholders = [];
+        $params = ["item_id" => $item->get_id()];
+
+        $placeholders2 = [];
+        $params2 = ["item_id" => $item->get_id()];
+
+        foreach ($priorities_after as $index => $priority) {
+            $placeholders2[] = "SELECT -:u$priority AS priority, " . ($index+1) . " AS desired_priority";
+            $params2[":u$priority"] = intval($priority);
+            echo intval($priority);
+        }
+        
+        $query = self::execute(
+            "UPDATE item_pictures AS p
+            SET p.priority = -p.priority
+            WHERE p.item = :item_id;
+
+            UPDATE item_pictures AS pic
+            JOIN ( " . implode(' UNION ALL ', $placeholders2) . " ) AS temp
+            ON pic.priority = temp.priority SET pic.priority = temp.desired_priority;",
+            $params2
+        );
+
+        $query->debugDumpParams();
     }
 }

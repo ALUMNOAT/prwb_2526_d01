@@ -51,6 +51,27 @@ class ItemStatus extends Model {
         return $this->not_purchased_direct_sale;
     }
 
+    public function is_owner(Member $user): bool {
+        return $this->item->is_owner($user);
+    }
+
+    public function is_biddable(Member $bidder): bool {
+        return $this->is_auction
+            && !$this->is_owner($bidder)
+            && !$this->buy_now_reached
+            && !$this->has_ended()
+            && !$bidder->is_guest();
+    }
+
+    public function is_buyable(?Member $buyer): bool {
+        return $this->has_buy_now
+            && !$this->is_owner($buyer)
+            && !$this->buy_now_reached
+            && !$this->has_ended()
+            && !$buyer->is_guest()
+            && $this->max_bid < $this->item->get_buy_now_price();
+    }
+
     public static function get_item_status(int $id): ItemStatus|false {
         $query = self::execute(
             "SELECT * FROM v_items_status
@@ -67,12 +88,12 @@ class ItemStatus extends Model {
                 $row['end_at'],
                 $row['bid_count'],
                 $row['max_bid'],
-                $row['is_direct_sale'],
-                $row['is_auction'],
-                $row['has_buy_now'],
-                $row['has_bids'],
-                $row['buy_now_reached'],
-                $row['not_purchased_direct_sale']
+                $row['is_direct_sale'] === 1,
+                $row['is_auction'] === 1,
+                $row['has_buy_now'] === 1,
+                $row['has_bids'] === 1,
+                $row['buy_now_reached'] === 1,
+                $row['not_purchased_direct_sale'] === 1
             );
 
             return $item_status;
@@ -156,7 +177,7 @@ class ItemStatus extends Model {
         $now = new DateTime(AppTime::get_current_datetime());
         $ago = new DateTime($this->end_at);
 
-        if ($now > $ago)
+        if ($this->has_ended() || $this->has_sold() || $this->has_not_sold())
             return "ended";
         else {
             $diff = $ago->diff($now);
@@ -184,4 +205,62 @@ class ItemStatus extends Model {
                 : $ends_in . "left";
         }
     }
+
+    public function has_ended(): bool {
+        $now = new DateTime(AppTime::get_current_datetime());
+        $end_at = new DateTime($this->end_at);
+        return $now > $end_at;
+    }
+
+    public function has_sold(): bool {
+        return $this->has_ended() && $this->has_bids || $this->buy_now_reached;
+    }
+
+    public function has_not_sold(): bool {
+        return $this->has_ended() && !$this->has_bids && !$this->buy_now_reached;
+    }
+
+    public function delete(): void {
+        /*
+        doc: https://www.w3schools.com/mysql/mysql_delete.asp
+        doc: https://dba.stackexchange.com/questions/232987/deleting-multiple-tables-in-a-single-delete-query-in-mysql
+        doc: https://stackoverflow.com/questions/31136434/mysql-deleting-rows-based-on-a-condition-with-data-from-another-table-and-no-jo
+        */
+        $query = self::execute(
+            "DELETE FROM item_pictures WHERE item_pictures.item = :item_id;
+            DELETE FROM items WHERE items.id = :item_id;
+            DELETE FROM v_items_status AS v WHERE v.id = :item_id;",
+            ['item_id' => $this->item->get_id()]
+        );
+    }
+
+    public static function has_bids(int $item_id): bool {
+        $query = self::execute(
+            "SELECT has_bids
+         FROM v_items_status
+         WHERE id = :id",
+            ["id" => $item_id]
+        );
+
+        if ($query->rowCount() === 0) {
+            return false;
+        }
+
+        return (bool)$query->fetch()['has_bids'];
+    }
+
+    public static function is_direct_sale(int $item_id): bool {
+        $query = self::execute(
+            "SELECT is_direct_sale
+            FROM v_items_status
+            WHERE id = :id",
+            ["id" => $item_id]
+        );
+        if ($query->rowCount() === 0) {
+            return false;
+        }
+
+        return (bool)$query->fetch()['is_direct_sale'];
+    }
+
 }

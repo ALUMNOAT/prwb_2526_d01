@@ -1,0 +1,127 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: rgb(15, 25, 38);
+}
+
+h1, h2, h3, h4 {
+    margin: 0px;
+}
+
+h1 {
+    color: dodgerblue;
+}
+
+h4 {
+    color: white;
+    margin: 0;
+}
+
+p {
+    margin: 0;
+}
+
+.attribution {
+    color: grey;
+}
+
+img {
+    object-fit:contain;
+    border-radius: 0.5em 0.5em 0 0;
+    width: 100%;
+    max-height: 15em;
+}
+
+.green {
+    color: springgreen;
+}
+
+.content {
+    margin: 1em;
+}
+
+.flex-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.count {
+    /*
+    doc: https://dev.to/frehner/css-vh-dvh-lvh-svh-and-vw-units-27k4
+    */
+    color: white;
+    background-color: springgreen;
+    padding: 6px 18px;
+    border-radius: 1em;
+}
+
+.count.sales {
+    background-color: springgreen;
+}
+
+.count.purchases {
+    background-color:cornflowerblue;
+}
+
+.data {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    margin: 1em 0px;
+    div {
+        padding: 1em;
+        flex-grow: 1;
+        background-color: #333333;
+        color: white;
+        border-radius: 5px;
+    }
+}
+
+.anecdote {
+    padding: 1em;
+    color: grey
+}
+
+.attribution {
+    color: grey;
+}
+
+.browse {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16em, auto)); /* <-- doc 'grid wrapping' */
+    grid-gap: 1em;
+    justify-content: center;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  list-style: none; /* remove list bullets */
+  padding: 0px;
+}
+
+.pagination li a {
+  display: block; /* let links fill the list item */
+  padding: 8px 12px;
+  text-decoration: none;
+  border: 1px solid gray;
+  color: grey;
+  margin: 0 4px;
+  border-radius: 5px; /* add rounded borders */
+}
+
+.pagination li a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.pagination li a.disabled {
+  color: #dddddd;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pagination li a:hover:not(.active) {
+  background-color: lightgray;
+}

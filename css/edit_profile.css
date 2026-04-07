@@ -8,52 +8,11 @@ body {
     margin: 0;
     padding: 0;
     font-family: Arial, sans-serif;
-    background: #0f172a;
+    background: var(--background);
     color: #e2e8f0;
 }
 
-/* ICONS */
-.material-symbols-outlined {
-    font-size: 2em;
-    /* Preferred icon size */
-    font-variation-settings:
-        'FILL' 0,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24
-}
-
 /* MENU LINK */
-.profile-navbar {
-    width: 100%;
-    background-color: #333333;
-    color: dodgerblue;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    h2 {
-        max-height: fit-content;
-        margin: 0px;
-    }
-}
-
-.profile-navbar button {
-    all: unset;
-    width: 3em;
-    height: 3em;
-    text-align: center;
-    color: dodgerblue;
-
-    span {
-        vertical-align: middle;
-    }
-
-    :hover {
-        color: white;
-        cursor: pointer;
-    }
-}
 
 .container {
     width: 70%;

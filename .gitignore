@@ -66,3 +66,4 @@ database/**/*private_dump.sql
 database/**/*private_image_backup/
 
 
+database/prwb_2526_d01_private_images_backup/.keep

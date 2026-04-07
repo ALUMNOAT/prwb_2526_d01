@@ -1,0 +1,49 @@
+/*
+doc: https://developers.google.com/fonts/docs/material_symbols#use_in_web
+doc: https://github.com/Dogfalo/materialize/issues/3732
+*/
+
+.material-symbols-outlined {
+    font-size: 24px;
+    vertical-align: middle;
+    /* Preferred icon size */
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+}
+
+/* Recommended icon sizes */
+span.size-20 {
+    font-size: 20px;
+    font-variation-settings: 'OPSZ' 20;
+}
+
+span.size-24 {
+    font-size: 24px;
+    font-variation-settings: 'OPSZ' 24;
+}
+
+span.size-40 {
+    font-size: 40px;
+    font-variation-settings: 'OPSZ' 40;
+}
+
+span.size-48 {
+    font-size: 48px;
+    font-variation-settings: 'OPSZ' 48;
+}
+
+span.size-120 {
+    font-size: 120px;
+    font-variation-settings: 'OPSZ' 96;
+}
+
+.icon-flipped { /* see doc */
+    -o-transform: scaleX(-1);
+    -moz-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    -ms-transform: scaleX(-1);
+    transform: scaleX(-1);
+}

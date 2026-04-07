@@ -4,8 +4,7 @@ require_once "model/Bid.php";
 require_once "utils/Role.php";
 
 
-class Member extends Model
-{
+class Member extends Model {
 
     /**
      * ID nullable :
@@ -33,34 +32,29 @@ class Member extends Model
         return $this->id;
     }
 
-    public function get_full_name(): string
-    {
+    public function get_full_name(): string {
         return $this->full_name;
     }
     public function get_email(): ?string {
         return $this->email;
     }
 
-    public function get_pseudo(): string
-    {
+    public function get_pseudo(): string {
         return $this->pseudo;
     }
     public function get_password(): ?string {
         return $this->password;
     }
 
-    public function get_role(): Role
-    {
+    public function get_role(): Role {
         return $this->role;
     }
 
-    public function get_picture_path(): ?string
-    {
+    public function get_picture_path(): ?string {
         return $this->picture_path;
     }
 
-    public function get_iban(): ?string
-    {
+    public function get_iban(): ?string {
         return $this->iban;
     }
 
@@ -71,23 +65,19 @@ class Member extends Model
         $this->full_name = $new_full_name;
     }
 
-    public function set_email(string $new_email): void
-    {
+    public function set_email(string $new_email): void {
         $this->email = $new_email;
     }
 
-    public function set_pseudo(string $new_pseudo): void
-    {
+    public function set_pseudo(string $new_pseudo): void {
         $this->pseudo = $new_pseudo;
     }
 
-    public function set_password(string $new_password): void
-    {
+    public function set_password(string $new_password): void {
         $this->password = $new_password;
     }
 
-    public function set_role(Role $new_role): void
-    {
+    public function set_role(Role $new_role): void {
         $this->role = $new_role;
     }
     public function set_picture_path(?string $new_picture_path): void {
@@ -99,15 +89,14 @@ class Member extends Model
 
     public function is_guest(): bool {
         return $this->id === null;
-    } 
+    }
 
-    public function persist(): Member
-    {
+    public function persist(): Member {
         // Si l'ID existe (utilisateur existe), on update
         if ($this->id !== null) {
             // On met à jour l'utilisateur existant (un ID attribué déjà)
             self::execute(
-                "UPDATE users 
+                "UPDATE users
                 SET full_name=:full_name, email=:email, pseudo=:pseudo, password=:password, role=:role, picture_path=:picture_path, iban=:iban WHERE id=:id",
                 ["id" => $this->id, "full_name" => $this->full_name, "email" => $this->email, "pseudo" => $this->pseudo, "password" => $this->password, "role" => $this->role->value, "picture_path" => $this->picture_path, "iban" => $this->iban]
             );
@@ -180,12 +169,11 @@ class Member extends Model
      * Doit contenir un chiffre, une Maj, une min, un symbole
      */
 
-    private static function validate_password(string $password): array
-    {
+    private static function validate_password(string $password): array {
         $errors = [];
 
         // 8 charactères minimum
-        if (strlen($password) < Configuration::get("password_min_length", 8)) {
+        if (mb_strlen($password) < Configuration::get("password_min_length", 8)) {
             $errors[] = "Le mot de passe doit contenir au moins 8 charact&egrave;res.";
         }
 
@@ -213,24 +201,33 @@ class Member extends Model
     /**
      * Règles metiers de l'unique :
      *
-     * email et pseudo doivent etre unique
+     * email, full_name et pseudo doivent etre unique
      */
 
     public static function validate_unicity(string $pseudo, string $email, string $full_name, ?int $exclude_id = null): array {
         $errors = [];
-        //TODO: do only one SQL query to verify unicity !
-        //it's also better if it's self contained, ie the SQL query is inside this function
-        $member_pseudo = self::get_member_by_pseudo($pseudo);
-        $member_email = self::get_member_by_email($email);
-        $member_full_name = self::get_member_by_full_name($full_name);
-        if ($member_pseudo && $member_pseudo->get_id() !== $exclude_id) {
-            $errors[] = "Ce pseudo '$pseudo' existe déjà.";
-        }
-        if ($member_email && $member_email->get_id() !== $exclude_id) {
-            $errors[] = "Cet email '$email' existe déjà.";
-        }
-        if ($member_full_name && $member_full_name->get_id() !== $exclude_id) {
-            $errors[] = "Ce nom d'utilisateur '$full_name' existe déjà.";
+
+        $query = self::execute(
+            "SELECT pseudo, email, full_name FROM users 
+            WHERE (pseudo = :pseudo OR email = :email OR full_name = :full_name) 
+            AND (:exclude_id IS NULL OR id != :exclude_id)",
+            [":pseudo" => $pseudo, ":email" => $email, ":full_name" => $full_name, ":exclude_id" => $exclude_id]
+        );
+
+        $data = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        // Vu que les variables de la DB sont UNIQUE dès le départ, pas besoin de flag (samePseudo = true/false et autres)
+        //
+        foreach ($data as $user) {
+            if ($user['pseudo'] === $pseudo) {
+                $errors[] = "Ce pseudo '$pseudo' existe déjà.";
+            }
+            if ($user['email'] === $email) {
+                $errors[] = "Cet email '$email' existe déjà.";
+            }
+            if ($user['full_name'] === $full_name) {
+                $errors[] = "Ce nom d'utilisateur '$full_name' existe déjà.";
+            }
         }
         return $errors;
     }
@@ -247,9 +244,9 @@ class Member extends Model
     public function validate_pseudo(): array {
         $errors = [];
 
-        if (strlen($this->pseudo) === 0)
+        if (mb_strlen($this->pseudo) === 0)
             $errors[] = "Un pseudo est requis.";
-        else if (strlen($this->pseudo) < Configuration::get("pseudo_min_length", 3) || strlen($this->pseudo) >= Configuration::get("pseudo_max_length", 30))
+        else if (mb_strlen($this->pseudo) < Configuration::get("pseudo_min_length", 3) || mb_strlen($this->pseudo) >= Configuration::get("pseudo_max_length", 30))
             $errors[] = "Le pseudo doit contenir entre 3 et 30 caractères.";
         /*
         else if (!strlen($this->pseudo) >= Configuration::get("pseudo_min_length", 3))
@@ -268,11 +265,11 @@ class Member extends Model
     public function validate_full_name(): array {
         $errors = [];
 
-        if (strlen($this->full_name) === 0)
+        if (mb_strlen($this->full_name) === 0)
             $errors[] = "Un nom est requis.";
-        else if (strlen($this->full_name) < Configuration::get("full_name_min_length", 3))
+        else if (mb_strlen($this->full_name) < Configuration::get("full_name_min_length", 3))
             $errors[] = "Le nom doit avoir au minimum 3 caractères.";
-        else if (strlen($this->full_name) > Configuration::get("full_name_max_length", 255))
+        else if (mb_strlen($this->full_name) > Configuration::get("full_name_max_length", 255))
             $errors[] = "Le nom ne doit pas dépasser 255 charactère.";
 
         return $errors;
@@ -326,8 +323,7 @@ class Member extends Model
      * • Compute remainder:        3214282912345698765432161182    mod 97 = 1
      *
      */
-    public static function validate_iban(string $iban): array
-    {
+    public static function validate_iban(string $iban): array {
         $errors = [];
         // Pour ne pas avoir 3 retours dans la fonction, on va créer un booléen
         $isvalid = true;
@@ -346,10 +342,10 @@ class Member extends Model
 
 
             $small_sublist_iban = substr($iban, 0, 4); //BE99 [0;3]
-            $big_sublist_iban = substr($iban, 4, strlen($iban)); // le reste
+            $big_sublist_iban = substr($iban, 4, mb_strlen($iban)); // le reste
 
             $converted = '';
-            for ($i = 0; $i < strlen($small_sublist_iban) - 2; $i++) {
+            for ($i = 0; $i < mb_strlen($small_sublist_iban) - 2; $i++) {
                 // char(B) = 66, 66-55 = 11, B = 11 ici
                 // le code peut bug mais pas possible pratiquement car regex check
                 $converted .= ord($small_sublist_iban[$i]) - 55;
@@ -367,8 +363,7 @@ class Member extends Model
         return $errors;
     }
 
-    public static function validate_photo(array $file): array
-    {
+    public static function validate_photo(array $file): array {
         $errors = [];
 
         if (!isset($file['tmp_name']) || $file['error'] !== UPLOAD_ERR_OK) {
@@ -396,11 +391,38 @@ class Member extends Model
         return $errors;
     }
 
-
     public static function get_member(int $id): Member|false {
         $query = self::execute(
             "SELECT *
-            FROM users 
+            FROM users
+            WHERE users.id = :user_id",
+            [
+                "user_id" => $id,
+            ]
+        );
+
+        if ($query->rowCount() == 0)
+            return false;
+
+        $row = $query->fetch();
+        $member = new Member(
+            $row['id'],
+            $row['full_name'],
+            $row['email'],
+            $row['pseudo'],
+            $row['password'],
+            Role::from($row['role']),
+            $row['picture_path'],
+            $row['iban']
+        );
+
+        return $member;
+    }
+
+    public static function get_member_by_id(int $id): Member|false {
+        $query = self::execute(
+            "SELECT *
+            FROM users
             WHERE users.id = :user_id",
             [
                 "user_id" => $id,
@@ -440,9 +462,9 @@ class Member extends Model
 
         $query = self::execute(
             "SELECT *
-            FROM v_items_status AS v  
+            FROM v_items_status AS v
             WHERE v.id IN (
-                SELECT bids.item                
+                SELECT bids.item
                 FROM bids
                 WHERE bids.owner = :user_id
             )
@@ -515,7 +537,7 @@ class Member extends Model
 
         $query = self::execute(
             "SELECT *
-            FROM users  
+            FROM users
             WHERE users.id IN ("
                 . implode(',', $placeholders) .
                 ")",
@@ -568,10 +590,11 @@ class Member extends Model
                 GROUP BY bids.item
             ) AS max_bids
                 ON (max_bids.item) = (b.item)
-            JOIN v_items_status AS v    
+            JOIN v_items_status AS v
                 ON v.id = b.item
             WHERE b.ranked_order = 1
             AND v.end_at > :now
+            AND v.buy_now_reached = 0
             ORDER BY v.end_at ASC;",
             [
                 "user_id" => $this->id,
@@ -609,11 +632,254 @@ class Member extends Model
             /*
             //If needs be to sort in PHP, I could use usort with an anonymous function :)
             usort($my_bids, function ($a, $b) {
-                return 
+                return [bool]
             })
                 */
         }
 
         return $my_bids;
+    }
+
+    public function get_my_items(): array {
+        $query = self::execute(
+            "SELECT *
+            FROM v_items_status AS v
+            WHERE owner = :user_id
+            ORDER BY v.end_at ASC;",
+            ["user_id" => $this->id]
+        );
+
+        $my_items_status = [];
+        $items = [];
+
+        if ($query->rowCount() > 0) {
+            $data = $query->fetchAll();
+
+            foreach ($data as $row) {
+                $item = new Item(
+                    $row['id'],
+                    $row['title'],
+                    $this,
+                    $row['created_at'],
+                    $row['duration_days'],
+                    [],
+                    $row['description'],
+                    $row['buy_now_price'],
+                    $row['starting_bid']
+                );
+                $items[$row['id']] = $item;
+
+                $item_status = new ItemStatus(
+                    $item,
+                    $row['end_at'],
+                    $row['bid_count'],
+                    $row['max_bid'],
+                    $row['is_direct_sale'] == '1',
+                    $row['is_auction'] == '1',
+                    $row['has_buy_now'] == '1',
+                    $row['has_bids'] == '1',
+                    $row['buy_now_reached'] == '1',
+                    $row['not_purchased_direct_sale'] == '1',
+                );
+
+                if ($item_status->has_sold())
+                    $my_items_status['closed_sold_items'][$item->get_id()] = $item_status;
+                else if ($item_status->has_not_sold())
+                    $my_items_status['closed_unsold_items'][$item->get_id()] = $item_status;
+                else
+                    $my_items_status['active_items'][$item->get_id()] = $item_status;
+            }
+
+            $items_pictures = ItemPicture::get_items_picture($items);
+            foreach ($items as $item) {
+                /** @var Item $item */
+                $item_id = $item->get_id();
+                $item->set_pictures($items_pictures[$item_id] ?? []);
+            }
+        }
+
+        return $my_items_status;
+    }
+
+    public function get_my_sales(): array {
+        /*
+        doc: https://stackoverflow.com/questions/10724324/mysql-inner-join-alias
+        */
+        $query = self::execute(
+            "SELECT
+                b.created_at AS b_created_at, b.amount AS b_amount,
+                u.id AS u_id, u.full_name, u.email, u.pseudo, u.password, u.role, u.picture_path, u.iban,
+                v.*
+            FROM v_items_status AS v
+            JOIN bids AS b ON ((b.item, b.amount) = (v.id, v.max_bid))
+            JOIN users AS u ON (u.id = b.owner)
+            WHERE v.owner = :user_id
+            AND (v.buy_now_reached OR
+                (v.has_bids AND v.end_at < :right_now))
+            ORDER BY v.end_at DESC;",
+            [
+                "user_id" => $this->id,
+                "right_now" => AppTime::get_current_datetime()
+            ]
+        );
+
+        $sales = [];
+        $bidder = [];
+        $items = [];
+
+        if ($query->rowCount() > 0) {
+            $data = $query->fetchAll();
+
+            foreach ($data as $row) {
+                $item = new Item(
+                    $row['id'],
+                    $row['title'],
+                    $this,
+                    $row['created_at'],
+                    $row['duration_days'],
+                    [],
+                    $row['description'],
+                    $row['buy_now_price'],
+                    $row['starting_bid']
+                );
+                $items[$row['id']] = $item;
+
+                $item_status = new ItemStatus(
+                    $item,
+                    $row['end_at'],
+                    $row['bid_count'],
+                    $row['max_bid'],
+                    $row['is_direct_sale'] == '1',
+                    $row['is_auction'] == '1',
+                    $row['has_buy_now'] == '1',
+                    $row['has_bids'] == '1',
+                    $row['buy_now_reached'] == '1',
+                    $row['not_purchased_direct_sale'] == '1',
+                );
+
+                if (!isset($bid_owner[$row['u_id']]))
+                    $bid_owner[$row['u_id']] = new Member(
+                        $row['u_id'],
+                        $row['full_name'],
+                        $row['email'],
+                        $row['pseudo'],
+                        $row['password'],
+                        Role::from($row['role']),
+                        $row['picture_path'],
+                        $row['iban']
+                    );
+
+                $bid = new Bid(
+                    $bid_owner[$row['u_id']],
+                    $item_status,
+                    $row['b_created_at'],
+                    $row['b_amount'],
+                );
+
+                $sales[] = $bid;
+            }
+
+            $items_pictures = ItemPicture::get_items_picture($items);
+            foreach ($items as $item) {
+                /** @var Item $item */
+                $item_id = $item->get_id();
+                $item->set_pictures($items_pictures[$item_id] ?? []);
+            }
+        }
+
+        return $sales;
+    }
+
+    public function get_my_purchases(): array {
+        /*
+        doc: https://stackoverflow.com/questions/10724324/mysql-inner-join-alias
+        */
+        $query = self::execute(
+            "SELECT
+                b.created_at AS b_created_at, b.amount AS b_amount,
+                u.id AS u_id, u.full_name, u.email, u.pseudo, u.password, u.role, u.picture_path, u.iban,
+                v.*
+            FROM v_items_status AS v
+            JOIN bids AS b ON ((b.item, b.amount) = (v.id, v.max_bid))
+            JOIN users AS u ON (u.id = v.owner)
+            WHERE b.owner = :user_id
+            AND (v.buy_now_reached OR
+                (v.has_bids AND v.end_at < :right_now))
+            ORDER BY v.end_at DESC;",
+            [
+                "user_id" => $this->id,
+                "right_now" => AppTime::get_current_datetime()
+            ]
+        );
+
+        $purchases = [];
+        $seller = [];
+        $items = [];
+
+        if ($query->rowCount() > 0) {
+            $data = $query->fetchAll();
+
+            foreach ($data as $row) {
+                if (!isset($seller[$row['u_id']]))
+                    $seller[$row['u_id']] = new Member(
+                        $row['u_id'],
+                        $row['full_name'],
+                        $row['email'],
+                        $row['pseudo'],
+                        $row['password'],
+                        Role::from($row['role']),
+                        $row['picture_path'],
+                        $row['iban']
+                    );
+
+                $item = new Item(
+                    $row['id'],
+                    $row['title'],
+                    $seller[$row['u_id']],
+                    $row['created_at'],
+                    $row['duration_days'],
+                    [],
+                    $row['description'],
+                    $row['buy_now_price'],
+                    $row['starting_bid']
+                );
+                $items[$row['id']] = $item;
+
+                $item_status = new ItemStatus(
+                    $item,
+                    $row['end_at'],
+                    $row['bid_count'],
+                    $row['max_bid'],
+                    $row['is_direct_sale'] == '1',
+                    $row['is_auction'] == '1',
+                    $row['has_buy_now'] == '1',
+                    $row['has_bids'] == '1',
+                    $row['buy_now_reached'] == '1',
+                    $row['not_purchased_direct_sale'] == '1',
+                );
+
+                $bid = new Bid(
+                    $this,
+                    $item_status,
+                    $row['b_created_at'],
+                    $row['b_amount'],
+                );
+
+                $purchases[] = $bid;
+            }
+
+            $items_pictures = ItemPicture::get_items_picture($items);
+            foreach ($items as $item) {
+                /** @var Item $item */
+                $item_id = $item->get_id();
+                $item->set_pictures($items_pictures[$item_id] ?? []);
+            }
+        }
+
+        return $purchases;
+    }
+
+    public function equal($other_user): bool {
+        return $this->id === $other_user->get_id();
     }
 }

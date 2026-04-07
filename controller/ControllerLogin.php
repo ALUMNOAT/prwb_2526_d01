@@ -3,6 +3,7 @@ require_once "framework/Controller.php";
 require_once "framework/View.php";
 require_once "framework/Tools.php";
 require_once "model/Member.php";
+require_once 'utils/Role.php';
 
 
 class ControllerLogin extends Controller {
@@ -16,16 +17,16 @@ class ControllerLogin extends Controller {
     */
 
     public function index(): void {
-        if ($this->user_logged())   //already connected, redirect
-            $this->redirect("browse");
-        else                        //nobody connected, or trying connection
+        if ($this->user_logged()) {   //already connected, redirect
+            $this->redirect('item', 'browse');
+        } else {                       //nobody connected, or trying connection
             $email = "";
             $password = "";
             $errors = [];
 
             if (isset($_POST["email"]) && isset($_POST["password"])) {
-                $email = $_POST["email"];
-                $password = $_POST["password"];
+                $email = html_entity_decode($_POST["email"], ENT_QUOTES, 'UTF-8');
+                $password = html_entity_decode($_POST["password"], ENT_QUOTES, 'UTF-8');
 
                 $errors = Member::validate_login($email, $password);
 
@@ -35,19 +36,20 @@ class ControllerLogin extends Controller {
                     //Luca: $member will evaluate to 'true' if there is an object, otherwise it will be false
                     //Luca: log_user() also redirects
                     if ($member) // s'assure que le membre existe
-                        $this->log_user($member, "browse"); // stocke le membre connecté dans la session
+                        $this->log_user($member, 'item', 'browse'); // stocke le membre connecté dans la session
                 }
             }
             //Luca: the login view can now work without any variables sent if we so desire. usefull when we first land on the page
             (new View("login"))->show(["email" => $email, "password" => $password, "errors" => $errors]);
+        }
     }
 
     public function guest(): void {
         if ($this->user_logged())
-            $this->redirect("browse");
+            $this->redirect('item', 'browse');
         else {
             $guest = new Member(null, "guest", null, "guest", null, Role::USER, null, null);
-            $this->log_user($guest, "browse");
+            $this->log_user($guest, 'item', 'browse');
         }
     }
 
@@ -59,9 +61,9 @@ class ControllerLogin extends Controller {
         }
 
         $pseudo = $_GET['param1'];
-        $member = Member::get_member_by_pseudo($pseudo);
+        $member = Member::get_member_by_id($pseudo);
         if ($member)
-            $this->log_user($member, "browse");
+            $this->log_user($member, 'item', 'browse');
         else
             $this->redirect("login");
     }

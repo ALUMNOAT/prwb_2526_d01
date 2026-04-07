@@ -1,6 +1,6 @@
 <?php
 
-$icons = "key,person"
+$icons = "key,person";
 ?>
 
 <!DOCTYPE html>
@@ -11,7 +11,9 @@ $icons = "key,person"
     <title>Log In</title>
     <base href="<?= $web_root ?>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=<?= $icons ?>" />
+    <link rel="stylesheet" href="css/colors.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=<?= $icons ?>">
+    <link rel="stylesheet" href="css/icons.css">
     <link href="css/login.css" rel="stylesheet" type="text/css" />
 </head>
 
@@ -67,18 +69,20 @@ $icons = "key,person"
             <?php endif; ?>
 
             <!-- LOGIN DEBUG -->
+            <?php if (Configuration::is_dev()): ?>
             <div class="debug">
                 <h3>For Debug Purpose</h3>
-                <p>Login as <a href="login/login_as/Boris" class="white"><strong>boverhaegen@epfc.eu</strong></a></p>
-                <p>Login as <a href="login/login_as/Marc" class="white"><strong>mamichel@epfc.eu</strong></a></p>
-                <p>Login as <a href="login/login_as/Quentin" class="white"><strong>quhouben@epfc.eu</strong></a></p>
-                <p>Login as <a href="login/login_as/Xavier" class="white"><strong>xapigeolet@epfc.eu</strong></a></p>
-                <p>Login as <a href="login/login_as/Admin" class="white"><strong>admin@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/4" class="white"><strong>boverhaegen@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/2" class="white"><strong>mamichel@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/1" class="white"><strong>quhouben@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/3" class="white"><strong>xapigeolet@epfc.eu</strong></a></p>
+                <p>Login as <a href="login/login_as/5" class="white"><strong>admin@epfc.eu</strong></a></p>
 
                 <a href="#" class="green">Restore original data</a>
                 <a href="#" class="orange">Backup personal data</a>
                 <a href="#" class="orange">Restore personal data</a>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </body>

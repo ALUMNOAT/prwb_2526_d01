@@ -4,6 +4,7 @@ require_once 'model/Member.php';
 require_once 'framework/View.php';
 require_once 'framework/Controller.php';
 require_once 'utils/Image.php';
+require_once 'utils/Role.php';
 
 class ControllerProfile extends Controller {
 
@@ -14,7 +15,7 @@ class ControllerProfile extends Controller {
 
     // profil de l'utilisateur connecté ou donné (à adapter)
     public function profile(): void {
-        $member = $this->get_user_or_redirect();
+        $member = $this->get_user_or_redirect_guess();
         if (isset($_GET["param1"]) && $_GET["param1"] !== "") {
             $member = Member::get_member_by_pseudo($_GET["param1"]);
         }
@@ -22,7 +23,7 @@ class ControllerProfile extends Controller {
     }
 
     public function change_password(): void {
-        $member = $this->get_user_or_redirect();
+        $member = $this->get_user_or_redirect_guess();
         $errors = [];
         $success = "";
 
@@ -31,9 +32,9 @@ class ControllerProfile extends Controller {
             && $_POST["current_password"] !== "" && $_POST["new_password"] !== "" && $_POST["confirm_password"] !== ""
         ) {
 
-            $current_password = $_POST["current_password"];
-            $new_password = $_POST["new_password"];
-            $confirm_password = $_POST["confirm_password"];
+            $current_password = html_entity_decode($_POST["current_password"], ENT_QUOTES, 'UTF-8');
+            $new_password = html_entity_decode($_POST["new_password"], ENT_QUOTES, 'UTF-8');
+            $confirm_password = html_entity_decode($_POST["confirm_password"], ENT_QUOTES, 'UTF-8');
 
             // On est connecté, donc on a toutes les données de la session, donc autant les utiliser (on a l'email)
             $errors = array_merge($errors, Member::validate_login($member->get_email(), $current_password));
@@ -59,14 +60,14 @@ class ControllerProfile extends Controller {
 
     public function edit_profile(): void {
         /** @var Member $member */
-        $member = $this->get_user_or_redirect();
+        $member = $this->get_user_or_redirect_guess();
         $errors = [];
         $success = "";
 
         if (isset($_POST["full_name"], $_POST["pseudo"], $_POST["email"])) {
-            $full_name = $_POST["full_name"];
-            $pseudo = $_POST["pseudo"];
-            $email = $_POST["email"];
+            $full_name = html_entity_decode($_POST["full_name"], ENT_QUOTES, 'UTF-8');
+            $pseudo = html_entity_decode($_POST["pseudo"], ENT_QUOTES, 'UTF-8');
+            $email = html_entity_decode($_POST["email"], ENT_QUOTES, 'UTF-8');
             $iban = $_POST["iban"] === "" ? null : $_POST["iban"];
 
             $member->set_full_name($full_name);
@@ -80,7 +81,7 @@ class ControllerProfile extends Controller {
              * validate_unicity() ne valide pas l'unicité si l'ID qu'il trouve dans la DB match notre ID
              * Explication: Je suis Emilian, je change pas mon nom mais mon iban, je veux pas avoir "Emilian" est pris, mon adresse email est prise, ... alors que je suis moi
              */
-            
+
             // On vérifie que le pseudo, email et full_name sont uniques
             $errors = Member::validate_unicity($pseudo, $email, $full_name, $member->get_id());
             // On vérifie les règles métiers du full_name
@@ -106,6 +107,13 @@ class ControllerProfile extends Controller {
                 // Redirect après POST (principe PRG)
                 $this->redirect("profile");
                 return; // on stoppe le reste du code
+            } else {
+                //reset member TODO this is bad practice !
+                $member_copy = Member::get_member_by_id($member->get_id());
+                $member->set_full_name($member_copy->get_full_name());
+                $member->set_pseudo($member_copy->get_pseudo());
+                $member->set_email($member_copy->get_email());
+                $member->set_iban($member_copy->get_iban());
             }
         }
 
@@ -121,7 +129,7 @@ class ControllerProfile extends Controller {
      * @throws Exception
      */
     public function profile_picture(): void {
-        $member = $this->get_user_or_redirect();
+        $member = $this->get_user_or_redirect_guess();
         $errors = [];
         $success = "";
 
@@ -201,14 +209,7 @@ class ControllerProfile extends Controller {
         /**
          * LE RESTE EST COMMUN POUR LES 2 BOUTONS
          *
-         * UPDATE DU PROFIL
          */
-
-        if (isset($_POST["profile"])) {
-            $member->profile = $_POST['profile'];
-            $member->persist();
-            $success = "Your profile has been successfully updated.";
-        }
 
         /**
          * REDIRECTION POST (PRG)
@@ -227,5 +228,24 @@ class ControllerProfile extends Controller {
         }
 
         (new View("profile_picture"))->show(["user" => $member, "errors" => $errors, "success" => $success]);
+    }
+
+    private function get_user_or_redirect_guess(bool $guest_pass = false): Member {
+        /** @var Member $user */
+        $user = $this->get_user_or_redirect();
+        if ($user->is_guest() && !$guest_pass)
+            $this->redirect("item", "browse");
+        return $user;
+    }
+
+    public function logout(): void {
+        // On peut faire ca meme si profile est dans le ControllerMember
+        // car le form et button est [form action="test/logout"]
+        // du coup le controlleur connait le bouton
+        if (!isset($_POST["logout"])) {
+            echo "Logout must be done via POST.";
+            return;
+        }
+        parent::logout();
     }
 }
