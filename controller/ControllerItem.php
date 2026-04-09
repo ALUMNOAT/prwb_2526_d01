@@ -496,16 +496,6 @@ class ControllerItem extends Controller {
         (new View("manage_images"))->show(["user" => $user, "item" => $item]);
     }
 
-    public function move_image_service() : void {
-        $user = $this->get_user_or_false();
-        $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $item = $this->get_item_or_redirect($item_id, $user);
-        $item_picture = $this->get_item_picture_or_false($item, $_POST['source_priority']);
-        $target_item_picture = $this->get_item_picture_or_false($item, $_POST['target_priority']);
-        $item = $this->get_item_or_redirect($item_id, $user);
-        $item_picture->swap_priority($target_item_picture);
-    }
-
     public function db_update_priorities_service() : void {
         //https://reqbin.com/code/php/0uwqq41y/json-to-array-php-example#:~:text=Converting%20JSON%20to%20PHP%20Array,JSON%20to%20a%20PHP%20array.
         //https://www.php.net/var_export
@@ -514,30 +504,96 @@ class ControllerItem extends Controller {
         //https://laracasts.com/discuss/channels/laravel/convert-string-array-to-array-of-ints
         $user = $this->get_user_or_error();
         if($user !== false) {
-            $item = $this->get_item_or_error($_GET['param1'], $user);
-            if($item !== false) {
-                if(!isset($_POST['priorities_after'])) {
-                    $this->errorResponse(400, "No priorities given");
-                }
-                $priorities_after = $_POST['priorities_after'];
-                if (!is_array($_POST['priorities_after'])) {
-                    $this->errorResponse(400, "No array given for priorities");
+
+            $item_status = $this->get_item_status_or_error($_GET['param1'], $user);
+            if($item_status !== false) {
+
+                if($item_status->get_has_bids() || $item_status->has_sold()) {
+                    $this->errorResponse(403, "You can no longer modify this item");
+
                 } else {
-                    $priorities_after = array_map('intval', $priorities_after);
-                    if ($priorities_after !== array_filter($priorities_after, 'is_int')) {
-                        $this->errorResponse(400, "Priorities in the array need to be integers");
-                    } else if ($item->get_picture_count() !== count($priorities_after)) {
-                        $this->errorResponse(400, "Priorities count does not match the item's photos count");
+                    if(!isset($_POST['priorities_after'])) {
+                        $this->errorResponse(400, "No priorities given");
+
                     } else {
                         $priorities_after = $_POST['priorities_after'];
-                        //echo var_export($source_priority, true) . var_export($target_priority, true);
-                        //echo " ### La variable priorities_after est de type: " . gettype($priorities_after) . " ### ";
+                        if (!is_array($_POST['priorities_after'])) {
+                            $this->errorResponse(400, "No array given for priorities");
 
-                        ItemPicture::db_update_priorities($item, $priorities_after);
+                        } else {
+                            $item = $item_status->get_item();
+                            $priorities_after = array_map('intval', $priorities_after);
+                            if ($priorities_after !== array_filter($priorities_after, 'is_int')) {
+                                $this->errorResponse(400, "Priorities in the array need to be integers");
+
+                            } else if ($item->get_picture_count() !== count($priorities_after)) {
+                                $this->errorResponse(400, "Priorities count does not match the item's photos count");
+
+                            } else {
+                                $priorities_after = $_POST['priorities_after'];
+                                ItemPicture::db_update_priorities($item, $priorities_after);
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+
+    public function remove_image_service(): void {
+        $user = $this->get_user_or_error();
+        if($user !== false) {
+
+            $item_status = $this->get_item_status_or_error($_GET['param1'], $user);
+            if($item_status !== false) {
+
+                if($item_status->get_has_bids() || $item_status->has_sold()) {
+                    $this->errorResponse(403, "You cannot remove an item while it has bids or after it has been sold");
+
+                } else {
+                    if(!isset($_POST['priorities_after'])) {
+                        $this->errorResponse(400, "No priorities given");
+
+                    } else {
+                        $priorities_after = $_POST['priorities_after'];
+                        if (!is_array($_POST['priorities_after'])) {
+                            $this->errorResponse(400, "No array given for priorities");
+
+                        } else {
+                            $item = $item_status->get_item();
+                            $priorities_after = array_map('intval', $priorities_after);
+                            if ($priorities_after !== array_filter($priorities_after, 'is_int')) {
+                                $this->errorResponse(400, "Priorities in the array need to be integers");
+
+                            } else if ($item->get_picture_count() !== count($priorities_after)) {
+                                $this->errorResponse(400, "Priorities count does not match the item's photos count");
+
+                            } else {
+                                $priorities_after = $_POST['priorities_after'];
+                                ItemPicture::db_update_priorities($item, $priorities_after);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        $user = $this->get_user_or_redirect_guess();
+        $item_id = $this->get_id_or_redirect($_GET['param1']);
+        $picture_priority = $this->get_priority_or_redirect($_POST['delete'], 'item', 'manage_images', $item_id);
+        $item_status = $this->get_item_status_or_redirect($item_id, $user);
+        $item = $item_status->get_item();
+
+        if ($item_status->get_has_bids() || $item_status->has_sold()) {
+            $this->redirect("item", "show", $item_id);
+        }
+        
+        $item_picture = $this->get_item_picture_or_redirect($item, $picture_priority);
+
+        if ($item_picture->is_owner($user))
+            $item_picture->delete();
+        $this->redirect("item", "manage_images", strval($item_id));
     }
 
     private function jsonResponse($data, $status = 200, $message = 'success'): void {
@@ -586,7 +642,7 @@ class ControllerItem extends Controller {
         } else {
             $id = NumberConverter::get_id_or_false($id);
             if(!$id) {
-                $this->errorResponse(400, "Parameter needs to be of type integer");
+                $this->errorResponse(400, "Parameter needs to be a strictly positive integer");
             }
         }
 
@@ -594,15 +650,51 @@ class ControllerItem extends Controller {
     }
 
     private function get_item_or_error(mixed $id, Member $owner, bool $public_access = false): Item|false {
+        $item = false;
         $item_id = $this->get_positive_int_or_error($id);
+
         if($item_id !== false) {
             $item = Item::get_item($item_id);
             if(!$item) {
                 $this->errorResponse(404, "No item with id $item_id was found");
-            } else if (!$item->is_owner($owner) && !$public_access)
+            } else if (!$item->is_owner($owner) && !$public_access) {
                 $this->errorResponse(403, "You are not allowed access to this item");
+                $item = false;
+            }
         }
+
         return $item;
+    }
+
+    private function get_item_status_or_error(mixed $id, Member $owner, bool $public_access = false): ItemStatus|false {
+        $item_status = false;
+        $item_id = $this->get_positive_int_or_error($id);
+
+        if($item_id !== false) {
+            $item_status = ItemStatus::get_item_status($item_id);
+            if(!$item_status) {
+                $this->errorResponse(404, "No item with id $item_id was found");
+            } else if (!$item_status->is_owner($owner) && !$public_access) {
+                $this->errorResponse(403, "You are not allowed access to this item");
+                $item_status = false;
+            }
+        }
+
+        return $item_status;
+    }
+
+    private function get_item_picture_or_error(mixed $priority, Item $item): ItemPicture|false {
+        $picture = false; //we could use 1 variable only but it might be less readable... sad :(
+        $picture_priority = $this->get_positive_int_or_error($priority);
+
+        if($picture_priority !== false) {
+            $picture = $item->get_picture($picture_priority);
+            if(!$picture) {
+                $this->errorResponse(404, "No picture with priority $picture_priority was found in \"".$item->get_title()."\"");
+            } 
+        }
+
+        return $picture;
     }
 
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {

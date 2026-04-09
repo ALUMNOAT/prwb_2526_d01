@@ -53,27 +53,27 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                 opacity: 0.4,
                 cursor: "move",
                 cursorAt: { top: middle_height, left: middle_width },
-                stop: function(/*event, ui*/) {
-                    if(priorities_changed()) {
-                        priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get(); //1, 2, 3, 4
-                        photos_after = $("#sortable").children();
-                        priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get(); //2, 1, 3, 4
-                        refresh_priority();
-
-                        db_update_priorities_service(priorities_before, priorities_after);
-                        refresh_arrows();
-                    }
+                stop: function() {
+                    refresh();
                 }
             });
         }
 
-        function priorities_changed() {
+        function refresh() {
             photos_after = $("#sortable").children();
-
             priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get();
             priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get();
+            priorities_changed = priorities_before.toString() !== priorities_after.toString();
 
-            return priorities_before.toString() !== priorities_after.toString();
+            if(priorities_changed) {
+                priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get(); //1, 2, 3, 4
+                photos_after = $("#sortable").children();
+                priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get(); //2, 1, 3, 4
+                refresh_priority();
+
+                db_update_priorities_service(priorities_before, priorities_after);
+                refresh_arrows();
+            }
         }
 
         function set_variables() {
@@ -111,7 +111,6 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                 move_btn = $(this);
                 priority = move_btn.attr("data-priority");
                 target_priority = move_btn.attr("value");
-                move_image_service(priority, target_priority);
 
                 parent_node = move_btn.parent();
                 
@@ -120,12 +119,13 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                 } else if(target_priority < priority) {
                     parent_node.insertBefore(parent_node.prev());
                 }
-                refresh_priority();
-                refresh_arrows();
+
+                refresh();
             });
 
-            $("#sortable button[name='delete']").on("click", function() {
-                delete_image()
+            $("#sortable button[name='delete']").on("click", async function() {
+                $(this).parent().hide();
+                await delete_image().then()
             });
         }
 
@@ -161,16 +161,20 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             });
         }
 
-        function delete_image() {
-            //TODO: add ajax
-            console.log("it works");
-        }
-
-        function move_image_service(from_priority, to_priority) {
-            //TODO: add ajax
-            $.post("item/move_image_service/"+item_id,
-                {source_priority:from_priority, target_priority:to_priority}
-            )
+        async function delete_image(picture_priority) {
+            await $.post(
+                "item/db_update_priorities_service/"+item_id,
+                {picture_priority: picture_priority},
+                function(data, textStatus) {
+                    $("#image_error").removeAttr("class");
+                },
+                "json" // this tells us the response will be JSON, no need to $.parseJSON(data) therefore !
+            ).fail(function(data) {
+                let response = data["responseJSON"];
+                $("#image_error").attr("class", "errors");
+                let error_message = "<b>" + data["status"] + " " + data["statusText"] + ": " +"</b>" + response["error"];
+                $("#image_error").append(error_message);
+            });
         }
 
         async function db_update_priorities_service(priorities_before, priorities_after) {
@@ -190,7 +194,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                 $("#image_error").attr("class", "errors");
                 let error_message = "<b>" + data["status"] + " " + data["statusText"] + ": " +"</b>" + response["error"];
                 $("#image_error").append(error_message);
-            })
+            });
         }
 
   </script>
