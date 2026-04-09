@@ -173,15 +173,27 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             )
         }
 
-        function db_update_priorities_service(priorities_before, priorities_after) {
-
-            $.post(
+        async function db_update_priorities_service(priorities_before, priorities_after) {
+            //https://stackoverflow.com/questions/751218/how-to-use-getjson-sending-data-with-post-method
+            //https://api.jquery.com/jQuery.post/#jQuery-post-url-data-success-dataType
+            //https://stackoverflow.com/questions/10475652/jquery-post-processing-json-response
+            //$("#image_error").text("hey hey hey");
+            await $.post(
                 "item/db_update_priorities_service/"+item_id,
                 {priorities_before: priorities_before, priorities_after: priorities_after},
-                function(data) {
+                function(data, textStatus) {
+                    $("#image_error").removeAttr("class");
+                    console.log("hey");
                     console.log(data);
-                }
-            );
+                    console.log(textStatus);
+                },
+                "json" // this tells use the response will be JSON, no need to $.parseJSON(data) therefore !
+            ).fail(function(data) {
+                let response = data["responseJSON"];
+                $("#image_error").attr("class", "errors");
+                let error_message = "<b>" + data["status"] + " " + data["statusText"] + ": " +"</b>" + response["error"];
+                $("#image_error").append(error_message);
+            })
         }
 
   </script>
@@ -246,6 +258,8 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             ?>
 
             <h2>Current Image<?= $item->has_single_picture() ? "" : "s" ?></h2>
+
+            <div id="image_error"></div>
 
             <form method="POST" id="remove_image" action="item/remove_image/<?= $item->get_id() ?>"></form>
 

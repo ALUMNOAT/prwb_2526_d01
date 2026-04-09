@@ -510,15 +510,34 @@ class ControllerItem extends Controller {
         //https://reqbin.com/code/php/0uwqq41y/json-to-array-php-example#:~:text=Converting%20JSON%20to%20PHP%20Array,JSON%20to%20a%20PHP%20array.
         //https://www.php.net/var_export
         //https://www.php.net/manual/en/function.gettype.php
-        $user = $this->get_user_or_false();
-        $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $priorities_before = $_POST['priorities_before'];
-        $priorities_after = $_POST['priorities_after'];
-        //echo var_export($source_priority, true) . var_export($target_priority, true);
-        //echo " ### La variable priorities_after est de type: " . gettype($priorities_after) . " ### ";
+        //https://stackoverflow.com/questions/3559542/more-concise-way-to-check-to-see-if-an-array-contains-only-numbers-integers
+        //https://laracasts.com/discuss/channels/laravel/convert-string-array-to-array-of-ints
+        $user = $this->get_user_or_error();
+        if($user !== false) {
+            $item = $this->get_item_or_error($_GET['param1'], $user);
+            if($item !== false) {
+                if(!isset($_POST['priorities_after'])) {
+                    $this->errorResponse(400, "No priorities given");
+                }
+                $priorities_after = $_POST['priorities_after'];
+                if (!is_array($_POST['priorities_after'])) {
+                    $this->errorResponse(400, "No array given for priorities");
+                } else {
+                    $priorities_after = array_map(function($id) {}, $priorities_after);
+                    if ($priorities_after !== array_filter($priorities_after, 'is_int')) {
+                        $this->errorResponse(400, "Priorities in the array need to be integers");
+                    } else if ($item->get_picture_count() !== count($priorities_after)) {
+                        $this->errorResponse(400, "Priorities count does not match the item's photos count");
+                    } else {
+                        $priorities_after = $_POST['priorities_after'];
+                        //echo var_export($source_priority, true) . var_export($target_priority, true);
+                        //echo " ### La variable priorities_after est de type: " . gettype($priorities_after) . " ### ";
 
-        $item = $this->get_item_or_redirect($item_id, $user);
-        ItemPicture::db_update_priorities($item, $priorities_after);
+                        ItemPicture::db_update_priorities($item, $priorities_after);
+                    }
+                }
+            }
+        }
     }
 
     private function jsonResponse($data, $status = 200, $message = 'success'): void {
@@ -535,30 +554,55 @@ class ControllerItem extends Controller {
         //exit;
     }
 
-    private function errorResponse($message, $status = 400, $errors = []): void {
+    private function errorResponse($status = 400, $error = "Bad request"): void {
         //https://webreference.com/php/web-development/ajax-json/
         http_response_code($status);
         
         $response = [
-            'status' => 'error',
-            'message' => $message,
-            'errors' => $errors,
+            "error" => $error,
         ];
         
         echo json_encode($response, JSON_PRETTY_PRINT);
     }
 
-    private function get_user_or_error($guest_pass = true): Member {
+    private function get_user_or_error($guest_pass = true): Member|false {
         /** @var Member $user */
         $user = $this->get_user_or_false();
 
         if(!$user) {
-            $this->errorResponse("Unauthorized", 401, ["error" => "You need to be connected to access this page"]);
+            $this->errorResponse(401, "You need to be connected to access this page");
         } else if ($user->is_guest() && !$guest_pass) {
-            $this->errorResponse("Forbidden", 403, ["error" => "Guests do not have access to this page"]);
+            $this->errorResponse(403, "Guests do not have access to this page");
+            $user = false;
         }
 
         return $user;
+    }
+
+    private function get_positive_int_or_error(mixed $id): int|false {
+        if (!isset($id)) {
+            $this->errorResponse(400, "No parameter found");
+            $id = false;
+        } else {
+            $id = NumberConverter::get_id_or_false($id);
+            if(!$id) {
+                $this->errorResponse(400, "Parameter needs to be of type integer");
+            }
+        }
+
+        return $id;
+    }
+
+    private function get_item_or_error(mixed $id, Member $owner, bool $public_access = false): Item|false {
+        $item_id = $this->get_positive_int_or_error($id);
+        if($item_id !== false) {
+            $item = Item::get_item($item_id);
+            if(!$item) {
+                $this->errorResponse(404, "No item with id $item_id was found");
+            } else if (!$item->is_owner($owner) && !$public_access)
+                $this->errorResponse(403, "You are not allowed access to this item");
+        }
+        return $item;
     }
 
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member {
