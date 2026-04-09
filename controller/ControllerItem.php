@@ -523,7 +523,7 @@ class ControllerItem extends Controller {
                 if (!is_array($_POST['priorities_after'])) {
                     $this->errorResponse(400, "No array given for priorities");
                 } else {
-                    $priorities_after = array_map(function($id) {}, $priorities_after);
+                    $priorities_after = array_map('intval', $priorities_after);
                     if ($priorities_after !== array_filter($priorities_after, 'is_int')) {
                         $this->errorResponse(400, "Priorities in the array need to be integers");
                     } else if ($item->get_picture_count() !== count($priorities_after)) {
