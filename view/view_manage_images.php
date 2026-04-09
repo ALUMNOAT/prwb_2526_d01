@@ -41,12 +41,12 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
         $(document).ready(function() {
             set_variables();
             remove_non_ajax();
-            make_it_sortable();
+            make_it_draggable();
             add_ajax();
             refresh_priority();
         });
 
-        function make_it_sortable() {
+        function make_it_draggable() {
             //https://stackoverflow.com/questions/2754021/jquery-get-a-list-of-values-of-an-attribute-from-elements-of-a-class <-- See Kobi's answer
             //https://www.freecodecamp.org/news/how-to-compare-arrays-in-javascript/
             $("#sortable").sortable({
@@ -183,9 +183,6 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                 {priorities_before: priorities_before, priorities_after: priorities_after},
                 function(data, textStatus) {
                     $("#image_error").removeAttr("class");
-                    console.log("hey");
-                    console.log(data);
-                    console.log(textStatus);
                 },
                 "json" // this tells use the response will be JSON, no need to $.parseJSON(data) therefore !
             ).fail(function(data) {
