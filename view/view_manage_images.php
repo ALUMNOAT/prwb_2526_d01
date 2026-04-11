@@ -59,23 +59,6 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             });
         }
 
-        function refresh() {
-            photos_after = $("#sortable").children();
-            priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get();
-            priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get();
-            priorities_changed = priorities_before.toString() !== priorities_after.toString();
-
-            if(priorities_changed) {
-                priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get(); //1, 2, 3, 4
-                photos_after = $("#sortable").children();
-                priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get(); //2, 1, 3, 4
-                refresh_priority();
-
-                db_update_priorities_service(priorities_before, priorities_after);
-                refresh_arrows();
-            }
-        }
-
         function set_variables() {
             //https://stackoverflow.com/questions/5873810/how-can-i-get-last-characters-of-a-string <-- see Jamon answer's
             //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
@@ -124,9 +107,26 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             });
 
             $("#sortable button[name='delete']").on("click", async function() {
-                $(this).parent().hide();
-                await delete_image().then()
+                image = $(this).parent();
+                await delete_image(image).then()
             });
+        }
+
+        function refresh() {
+            photos_after = $("#sortable").children();
+            priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get();
+            priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get();
+            priorities_changed = priorities_before.toString() !== priorities_after.toString();
+
+            if(priorities_changed) {
+                priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get(); //1, 2, 3, 4
+                photos_after = $("#sortable").children();
+                priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get(); //2, 1, 3, 4
+                refresh_priority();
+
+                db_update_priorities_service(priorities_before, priorities_after);
+                refresh_arrows();
+            }
         }
 
         function refresh_priority() {
@@ -161,15 +161,20 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
             });
         }
 
-        async function delete_image(picture_priority) {
+        async function delete_image(image) {
+            image.hide();
+            priority = image.attr("data-priority");
+
             await $.post(
                 "item/db_update_priorities_service/"+item_id,
-                {picture_priority: picture_priority},
+                {picture_priority: priority},
                 function(data, textStatus) {
+                    image.remove();
                     $("#image_error").removeAttr("class");
                 },
                 "json" // this tells us the response will be JSON, no need to $.parseJSON(data) therefore !
             ).fail(function(data) {
+                image.show();
                 let response = data["responseJSON"];
                 $("#image_error").attr("class", "errors");
                 let error_message = "<b>" + data["status"] + " " + data["statusText"] + ": " +"</b>" + response["error"];
