@@ -510,6 +510,55 @@ class ControllerItem extends Controller
         (new View("manage_images"))->show(["user" => $user, "item" => $item]);
     }
 
+    public function validate_full_item_ajax(): void
+    {
+        $user = $this->get_user_or_false();
+        $id = isset($_GET['param1']) ? (int)$_GET['param1'] : null;
+        $errors = [];
+
+        // On récupère tout
+        $title = $_POST['title'] ?? '';
+        $description = $_POST['description'] ?? '';
+        $days = (int)($_POST['days'] ?? 7);
+        $starting_bid = $_POST['starting_bid'] === '' ? null : (float)$_POST['starting_bid'];
+        $buy_now_price = $_POST['buy_now_price'] === '' ? null : (float)$_POST['buy_now_price'];
+        $sale_price = $_POST['sale_price'] === '' ? null : (float)$_POST['sale_price'];
+
+        // --- LES 4 RÈGLES DE COMBINAISON (Copiées de ton add) ---
+        if ($starting_bid !== null && $sale_price !== null) {
+            $errors[] = "You cannot use both 'Starting Bid' and 'Sale Price'.";
+        }
+        if ($buy_now_price !== null && $starting_bid === null && $sale_price === null) {
+            $errors[] = "Instant Purchase Price requires a Starting Bid.";
+        }
+        if ($buy_now_price !== null && $sale_price !== null) {
+            $errors[] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
+        }
+        if ($starting_bid === null && $buy_now_price === null && $sale_price === null) {
+            $errors[] = "You must specify at least one price.";
+        }
+
+        // Conversion logique
+        if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
+            $buy_now_price = $sale_price;
+        }
+
+        // On crée l'item
+        $item = new Item($id, $title, $user, AppTime::get_current_datetime(), $days, [], $description, $buy_now_price, $starting_bid);
+
+        // On récolte toutes les erreurs
+        $errors = array_merge(
+            $errors,
+            $item->validate_title(),
+            $item->validate_description(),
+            $item->validate_prices(),
+            $item->unicity()
+        );
+
+        // On renvoie le tableau complet
+        echo json_encode(['errors' => $errors]);
+    }
+
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member
     {
         /** @var Member $user */

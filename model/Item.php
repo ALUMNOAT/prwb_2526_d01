@@ -417,7 +417,7 @@ class Item extends Model {
             mb_strlen($this->description) < Configuration::get("description_min_length", 3)
             || mb_strlen($this->description) > Configuration::get("description_max_length", 10000)
         ) {
-            $errors[] = "description length must be between 3 and 10000 characters";
+            $errors[] = "Description length must be between 3 and 10000 characters";
         }
 
         return $errors;

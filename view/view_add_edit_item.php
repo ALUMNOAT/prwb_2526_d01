@@ -16,6 +16,8 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
     <link rel="stylesheet" href="css/icons.css">
     <link rel="stylesheet" href="css/top_navbar.css">
     <link rel="stylesheet" href="css/add_edit_item.css" type="text/css" />
+    <script src="lib/jquery-4.0.0.min.js" type="text/javascript"></script>
+    <script src="scripts/validations_(a)sync_edit_add_item.js" type="text/javascript"></script>
 </head>
 
 <body>
@@ -45,13 +47,18 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
                 <input value="MacBook Pro 14" M2 Pro"> (HTML breaks because of ")
                 <input value="MacBook Pro 14&quot; M2 Pro"> (thanks to Tools::sanitize() and web changes it to ", HTML doesn't break)
                 -->
-                <input type="text" id="title" name="title" class="input" value="<?= Tools::sanitize($item?->get_title() ?? '') ?>" placeholder="Ex: iPhone 13 Pro Max 256GB" required>
+                <input type="text" id="title" name="title" class="input"
+                    value="<?= Tools::sanitize($item?->get_title() ?? '') ?>" placeholder="Ex: iPhone 13 Pro Max 256GB" required>
+                <span id="error-title" class="error-message" style="color: red; display: none;"></span>
 
                 <label for="description" class="label">Description</label>
-                <input type="text" id="description" name="description" class="input" value="<?= /** @var Item $item */ Tools::sanitize($item?->get_description() ?? '') ?>" placeholder="Describe your item in detail ...">
+                <input type="text" id="description" name="description" class="input"
+                    value="<?= Tools::sanitize($item?->get_description() ?? '') ?>" placeholder="Describe your item in detail ...">
+                <span id="error-description" class="error-message" style="color: red; display: none;"></span>
 
                 <label for="days" class="label">Sale Duration (days) *</label>
                 <input type="text" id="days" name="days" class="input" value="<?= $item?->get_duration_days() ?? '7' ?>">
+                <span id="error-sale-duration" class="error-message" style="color: red; display: none;"></span>
             </div>
 
             <div class="section">
@@ -81,12 +88,15 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
 
                 <label for="starting_bid" class="label">Starting Bid</label>
                 <input type="text" id="starting_bid" name="starting_bid" class="input" value="<?= $startingBidVal ?>" placeholder="e.g., 50.00">
+                <span id="error-starting-bid" class="error-message" style="color: red; display: none;"></span>
 
                 <label for="buy_now_price" class="label">Instant purchase Price <span class="secondary">(optional)</span></label>
                 <input type="text" id="buy_now_price" name="buy_now_price" class="input" value="<?= $buyNowVal ?>">
+                <span id="error-buy-now-price" class="error-message" style="color: red; display: none;"></span>
 
                 <label for="sale_price" class="label">Sale Price</label>
                 <input type="text" id="sale_price" name="sale_price" class="input" value="<?= $salePriceVal ?>">
+                <span id="error-sale-price" class="error-message" style="color: red; display: none;"></span>
 
             </div>
         </form>
