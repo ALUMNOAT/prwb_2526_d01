@@ -160,16 +160,18 @@ class ItemPicture extends Model {
             WHERE item = :item_id
             AND priority = :priority;
 
-            SET @p := 0;                #reset priority for each delete !
-            
             UPDATE item_pictures
-            SET priority = @p := (@p + 1)
-            WHERE item = :item_id;",
+            SET priority = priority - 1
+            WHERE item = :item_id
+            AND priority > :priority;",
             [
                 "item_id" => $this->item->get_id(),
                 "priority" => $this->priority
             ]
         );
+
+        //$query->debugDumpParams();
+
         if (file_exists($this->picture_path))
             unlink($this->picture_path);
         if (file_exists($this->thumbnail_path))

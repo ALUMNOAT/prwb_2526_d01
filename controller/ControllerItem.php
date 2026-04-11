@@ -548,62 +548,27 @@ class ControllerItem extends Controller {
             if($item_status !== false) {
 
                 if($item_status->get_has_bids() || $item_status->has_sold()) {
-                    $this->errorResponse(403, "You cannot remove an item while it has bids or after it has been sold");
+                    $this->errorResponse(403, "You cannot remove an image while its item has bids or has been sold");
 
                 } else {
-                    if(!isset($_POST['priorities_after'])) {
-                        $this->errorResponse(400, "No priorities given");
+                    $item = $item_status->get_item();
+                    $picture = $this->get_item_picture_or_error($_POST['picture_priority_to_delete'], $item);
 
-                    } else {
-                        $priorities_after = $_POST['priorities_after'];
-                        if (!is_array($_POST['priorities_after'])) {
-                            $this->errorResponse(400, "No array given for priorities");
-
-                        } else {
-                            $item = $item_status->get_item();
-                            $priorities_after = array_map('intval', $priorities_after);
-                            if ($priorities_after !== array_filter($priorities_after, 'is_int')) {
-                                $this->errorResponse(400, "Priorities in the array need to be integers");
-
-                            } else if ($item->get_picture_count() !== count($priorities_after)) {
-                                $this->errorResponse(400, "Priorities count does not match the item's photos count");
-
-                            } else {
-                                $priorities_after = $_POST['priorities_after'];
-                                ItemPicture::db_update_priorities($item, $priorities_after);
-                            }
-                        }
+                    if($picture !== false) {
+                        $picture->delete();
+                        $this->jsonResponse();
                     }
                 }
             }
         }
-
-
-        $user = $this->get_user_or_redirect_guess();
-        $item_id = $this->get_id_or_redirect($_GET['param1']);
-        $picture_priority = $this->get_priority_or_redirect($_POST['delete'], 'item', 'manage_images', $item_id);
-        $item_status = $this->get_item_status_or_redirect($item_id, $user);
-        $item = $item_status->get_item();
-
-        if ($item_status->get_has_bids() || $item_status->has_sold()) {
-            $this->redirect("item", "show", $item_id);
-        }
-        
-        $item_picture = $this->get_item_picture_or_redirect($item, $picture_priority);
-
-        if ($item_picture->is_owner($user))
-            $item_picture->delete();
-        $this->redirect("item", "manage_images", strval($item_id));
     }
 
-    private function jsonResponse($data, $status = 200, $message = 'success'): void {
+    private function jsonResponse($status = 200, $message = "Success"): void {
         //https://webreference.com/php/web-development/ajax-json/
         http_response_code($status);
         
         $response = [
-            'status' => $status < 400 ? 'success' : 'error',
             'message' => $message,
-            'data' => $data,
         ];
         
         echo json_encode($response, JSON_PRETTY_PRINT);
@@ -619,6 +584,7 @@ class ControllerItem extends Controller {
         ];
         
         echo json_encode($response, JSON_PRETTY_PRINT);
+        //exit;
     }
 
     private function get_user_or_error($guest_pass = true): Member|false {

@@ -54,7 +54,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                 cursor: "move",
                 cursorAt: { top: middle_height, left: middle_width },
                 stop: function() {
-                    refresh();
+                    update_db_and_refresh_all();
                 }
             });
         }
@@ -103,16 +103,18 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
                     parent_node.insertBefore(parent_node.prev());
                 }
 
-                refresh();
+                update_db_and_refresh_all();
             });
 
             $("#sortable button[name='delete']").on("click", async function() {
                 image = $(this).parent();
-                await delete_image(image).then()
+                await delete_image(image).then();
+                refresh_priority();
+                refresh_arrows();
             });
         }
 
-        function refresh() {
+        function update_db_and_refresh_all() {
             photos_after = $("#sortable").children();
             priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get();
             priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get();
@@ -132,13 +134,15 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
         function refresh_priority() {
             photos = $("#sortable").children();
 
-            i = 1;
+            i = 1; //photos.first().attr("data-priority");
             photos.each(function() {
                 $(this).attr("data-priority", i);
                 move_btn = $(this).find("button[name='move']");
                 move_btn.attr("data-priority", i);
                 move_btn.first().attr("value", i-1);
                 move_btn.last().attr("value", i+1);
+                move_btn = $(this).find("button[name='delete']");
+                move_btn.attr("value", i);
                 i++;
             })
         }
@@ -164,22 +168,30 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
         async function delete_image(image) {
             image.hide();
             priority = image.attr("data-priority");
+            console.log(priority);
 
             await $.post(
-                "item/db_update_priorities_service/"+item_id,
-                {picture_priority: priority},
+                "item/remove_image_service/"+item_id,
+                {picture_priority_to_delete: priority},
                 function(data, textStatus) {
                     image.remove();
                     $("#image_error").removeAttr("class");
+                    //console.log(priority + " was successfully deleted !");
                 },
                 "json" // this tells us the response will be JSON, no need to $.parseJSON(data) therefore !
-            ).fail(function(data) {
-                image.show();
-                let response = data["responseJSON"];
-                $("#image_error").attr("class", "errors");
-                let error_message = "<b>" + data["status"] + " " + data["statusText"] + ": " +"</b>" + response["error"];
-                $("#image_error").append(error_message);
-            });
+            ).fail(
+                function(data) {
+                    //console.log(priority + " failed to delete !");
+                    //console.log(data["responseText"]);
+                    
+                    image.show();
+                    $("#image_error").attr("class", "errors");
+
+                    let response = data["responseJSON"];
+                    let error_message = "<b>" + data["status"] + " " + data["statusText"] + ": " +"</b>" + response["error"];
+                    $("#image_error").append(error_message);
+                }
+            );
         }
 
         async function db_update_priorities_service(priorities_before, priorities_after) {
