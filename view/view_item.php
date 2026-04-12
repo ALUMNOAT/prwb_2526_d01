@@ -54,7 +54,7 @@
                         <img src="<?= $main_pic->get_picture_path() ?>" alt="Item picture">
                     <?php endif; ?>
                 </div>
-                
+
                 <!-- INFO -->
                 <div class='item-details'>
                     <h1><?= Tools::sanitize($item->get_title()) ?></h1>
@@ -81,7 +81,14 @@
 
             <!-- BIDS HISTORY -->
             <div class="bid-history">
-                <h3>Bid History</h3>
+                <div class='row'>
+                    <h3>Bid History</h3>
+                    <?php if (!empty($bids)): ?>
+                        <div class='entries'>
+                            <b><?= count($bids); ?> entries</b>
+                        </div>
+                    <?php endif; ?>
+                </div>
 
                 <?php if (empty($bids)): ?>
                     <p>No bids yet.</p>
@@ -168,17 +175,15 @@
                 <div class="manage-item">
                     <h3>Manage Your Item</h3>
                     <?php if (!$item_status->get_has_bids()): ?>
-                    <a href="item/edit/<?= $item->get_id() ?>" class="row">
-                        <div class="row-title">Edit Item Details</div>
-                    </a>
-                    <?php endif; ?>
+                        <a href="item/edit/<?= $item->get_id() ?>" class="row">
+                            <div class="row-title">Edit Item Details</div>
+                        </a>
 
                     <a href="item/manage_images/<?= $item->get_id() ?>" class="row">
                         <div class="row-title">Manage Images</div>
                     </a>
 
-                    <?php /** @var ItemStatus $item_status */
-                    if (!$item_status->get_has_bids()): ?>
+                    <?php /** @var ItemStatus $item_status */ ?>
                         <a href="my_items/delete/<?= $item->get_id() ?>" class="row">
                             <div class="row-title">Delete Item</div>
                         </a>

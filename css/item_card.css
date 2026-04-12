@@ -58,7 +58,7 @@
 }
 
 .current-bid-price {
-    color: var(--text-2);
+    color:chartreuse;
     margin-left: auto;
 }
 

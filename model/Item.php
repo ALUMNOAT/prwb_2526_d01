@@ -230,8 +230,7 @@ class Item extends Model {
         */
         $query = self::execute(
             "DELETE FROM item_pictures AS p WHERE p.item = :item_id;
-            DELETE FROM items WHERE items.id = :item_id;
-            DELETE FROM v_items_status AS v WHERE v.id = :item_id;",
+            DELETE FROM items WHERE items.id = :item_id;",
             ['item_id' => $this->id]
         );
     }
@@ -411,28 +410,35 @@ class Item extends Model {
         return $errors;
     }
 
-    public function validate_ipp(): array {
+    public function validate_description(): array {
         $errors = [];
 
-        if ($this->buy_now_price !== null && $this->starting_bid !== null) {
-            if ($this->buy_now_price < $this->starting_bid) {
-                $errors[] = "Buy now price must be greater than the starting bid.";
-            }
-            if ($this->buy_now_price < 0) {
-                $errors[] = "Buy now price must be greater than 0.";
-            }
+        if( $this->description !== null && $this->description != '' &&
+            mb_strlen($this->description) < Configuration::get("description_min_length", 3)
+            || mb_strlen($this->description) > Configuration::get("description_max_length", 10000)
+        ) {
+            $errors[] = "description length must be between 3 and 10000 characters";
         }
 
         return $errors;
     }
 
-    public function validate_bid(): array {
+    public function validate_prices(): array {
         $errors = [];
-
-        if ($this->starting_bid !== null && $this->starting_bid < 0) {
-            $errors[] = "Starting bid must be positive.";
+        
+        if ($this->starting_bid !== null && $this->starting_bid <= 0) {
+            $errors[] = "Starting bid must be greater than 0.";
         }
-
+        
+        if ($this->buy_now_price !== null && $this->buy_now_price <= 0) {
+            $errors[] = "Buy now price must be greater than 0.";
+        }
+        
+        if ($this->starting_bid !== null && $this->buy_now_price !== null 
+            && $this->buy_now_price <= $this->starting_bid) {
+            $errors[] = "Buy now price must be greater than starting bid.";
+        }
+        
         return $errors;
     }
 

@@ -15,13 +15,11 @@ En développement, donnez les permissions d'écriture aux dossiers uploads et da
 * mamichel@epfc.eu, password "Password1,", utilisateur
 * quhouben@epfc.eu, password "Password1,", utilisateur
 * xapigeolet@epfc.eu, password "Password1,", utilisateur
-* A compléter...
 
 ### Liste des bugs connus
 
-* bug 1
-* bug 2
-* ...
+* concurrence de sauvegarde vers la database: essayer de bid sur un item trop rapidement va lancer une erreur SQL
+* /
 
 ### URLs deploiement
 
@@ -31,13 +29,14 @@ En développement, donnez les permissions d'écriture aux dossiers uploads et da
 * étudiant Nom Prenom :
   * URL :
   * Mot de passe :
-* étudiant Nom Prénom :
-  * URL :
-  * Mot de passe :
 
 ### Liste des fonctionnalités supplémentaires
 
+* Check IBAN implémenté
+
 ### Divers
+
+* notre code est trop complexe, et certaines choses sont au mauvais endroit (à refactor)
 
 ## Notes de version itération 2
 

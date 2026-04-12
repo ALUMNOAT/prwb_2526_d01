@@ -81,7 +81,7 @@ class ControllerProfile extends Controller {
              * validate_unicity() ne valide pas l'unicité si l'ID qu'il trouve dans la DB match notre ID
              * Explication: Je suis Emilian, je change pas mon nom mais mon iban, je veux pas avoir "Emilian" est pris, mon adresse email est prise, ... alors que je suis moi
              */
-            
+
             // On vérifie que le pseudo, email et full_name sont uniques
             $errors = Member::validate_unicity($pseudo, $email, $full_name, $member->get_id());
             // On vérifie les règles métiers du full_name
@@ -107,6 +107,13 @@ class ControllerProfile extends Controller {
                 // Redirect après POST (principe PRG)
                 $this->redirect("profile");
                 return; // on stoppe le reste du code
+            } else {
+                //reset member TODO this is bad practice !
+                $member_copy = Member::get_member_by_id($member->get_id());
+                $member->set_full_name($member_copy->get_full_name());
+                $member->set_pseudo($member_copy->get_pseudo());
+                $member->set_email($member_copy->get_email());
+                $member->set_iban($member_copy->get_iban());
             }
         }
 
@@ -229,5 +236,16 @@ class ControllerProfile extends Controller {
         if ($user->is_guest() && !$guest_pass)
             $this->redirect("item", "browse");
         return $user;
+    }
+
+    public function logout(): void {
+        // On peut faire ca meme si profile est dans le ControllerMember
+        // car le form et button est [form action="test/logout"]
+        // du coup le controlleur connait le bouton
+        if (!isset($_POST["logout"])) {
+            echo "Logout must be done via POST.";
+            return;
+        }
+        parent::logout();
     }
 }

@@ -90,7 +90,7 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
             <?php if (isset($bid)): ?>
                 <div class="current-bid-price">
                     <p class="attribution">Current bid</p>
-                    € <?= number_format($bid->get_amount(), 2, ",", ".") ?>
+                    € <?= number_format($bid->get_highest_bid(), 2, ",", ".") ?>
                 </div>
             <?php endif; ?>
         </div>

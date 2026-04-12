@@ -99,7 +99,7 @@ $icons = "account_circle,add,arrow_back,celebration,home,logout,manage_accounts,
             </a>
 
             <!-- LOGOUT -->
-            <form action="test/logout" method="post" class="logout-form" id="logout-form"></form>
+            <form action="profile/logout" method="post" class="logout-form" id="logout-form"></form>
             <button type="submit" name="logout" class="row logout" form="logout-form">
                 <span class="material-symbols-outlined size-40">logout</span>
                 <div>

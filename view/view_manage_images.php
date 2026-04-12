@@ -24,6 +24,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse</title>
     <base href="<?= $web_root ?>">
     <link rel="stylesheet" href="css/colors.css">
@@ -32,7 +33,188 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
     <link rel="stylesheet" href="css/top_navbar.css">
     <link rel="stylesheet" href="css/manage_images.css">
     <link rel="stylesheet" href="css/menu.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.2/jquery-ui.js"></script>
+    <script>
+        let middle_width, middle_height, item_id, photos;
+
+        $(document).ready(function() {
+            set_variables();
+            remove_non_ajax();
+            make_it_draggable();
+            add_ajax();
+            refresh_priority();
+        });
+
+        function make_it_draggable() {
+            //https://stackoverflow.com/questions/2754021/jquery-get-a-list-of-values-of-an-attribute-from-elements-of-a-class <-- See Kobi's answer
+            //https://www.freecodecamp.org/news/how-to-compare-arrays-in-javascript/
+            $("#sortable").sortable({
+                opacity: 0.4,
+                cursor: "move",
+                cursorAt: { top: middle_height, left: middle_width },
+                stop: function() {
+                    update_db_and_refresh_all();
+                }
+            });
+        }
+
+        function set_variables() {
+            //https://stackoverflow.com/questions/5873810/how-can-i-get-last-characters-of-a-string <-- see Jamon answer's
+            //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
+            //https://api.jquery.com/children/
+            //https://html.spec.whatwg.org/#embedding-custom-non-visible-data-with-the-data-*-attributes
+            //https://www.tutorialrepublic.com/faq/how-to-get-the-children-of-the-this-selector-in-jquery.php
+            //https://stackoverflow.com/questions/2754021/jquery-get-a-list-of-values-of-an-attribute-from-elements-of-a-class <-- See Kobi's answer
+            middle_width = $("#sortable div:first").width()/2;
+            middle_height = $("#sortable div:first img").height()/2;
+            item_id = parseInt($("#input_images").attr("action").split("/").pop()); //Jamon + parseInt ^
+
+            photos = $("#sortable").children().each(function() {
+                priority = parseInt($(this).find("button[name='delete']").attr("value"));
+                $(this).attr("data-priority", priority);
+                $(this).find("button[name='move']").attr("data-priority", priority);
+            });
+        }
+
+        function remove_non_ajax() {
+            //https://api.jquery.com/removeAttr/
+            $("#move_image").remove();
+            $("#remove_image").remove();
+            $("#sortable button").removeAttr("formaction type form")
+        }
+
+        function add_ajax() {
+            //https://api.jquery.com/attribute-equals-selector/
+            //https://stackoverflow.com/questions/9122078/difference-between-onclick-vs-click
+            //https://stackoverflow.com/questions/698301/is-there-a-native-jquery-function-to-switch-elements <-- see User2820... 
+            //https://forum.jquery.com/portal/en/community/topic/swap-an-element-with-another-element
+            
+            $("#sortable button[name='move']").on("click", function() {
+                move_btn = $(this);
+                priority = move_btn.attr("data-priority");
+                target_priority = move_btn.attr("value");
+
+                parent_node = move_btn.parent();
+                
+                if(target_priority > priority) {
+                    parent_node.insertAfter(parent_node.next());
+                } else if(target_priority < priority) {
+                    parent_node.insertBefore(parent_node.prev());
+                }
+
+                update_db_and_refresh_all();
+            });
+
+            $("#sortable button[name='delete']").on("click", async function() {
+                image = $(this).parent();
+                await delete_image(image).then();
+                refresh_priority();
+                refresh_arrows();
+            });
+        }
+
+        function update_db_and_refresh_all() {
+            photos_after = $("#sortable").children();
+            priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get();
+            priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get();
+            priorities_changed = priorities_before.toString() !== priorities_after.toString();
+
+            if(priorities_changed) {
+                priorities_before = photos.map(function(){return $(this).attr("data-priority");}).get(); //1, 2, 3, 4
+                photos_after = $("#sortable").children();
+                priorities_after = photos_after.map(function(){return $(this).attr("data-priority");}).get(); //2, 1, 3, 4
+                refresh_priority();
+
+                db_update_priorities_service(priorities_before, priorities_after);
+                refresh_arrows();
+            }
+        }
+
+        function refresh_priority() {
+            photos = $("#sortable").children();
+
+            i = 1; //photos.first().attr("data-priority");
+            photos.each(function() {
+                $(this).attr("data-priority", i);
+                move_btn = $(this).find("button[name='move']");
+                move_btn.attr("data-priority", i);
+                move_btn.first().attr("value", i-1);
+                move_btn.last().attr("value", i+1);
+                move_btn = $(this).find("button[name='delete']");
+                move_btn.attr("value", i);
+                i++;
+            })
+        }
+
+        function refresh_arrows() {
+            //https://stackoverflow.com/questions/13207927/switch-statement-for-multiple-cases-in-javascript
+            priorities = photos.map(function(){return $(this).attr("data-priority");}).get();
+
+            min = 0;
+            max = priorities.length + 1;
+
+            $("button[name='move']").each(function() {
+                button = $(this);
+                target_priority = button.attr("value");
+                if(target_priority <= min || target_priority >= max) {
+                    button.prop("disabled", true);
+                } else {
+                    button.prop("disabled", false);
+                }
+            });
+        }
+
+        async function delete_image(image) {
+            image.hide();
+            priority = image.attr("data-priority");
+            console.log(priority);
+
+            await $.post(
+                "item/remove_image_service/"+item_id,
+                {picture_priority_to_delete: priority},
+                function(data, textStatus) {
+                    image.remove();
+                    $("#image_error").removeAttr("class");
+                    //console.log(priority + " was successfully deleted !");
+                },
+                "json" // this tells us the response will be JSON, no need to $.parseJSON(data) therefore !
+            ).fail(
+                function(data) {
+                    //console.log(priority + " failed to delete !");
+                    //console.log(data["responseText"]);
+                    
+                    image.show();
+                    $("#image_error").attr("class", "errors");
+
+                    let response = data["responseJSON"];
+                    let error_message = "<b>" + data["status"] + " " + data["statusText"] + ": " +"</b>" + response["error"];
+                    $("#image_error").append(error_message);
+                }
+            );
+        }
+
+        async function db_update_priorities_service(priorities_before, priorities_after) {
+            //https://stackoverflow.com/questions/751218/how-to-use-getjson-sending-data-with-post-method
+            //https://api.jquery.com/jQuery.post/#jQuery-post-url-data-success-dataType
+            //https://stackoverflow.com/questions/10475652/jquery-post-processing-json-response
+            //$("#image_error").text("hey hey hey");
+            await $.post(
+                "item/db_update_priorities_service/"+item_id,
+                {priorities_before: priorities_before, priorities_after: priorities_after},
+                function(data, textStatus) {
+                    $("#image_error").removeAttr("class");
+                },
+                "json" // this tells use the response will be JSON, no need to $.parseJSON(data) therefore !
+            ).fail(function(data) {
+                let response = data["responseJSON"];
+                $("#image_error").attr("class", "errors");
+                let error_message = "<b>" + data["status"] + " " + data["statusText"] + ": " +"</b>" + response["error"];
+                $("#image_error").append(error_message);
+            });
+        }
+
+  </script>
 </head>
 
 <body>
@@ -53,7 +235,7 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
         <div class="section">
             <h2>Add New Images</h2>
 
-            <form method="POST" action="item/add_images/<?= $item->get_id() ?>" enctype="multipart/form-data">
+            <form id="input_images" method="POST" action="item/add_images/<?= $item->get_id() ?>" enctype="multipart/form-data">
                 <h3>
                     <b>Select Images</b>
                 </h3>
@@ -95,13 +277,15 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
             <h2>Current Image<?= $item->has_single_picture() ? "" : "s" ?></h2>
 
+            <div id="image_error"></div>
+
             <form method="POST" id="remove_image" action="item/remove_image/<?= $item->get_id() ?>"></form>
 
             <form method="POST" id="move_image" action="item/move_image/<?= $item->get_id() ?>"></form>
 
             <?php $image_count = $item->get_picture_count(); ?>
 
-            <div class="images_container">
+            <div class="images_container" id="sortable">
                 <?php foreach ($item->get_pictures() as $item_picture): ?>
                     <div>
                         <?php /** @var ItemPicture $item_picture */ ?>
@@ -111,19 +295,17 @@ $icons = "add,arrow_back,arrow_left_alt,arrow_right_alt,celebration,close_small,
 
                         <br>
 
-                        <?php if (!$item_picture->is_first_priority()): ?>
-                            <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>" 
-                            type="submit" name="move" id='move' form="move_image" value="<?= ($priority-1) ?>">
-                                <span class="material-symbols-outlined">arrow_left_alt</span>
-                            </button>
-                        <?php endif; ?>
+                        <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>"
+                        type="submit" name="move" id='move' form="move_image" value="<?= ($priority-1) ?>"
+                        <?= $item_picture->is_first_priority() ? "disabled" : "" ?>>
+                            <span class="material-symbols-outlined">arrow_left_alt</span>
+                        </button>
 
-                        <?php if (!$item_picture->is_last_priority()): ?>
-                            <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>" 
-                            type="submit" name="move" id='move' form="move_image" value="<?= ($priority+1) ?>">
-                                <span class="material-symbols-outlined">arrow_right_alt</span>
-                            </button>
-                        <?php endif; ?>
+                        <button formaction="item/move_image/<?= $item->get_id() ?>/<?= $priority ?>" 
+                        type="submit" name="move" id='move' form="move_image" value="<?= ($priority+1) ?>"
+                        <?= $item_picture->is_last_priority() ? "disabled" : "" ?>>
+                            <span class="material-symbols-outlined">arrow_right_alt</span>
+                        </button>
 
                         <button class="delete" type="submit" name="delete" id='delete' form="remove_image" value="<?= $priority ?>">
                             <span class="material-symbols-outlined">close_small</span>
