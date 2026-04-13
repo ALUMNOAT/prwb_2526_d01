@@ -82,3 +82,12 @@ img {
     margin-right: 16px;
     font-size: 20px;
 }
+
+.search-bar select[id="search-field"] {
+    float: right;
+    padding: 5px;
+    border: none;
+    margin-top: 3px;
+    margin-right: 16px;
+    font-size: 20px;
+}

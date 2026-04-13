@@ -1,111 +1,81 @@
 $(() => {
-  // On insère la barre de recherche en haut du contenu
   $("div.content").prepend(`
     <div class="search-bar">
+
+    <!-- Champ texte où l'utilisateur tape sa recherche -->
       <input type="text" id="fulltext-search" placeholder="Search..." autocomplete="off">
+
+      <!-- Menu déroulant pour choisir sur quel champ filtrer -->
+      <select id="search-field">
+        <option value="all">All</option>
+        <option value="title">Title</option>
+        <option value="owner">Owner</option>
+        <option value="description">Description</option>
+      </select>
+
     </div>
   `);
 
-  // À chaque frappe clavier, on récupère le texte saisi et on filtre
-  $("#fulltext-search").on("input", function () {
-    const pattern = $(this).val().trim().toLowerCase();
-    filterItems(pattern);
-  });
+  /* Sur la barre de recherche et sur le filtre si on fait un changement -> fonction */
+  $("#fulltext-search, #search-field").on("input change", function () {
+    const value = $("#fulltext-search").val().toLowerCase();
+    const field = $("#search-field").val();
 
-  function filterItems(pattern) {
-    let totalVisible = 0;
-
-    // On parcourt chaque titre de section
-    // $("div.content > h1") = seulement les h1 ENFANTS DIRECTS de div.content (donc pas les petits enfants)
+    /* On entre dans les séparateurs MY BIDS et AVAILABLE ITEMS (view_browse comme exemple) */
     $("div.content > h1").each(function () {
-      const $heading = $(this);
-      const $browse = $heading.next("div.browse"); // le conteneur des cartes sous ce titre (ici les 16 item_card.php par exemple)
+      const $heading = $(this); // ici le titre (<h1> My bids <h1> comme exemple)
+      const $browse = $heading.next("div.browse"); // On entre dans item_card
+      let visible = 0; // 0 cartes visibles pour l'instant
 
-      // Pour chaque carte de la section, on vérifie si elle contient le texte recherché
-      let sectionVisible = 0;
+      // Vu qu'on est rentré dans item_card, on utilse les div des item_cards
       $browse.children().each(function () {
-        const title = $(this).find(".container-text b").text().toLowerCase();
-
-        const owner = $(this)
-          .find(".container-text .attribution")
-          .first() //2nd "attribution" est current bid. Donc on prend le 1er
+        const title = $(this).find(".container-text b") // on cherche <b> (bold) dans div class="container-text"
           .text()
           .toLowerCase();
 
-        // $(this).data("description") = $(this).attr("data-description") mais dur a se rappeler
-        // plus facile de se dire que .find() = element html et balises
-        // .attr() = pour les attributs
+        const owner = $(this).find(".container-text .attribution")
+          .first()
+        // "Current bid" utilise aussi la classe .attribution, sans le .first(),
+        // on récupèrerait aussi le prix du bid par erreur
+          .text()
+          .toLowerCase();
 
-        const description = ($(this).attr("data-description") ?? "").toLowerCase();
+        // l'attribut de la description est dans la <div class="card"> (le $(this))
+        // On aurait du le mettre dans le <div class="container-text">
+        // et du coup on aurait du écrire comme dans les autres variables
+        // $(this).find(".container-text").attr("data-description")
+        const description = ($(this).attr("data-description") ?? "")
+          .toLowerCase();
+
+        // .indexOf() retourne la position de "value" dans "str", ou -1 si absent
+        // > -1 signifie "value est contenu dans str"
+        const check = (str) => str.indexOf(value) > -1;
+
+        /* matches = vrai si...
+           ├── input vide      → on affiche tout OU
+           ├── field = "all"   ET match tout  OU
+           ├── field = "title" ET match titre OU
+           ├── field = "owner" ET match owner OU
+           └── field = "desc"  ET match desc  OU */
 
         const matches =
-          pattern === "" ||
-          title.includes(pattern) ||
-          owner.includes(pattern) ||
-          description.includes(pattern);
+          value === "" ||
+          (field === "all" && (check(title) || check(owner) || check(description))) ||
+          (field === "title" && check(title)) ||
+          (field === "owner" && check(owner)) ||
+          (field === "description" && check(description));
 
-        $(this).toggle(matches); // affiche ou cache la carte selon le résultat
-        if (matches) sectionVisible++;
+        $(this).toggle(matches);
+        if (matches) visible++;
       });
 
-      // Si aucune carte de la section ne correspond, on cache aussi le titre
-      $heading.toggle(sectionVisible > 0);
-      $browse.toggle(sectionVisible > 0);
-      totalVisible += sectionVisible;
+      $heading.toggle(visible > 0);
+      $browse.toggle(visible > 0);
     });
 
-    // On supprime l'ancien message "aucun résultat" s'il existe, pour éviter les doublons
     $("#no-result-msg").remove();
-
-    // Si rien n'est visible et que l'utilisateur a bien tapé quelque chose, on affiche le message
-    if (totalVisible === 0 && pattern !== "") {
+    if (value !== "" && $("div.browse .card:visible").length === 0) {
       $("div.content").append('<p id="no-result-msg">No item found.</p>');
     }
-  }
-});
-
-/* $(() => {
-  // On insère la barre de recherche en haut du contenu
-  $("div.content").prepend(`
-    <div class="search-bar">
-      <input type="text" id="fulltext-search" placeholder="Search items..." autocomplete="off">
-    </div>
-  `);
-
-  // À chaque frappe clavier, on récupère le texte saisi et on filtre
-  $("#fulltext-search").on("input", function () {
-    const pattern = $(this).val().trim().toLowerCase();
-    filterItems(pattern);
   });
-
-  function filterItems(pattern) {
-    let totalVisible = 0;
-
-    // On parcourt chaque titre de section (Active, Unsold, Sold...)
-    $("div.content > h1").each(function () {
-      const $heading = $(this);
-      const $browse = $heading.next("div.browse"); // le conteneur des cartes sous ce titre
-
-      // Pour chaque carte de la section, on vérifie si elle contient le texte recherché
-      let sectionVisible = 0;
-      $browse.children().each(function () {
-        const matches = pattern === "" || $(this).text().toLowerCase().includes(pattern);
-        $(this).toggle(matches); // affiche ou cache la carte selon le résultat
-        if (matches) sectionVisible++;
-      });
-
-      // Si aucune carte de la section ne correspond, on cache aussi le titre
-      $heading.toggle(sectionVisible > 0);
-      $browse.toggle(sectionVisible > 0);
-      totalVisible += sectionVisible;
-    });
-
-    // On supprime l'ancien message "aucun résultat" s'il existe, pour éviter les doublons
-    $("#no-result-msg").remove();
-
-    // Si rien n'est visible et que l'utilisateur a bien tapé quelque chose, on affiche le message
-    if (totalVisible === 0 && pattern !== "") {
-      $("div.content").append('<p id="no-result-msg">No item found.</p>');
-    }
-  }
-}); */
+});
