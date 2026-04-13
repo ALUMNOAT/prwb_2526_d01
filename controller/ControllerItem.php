@@ -564,14 +564,22 @@ class ControllerItem extends Controller {
     }
 
     public function get_images_service(): void {
+        //https://stackoverflow.com/questions/17576065/php-how-to-pass-parameter-which-may-be-undefined
         $user = $this->get_user_or_error();
         if($user !== false) {
 
-            $item_status = $this->get_item_status_or_error($_GET['param1'], $user, public_access: true);
+            $id = $_GET['param1'] ?? null;
+            $item_status = $this->get_item_status_or_error($id, $user, public_access: true);
             if($item_status !== false) {
                 $item = $item_status->get_item();
                 $pictures = $item->get_pictures();
-                $this->jsonResponse($pictures);
+
+                $pictures_path = ["id" => $id];
+                foreach($pictures as $priority => $picture) {
+                    $pictures_path["images"][] = ["priority" => $priority, "path" => $picture->get_picture_path()];
+                }
+
+                $this->jsonResponse($pictures_path);
             }
         }
     }

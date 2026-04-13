@@ -31,75 +31,108 @@
     <script>
         let images, item_id;
 
-        $(document).ready(function() {
+        $(document).ready(async function() {
+            //https://api.jquery.com/deferred.done/
             set_variables();
-            set_images();
-            console.log("test");
-            set_carousel();
+
+            await set_images_or_error();
+
+            if(typeof(images) !== 'undefined') {
+                set_carousel();
+            }
         });
 
         function set_variables() {
             item_id = parseInt($(".item-data").attr("data-item_id"));
         }
 
-        async function set_images() {
-            await $.get(
-                "item/get_images_service/"+item_id,
-                function(data) {
-                    //let images = data["responseJSON"]["data"];
-                    console.log(data["message"]);
-                    console.log(data["data"]);
+        async function set_images_or_error() {
+            await $.get({
+                url: "item/get_images_service/"+item_id,
+                success: function(data) {
+                    let item = data.data;
+
+                    if(item.id == item_id) {
+                        images = item.images;
+                    } else {
+                        //https://stackoverflow.com/questions/4508913/can-i-change-the-pages-html-status-code-on-the-client-side
+                        set_error("item id received in the server does not match the page's id");
+                    }
                 },
-                "json" // this tells use the response will be JSON, no need to $.parseJSON(data) therefore !
-            ).fail(function(data) {
-                console.log("failed to load images");
-                // let response = data["responseJSON"];
-                // $("#image_error").attr("class", "errors");
-                // let error_message = "<b>" + data["status"] + " " + data["statusText"] + ": " +"</b>" + response["error"];
-                // $("#image_error").append(error_message);
+                dataType: "json" // this tells use the response will be JSON, no need to $.parseJSON(data) therefore !
+            }).fail(function(data) {
+                error = data["responseJSON"]["error"];
+                set_error(error + " for the Jquery request");
             });
         }
 
-        async function set_carousel() {
-            //https://api.jquery.com/prepend/#:~:text=The%20.,append()%20).
-            img_carousel = $(".img").empty();
-            img_carousel.attr("id", "carousel").addClass("carousel slide");
-            img_carousel.append("<");
+        function set_carousel() {
+            carousel = $(".img").empty();
+            carousel.attr("id", "carousel").addClass("carousel slide");
 
-            console.log("test2");
+            set_carousel_indicators(carousel);
+            set_carousel_images(carousel);
+            set_carousel_buttons(carousel);
+        }
+
+        function set_carousel_indicators(carousel) {
+            //https://api.jquery.com/prepend/#:~:text=The%20.,append()%20).
+            //https://stackoverflow.com/questions/13485925/jquery-help-using-each-and-append-to-add-pictures-to-html
+            //https://api.jquery.com/jQuery.each/
+            //https://www.geeksforgeeks.org/jquery/what-is-the-equivalent-method-of-document-createelement-in-jquery/
+
+            let indicator = $("<div class='carousel-indicators'>");
+            
+            $.each(images, function(index, photo) {
+                indicator.append(
+                    "<button type='button' data-bs-target='#carousel' data-bs-slide-to='"+index+"' aria-current='true' aria-label='Slide "+index+"'></button>"
+                );
+            });
+            indicator.children().first().addClass("active").attr("aria-current", "true");
+
+            carousel.append(indicator);
+        }
+
+        function set_carousel_images(carousel) {
+            let images_slides = $("<div class='carousel-inner'>");
+
+            $.each(images, function(index, photo) {
+                let carousel_item = $("<div class='carousel-item'>");
+                let img = $("<img src='"+photo.path+"' class='d-block w-100' alt='...'>");
+                
+                carousel_item.append(img);
+                images_slides.append(carousel_item);
+            });
+
+            images_slides.children().first().addClass("active");
+            carousel.append(images_slides);
+        }
+
+        function set_carousel_buttons(carousel) {
+            let left_button = $('<button class="carousel-control-prev" type="button" data-bs-target="#carousel" data-bs-slide="prev">').append([
+                $('<span class="carousel-control-prev-icon" aria-hidden="true">'),
+                $('<span class="visually-hidden">').html("Previous")
+            ]);
+            
+            let right_button = $('<button class="carousel-control-next" type="button" data-bs-target="#carousel" data-bs-slide="next">').append([
+                $('<span class="carousel-control-next-icon" aria-hidden="true">'),
+                $('<span class="visually-hidden">').html("Next")
+            ]);
+
+            carousel.append([left_button, right_button]);
+        }
+
+        function set_error(message) {
+            let error_container = $('<div class="errors">');
+            let error = $('<p>').html(message);
+
+            error_container.append(error);
+            $(".item-details").append(error_container);
         }
     </script>
 </head>
 
 <body>
-
-    <div id="carouselExampleIndicators" class="carousel slide">
-        <div class="carousel-indicators">
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
-        </div>
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="https://www.dummyimage.com/600x400/000/fff&text=hello_world" class="d-block w-100" alt="...">
-            </div>
-            <div class="carousel-item">
-                <img src="https://www.dummyimage.com/600x400/000/fff&text=WOWOW" class="d-block w-100" alt="...">
-            </div>
-            <div class="carousel-item">
-                <img src="https://www.dummyimage.com/600x400/000/fff&text=alright" class="d-block w-100" alt="...">
-            </div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
-
     <!-- TOP NAVBAR -->
     <div class="top-navbar">
         <a href="item/browse">
