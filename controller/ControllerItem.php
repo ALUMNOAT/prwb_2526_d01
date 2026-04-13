@@ -563,12 +563,26 @@ class ControllerItem extends Controller {
         }
     }
 
-    private function jsonResponse($status = 200, $message = "Success"): void {
+    public function get_images_service(): void {
+        $user = $this->get_user_or_error();
+        if($user !== false) {
+
+            $item_status = $this->get_item_status_or_error($_GET['param1'], $user, public_access: true);
+            if($item_status !== false) {
+                $item = $item_status->get_item();
+                $pictures = $item->get_pictures();
+                $this->jsonResponse($pictures);
+            }
+        }
+    }
+
+    private function jsonResponse($data = null, $status = 200, $message = "Success"): void {
         //https://webreference.com/php/web-development/ajax-json/
         http_response_code($status);
         
         $response = [
             'message' => $message,
+            'data' => $data,
         ];
         
         echo json_encode($response, JSON_PRETTY_PRINT);
