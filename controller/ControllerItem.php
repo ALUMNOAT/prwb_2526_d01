@@ -518,6 +518,12 @@ class ControllerItem extends Controller
         echo json_encode(["response" => $test]);
     }
 
+    public function url_safe_decode_service(): void {
+        $temp = $_GET['param1'];
+        $test = UrlDataEncoderDecoder::url_safe_decode($temp);
+        echo json_encode(["response" => $test]);
+    }
+
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member
     {
         /** @var Member $user */

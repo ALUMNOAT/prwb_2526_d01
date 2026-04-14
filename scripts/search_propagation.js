@@ -1,14 +1,24 @@
 let search_bar, search_field, search_value, encoded_value, card_link;
 
-$(document).ready(function() {
+$(document).ready(async function() {
     set_variables();
+    await set_search_bar();
     set_events();
+    //set_search_bar();
 });
 
 function set_variables() {
     //https://stackoverflow.com/questions/10659097/jquery-get-selected-option-from-dropdown
     search_bar = $("#fulltext-search");
     search_field = $("#search-field");
+
+    let pathname = $(location).attr("href");
+    let last_param = pathname.split("/").pop();
+
+    if(isNaN(parseInt(last_param)) && (last_param != "browse" || last_param != "myitems" || last_param != "my_items")) {
+        encoded_value = last_param;
+    }
+
 }
 
 async function set_events() {
@@ -42,4 +52,35 @@ async function set_encoded_value() {
         },
         "json"
     );
+}
+
+async function get_decoded_value(encoded_value) {
+    let decoded_value = undefined;
+
+    await $.get("item/url_safe_decode_service/"+encoded_value,
+        function (data) {
+            decoded_value = data.response;
+        },
+        "json"
+    );
+
+    console.log(decoded_value);
+
+    return decoded_value;
+}
+
+async function set_search_bar() {
+    //https://www.sitepoint.com/jquery-current-page-url/
+    //https://stackoverflow.com/questions/30314447/how-do-you-test-for-nan-in-javascript
+    //https://api.jquery.com/change/#trigger2
+    pathname = $(location).attr("href");
+    last_param = pathname.split("/").pop();
+
+    console.log(pathname);
+    console.log(last_param);
+
+    if(isNaN(parseInt(last_param)) && (last_param != "browse" || last_param != "myitems" || last_param != "my_items")) {
+        search_bar.val(await get_decoded_value(last_param));
+        search_bar.trigger("change");
+    }
 }
