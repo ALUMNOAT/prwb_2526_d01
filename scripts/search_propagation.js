@@ -33,14 +33,7 @@ async function set_events() {
         if(typeof encoded_value !== "undefined") {
             $(this).attr("href", $(this).attr("href") + "/1/" + encoded_value);
         }
-    })
-
-    $(".card").on("click", function() {
-        console.log($(this).attr("data-description"));
     });
-
-    /*$(".card > a").remove();
-    item_cards = $(".card");*/
 }
 
 async function set_encoded_value() {
@@ -48,7 +41,6 @@ async function set_encoded_value() {
     $.post("item/url_safe_encode_service/", {search: search_value},
         function (data, textStatus, jqXHR) {
             encoded_value = data.response;
-            console.log(encoded_value);
         },
         "json"
     );
@@ -64,8 +56,6 @@ async function get_decoded_value(encoded_value) {
         "json"
     );
 
-    console.log(decoded_value);
-
     return decoded_value;
 }
 
@@ -75,9 +65,6 @@ async function set_search_bar() {
     //https://api.jquery.com/change/#trigger2
     pathname = $(location).attr("href");
     last_param = pathname.split("/").pop();
-
-    console.log(pathname);
-    console.log(last_param);
 
     if(isNaN(parseInt(last_param)) && (last_param != "browse" || last_param != "myitems" || last_param != "my_items")) {
         search_bar.val(await get_decoded_value(last_param));
