@@ -512,16 +512,19 @@ class ControllerItem extends Controller
     }
 
     public function url_safe_encode_service(): void {
-        //$temp = $_GET['param1'];
         $temp2 = $_POST['search'];
         $test = UrlDataEncoderDecoder::url_safe_encode($temp2);
         echo json_encode(["response" => $test]);
     }
 
     public function url_safe_decode_service(): void {
-        $temp = $_GET['param1'];
-        $test = UrlDataEncoderDecoder::url_safe_decode($temp);
-        echo json_encode(["response" => $test]);
+        $encoded_data = $_GET['param1'];
+        $decoded_data = UrlDataEncoderDecoder::url_safe_decode($encoded_data);
+
+        $answer = explode("|", $decoded_data, 2);
+        $answer = ["field" => $answer[0], "search_value" => $answer[1]];        
+
+        echo json_encode(["response" => $answer]);
     }
 
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member
