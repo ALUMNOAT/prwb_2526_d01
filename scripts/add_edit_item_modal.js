@@ -43,7 +43,7 @@ $(() => {
 
   // Petite fonction utilitaire : renvoie 'true' si le formulaire actuel est différent du début
   const isDirty = () => initialFormData !== $form.serialize();
-  
+
   // --- 3. COMPORTEMENTS ---
 
   // --- SCÉNARIO 1 : CLIC SUR LE BOUTON 'SAVE' (Disquette) ---
@@ -81,9 +81,7 @@ $(() => {
       e.preventDefault(); // On empêche le navigateur de changer de page tout de suite
 
       // On prépare le texte de la modal pour un abandon des modifs
-      $(".modal-body").text(
-        "You have unsaved changes. If you leave, they will be lost.",
-      );
+      $(".modal-body").text("You have unsaved changes. If you leave, they will be lost.");
       $("#execute-action")
         .text("Leave Page") //.removeClass('btn-primary').addClass('btn-danger')
         .css({
