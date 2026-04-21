@@ -525,17 +525,18 @@ class ControllerItem extends Controller
         $sale_price = $_POST['sale_price'] === '' ? null : (float)$_POST['sale_price'];
 
         // --- LES 4 RÈGLES DE COMBINAISON (Copiées de ton add) ---
-        if ($starting_bid !== null && $sale_price !== null) {
-            $errors[] = "You cannot use both 'Starting Bid' and 'Sale Price'.";
+        if ($starting_bid !== null && $buy_now_price !== null && $sale_price !== null) {
+            $errors["sale_option_conflict"] = "You cannot use both 'Starting Bid' and 'Sale Price'.";
         }
-        if ($buy_now_price !== null && $starting_bid === null && $sale_price === null) {
-            $errors[] = "Instant Purchase Price requires a Starting Bid.";
+        else if ($starting_bid !== null && $sale_price !== null) {
+            $errors["sale_option_conflict"] = "You cannot use both 'Starting Bid' and 'Sale Price'.";
         }
-        if ($buy_now_price !== null && $sale_price !== null) {
-            $errors[] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
+        else if ($buy_now_price !== null && $sale_price !== null) {
+            $errors["sale_option_conflict"] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
         }
-        if ($starting_bid === null && $buy_now_price === null && $sale_price === null) {
-            $errors[] = "You must specify at least one price.";
+
+        if ($buy_now_price !== null && $starting_bid === null) {
+            $errors["starting_bid_missing"] = "Instant Purchase Price requires a Starting Bid.";
         }
 
         // Conversion logique

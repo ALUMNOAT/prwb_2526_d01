@@ -11,37 +11,35 @@ $(() => {
         $(".error-message").hide().text("");
         $(".input").css("border", "1px solid green");
 
-        if (data.errors.length > 0) {
+
+        if (Object.keys(data.errors).length > 0) {
           $("button[type='submit']").prop("disabled", true);
 
           // si l'erreur dans le validator a la phrase qui commence par (voir Item.php-> validate_title, ...)
-          data.errors.forEach((msg) => {
-            if (msg.includes("Title")) {
+          Object.keys(data.errors).forEach((key) => {
+            let msg = data.errors[key];
+            if (key == "title") {
               $("#error-title").text(msg).show();
               $("#title").css("border", "2px solid red");
             }
-            if (msg.includes("Description")) {
+            if (key == "description") {
               $("#error-description").text(msg).show();
               $("#description").css("border", "2px solid red");
             }
-            if (msg.includes("Starting bid")) {
+            if (key == "starting_bid_missing" || key == "starting_bid") {
               $("#error-starting-bid").text(msg).show();
               $("#starting_bid").css("border", "2px solid red");
             }
-            if (msg.includes("Buy now price")) {
+            if (key == "buy_now_price") {
               $("#error-buy-now-price").text(msg).show();
               $("#buy_now_price").css("border", "2px solid red");
             }
             if (
-              msg.includes("Sale Price") ||
-              msg.includes("at least one price")
+              key == "sale_price" ||
+              key == "sale_option_conflict"
             ) {
               $("#error-sale-price").text(msg).show();
               $("#sale_price").css("border", "2px solid red");
-            }
-            if (msg.includes("requires a Starting Bid")) {
-              $("#error-buy-now-price").text(msg).show();
-              $("#buy_now_price").css("border", "2px solid red");
             }
           });
         } else {
