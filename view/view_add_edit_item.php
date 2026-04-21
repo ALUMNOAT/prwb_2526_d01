@@ -10,12 +10,19 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
     <meta charset="UTF-8">
     <title><?= $pageTitle ?></title>
     <base href="<?= $web_root ?>" />
+    <!-- Bootstrap CSS (doit etre avant tout) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/colors.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,arrow_back,celebration,filter,gavel,home,save,schedule,settings,shopping_cart,travel_explore,trophy">
     <link rel="stylesheet" href="css/icons.css">
     <link rel="stylesheet" href="css/top_navbar.css">
     <link rel="stylesheet" href="css/add_edit_item.css" type="text/css" />
+    <script src="lib/jquery-4.0.0.min.js" type="text/javascript"></script>
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Modal -->
+    <script src="scripts/add_edit_item_modal.js" type="text/javascript"></script>
 </head>
 
 <body>
