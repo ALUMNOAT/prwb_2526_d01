@@ -23,12 +23,14 @@
     <link rel="stylesheet" href="css/top_navbar.css">
     <link rel="stylesheet" href="css/item.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="lib/jquery-4.0.0.min.js" type="text/javascript"></script>
+    <script src="scripts/item_search_propagation.js" type="text/javascript"></script>
 </head>
 
 <body>
     <!-- TOP NAVBAR -->
     <div class="top-navbar">
-        <a href="item/browse">
+        <a href="item/browse" id="return_back">
             <span class="material-symbols-outlined size-40">arrow_back</span>
         </a>
 

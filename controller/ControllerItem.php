@@ -5,6 +5,7 @@ require_once "model/ItemStatus.php";
 require_once "utils/NumberConverter.php";
 require_once 'utils/Image.php';
 require_once 'model/Bid.php';
+require_once 'utils/UrlDataEncoderDecoder.php';
 
 class ControllerItem extends Controller
 {
@@ -508,6 +509,22 @@ class ControllerItem extends Controller
             $this->redirect('item', 'manage_images', strval($item_id));
         }
         (new View("manage_images"))->show(["user" => $user, "item" => $item]);
+    }
+
+    public function url_safe_encode_service(): void {
+        $temp2 = $_POST['search'];
+        $test = UrlDataEncoderDecoder::url_safe_encode($temp2);
+        echo json_encode(["response" => $test]);
+    }
+
+    public function url_safe_decode_service(): void {
+        $encoded_data = $_GET['param1'];
+        $decoded_data = UrlDataEncoderDecoder::url_safe_decode($encoded_data);
+
+        $answer = explode("|", $decoded_data, 2);
+        $answer = ["field" => $answer[0], "search_value" => $answer[1]];        
+
+        echo json_encode(["response" => $answer]);
     }
 
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member
