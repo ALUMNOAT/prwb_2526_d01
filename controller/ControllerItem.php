@@ -524,21 +524,6 @@ class ControllerItem extends Controller
         $buy_now_price = $_POST['buy_now_price'] === '' ? null : (float)$_POST['buy_now_price'];
         $sale_price = $_POST['sale_price'] === '' ? null : (float)$_POST['sale_price'];
 
-        // --- LES 4 RÈGLES DE COMBINAISON (Copiées de ton add) ---
-        if ($starting_bid !== null && $buy_now_price !== null && $sale_price !== null) {
-            $errors["sale_option_conflict"] = "You cannot use both 'Starting Bid' and 'Sale Price'.";
-        }
-        else if ($starting_bid !== null && $sale_price !== null) {
-            $errors["sale_option_conflict"] = "You cannot use both 'Starting Bid' and 'Sale Price'.";
-        }
-        else if ($buy_now_price !== null && $sale_price !== null) {
-            $errors["sale_option_conflict"] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
-        }
-
-        if ($buy_now_price !== null && $starting_bid === null) {
-            $errors["starting_bid_missing"] = "Instant Purchase Price requires a Starting Bid.";
-        }
-
         // Conversion logique
         if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
             $buy_now_price = $sale_price;
@@ -552,7 +537,7 @@ class ControllerItem extends Controller
             $errors,
             $item->validate_title(),
             $item->validate_description(),
-            $item->validate_prices(),
+            $item->validate_prices($sale_price !== null),
             $item->unicity()
         );
 
