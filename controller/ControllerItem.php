@@ -511,20 +511,39 @@ class ControllerItem extends Controller
         (new View("manage_images"))->show(["user" => $user, "item" => $item]);
     }
 
-    public function url_safe_encode_service(): void {
-        $temp2 = $_POST['search'];
-        $test = UrlDataEncoderDecoder::url_safe_encode($temp2);
-        echo json_encode(["response" => $test]);
-    }
+    public function validate_full_item_ajax(): void
+    {
+        $user = $this->get_user_or_false();
+        $id = isset($_GET['param1']) ? (int)$_GET['param1'] : null;
+        $errors = [];
 
-    public function url_safe_decode_service(): void {
-        $encoded_data = $_GET['param1'];
-        $decoded_data = UrlDataEncoderDecoder::url_safe_decode($encoded_data);
+        // On récupère tout
+        $title = $_POST['title'] ?? '';
+        $description = $_POST['description'] ?? '';
+        $days = (int)($_POST['days'] ?? 7);
+        $starting_bid = $_POST['starting_bid'] === '' ? null : (float)$_POST['starting_bid'];
+        $buy_now_price = $_POST['buy_now_price'] === '' ? null : (float)$_POST['buy_now_price'];
+        $sale_price = $_POST['sale_price'] === '' ? null : (float)$_POST['sale_price'];
 
-        $answer = explode("|", $decoded_data, 2);
-        $answer = ["field" => $answer[0], "search_value" => $answer[1]];        
+        // Conversion logique
+        if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
+            $buy_now_price = $sale_price;
+        }
 
-        echo json_encode(["response" => $answer]);
+        // On crée l'item
+        $item = new Item($id, $title, $user, AppTime::get_current_datetime(), $days, [], $description, $buy_now_price, $starting_bid);
+
+        // On récolte toutes les erreurs
+        $errors = array_merge(
+            $errors,
+            $item->validate_title(),
+            $item->validate_description(),
+            $item->validate_prices($sale_price !== null),
+            $item->unicity()
+        );
+
+        // On renvoie le tableau complet
+        echo json_encode(['errors' => $errors]);
     }
 
     private function get_user_or_redirect_guess(bool $guest_pass = false): Member
