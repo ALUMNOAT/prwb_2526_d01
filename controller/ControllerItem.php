@@ -511,7 +511,196 @@ class ControllerItem extends Controller
         (new View("manage_images"))->show(["user" => $user, "item" => $item]);
     }
 
-        public function validate_full_item_ajax(): void
+    public function db_update_priorities_service() : void {
+        //https://reqbin.com/code/php/0uwqq41y/json-to-array-php-example#:~:text=Converting%20JSON%20to%20PHP%20Array,JSON%20to%20a%20PHP%20array.
+        //https://www.php.net/var_export
+        //https://www.php.net/manual/en/function.gettype.php
+        //https://stackoverflow.com/questions/3559542/more-concise-way-to-check-to-see-if-an-array-contains-only-numbers-integers
+        //https://laracasts.com/discuss/channels/laravel/convert-string-array-to-array-of-ints
+        $user = $this->get_user_or_error();
+        if($user !== false) {
+
+            $item_status = $this->get_item_status_or_error($_GET['param1'], $user);
+            if($item_status !== false) {
+
+                if($item_status->get_has_bids() || $item_status->has_sold()) {
+                    $this->errorResponse(403, "You can no longer modify this item");
+
+                } else {
+                    if(!isset($_POST['priorities_after'])) {
+                        $this->errorResponse(400, "No priorities given");
+
+                    } else {
+                        $priorities_after = $_POST['priorities_after'];
+                        if (!is_array($_POST['priorities_after'])) {
+                            $this->errorResponse(400, "No array given for priorities");
+
+                        } else {
+                            $item = $item_status->get_item();
+                            $priorities_after = array_map('intval', $priorities_after);
+                            if ($priorities_after !== array_filter($priorities_after, 'is_int')) {
+                                $this->errorResponse(400, "Priorities in the array need to be integers");
+
+                            } else if ($item->get_picture_count() !== count($priorities_after)) {
+                                $this->errorResponse(400, "Priorities count does not match the item's photos count");
+
+                            } else {
+                                $priorities_after = $_POST['priorities_after'];
+                                ItemPicture::db_update_priorities($item, $priorities_after);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public function remove_image_service(): void {
+        $user = $this->get_user_or_error();
+        if($user !== false) {
+
+            $item_status = $this->get_item_status_or_error($_GET['param1'], $user);
+            if($item_status !== false) {
+
+                if($item_status->get_has_bids() || $item_status->has_sold()) {
+                    $this->errorResponse(403, "You cannot remove an image while its item has bids or has been sold");
+
+                } else {
+                    $item = $item_status->get_item();
+                    $picture = $this->get_item_picture_or_error($_POST['picture_priority_to_delete'], $item);
+
+                    if($picture !== false) {
+                        $picture->delete();
+                        $this->jsonResponse();
+                    }
+                }
+            }
+        }
+    }
+
+    public function get_images_service(): void {
+        //https://stackoverflow.com/questions/17576065/php-how-to-pass-parameter-which-may-be-undefined
+        $user = $this->get_user_or_error();
+        if($user !== false) {
+
+            $id = $_GET['param1'] ?? null;
+            $item_status = $this->get_item_status_or_error($id, $user, public_access: true);
+            if($item_status !== false) {
+                $item = $item_status->get_item();
+                $pictures = $item->get_pictures();
+
+                $pictures_path = ["id" => $id];
+                foreach($pictures as $priority => $picture) {
+                    $pictures_path["images"][] = ["priority" => $priority, "path" => $picture->get_picture_path()];
+                }
+
+                $this->jsonResponse($pictures_path);
+            }
+        }
+    }
+
+    private function jsonResponse($data = null, $status = 200, $message = "Success"): void {
+        //https://webreference.com/php/web-development/ajax-json/
+        http_response_code($status);
+        
+        $response = [
+            'message' => $message,
+            'data' => $data,
+        ];
+        
+        echo json_encode($response, JSON_PRETTY_PRINT);
+        //exit;
+    }
+
+    private function errorResponse($status = 400, $error = "Bad request"): void {
+        //https://webreference.com/php/web-development/ajax-json/
+        http_response_code($status);
+        
+        $response = [
+            "error" => $error,
+        ];
+        
+        echo json_encode($response, JSON_PRETTY_PRINT);
+        //exit;
+    }
+
+    private function get_user_or_error($guest_pass = true): Member|false {
+        /** @var Member $user */
+        $user = $this->get_user_or_false();
+
+        if(!$user) {
+            $this->errorResponse(401, "You need to be connected to access this page");
+        } else if ($user->is_guest() && !$guest_pass) {
+            $this->errorResponse(403, "Guests do not have access to this page");
+            $user = false;
+        }
+
+        return $user;
+    }
+
+    private function get_positive_int_or_error(mixed $id): int|false {
+        if (!isset($id)) {
+            $this->errorResponse(400, "No parameter found");
+            $id = false;
+        } else {
+            $id = NumberConverter::get_id_or_false($id);
+            if(!$id) {
+                $this->errorResponse(400, "Parameter needs to be a strictly positive integer");
+            }
+        }
+
+        return $id;
+    }
+
+    private function get_item_or_error(mixed $id, Member $owner, bool $public_access = false): Item|false {
+        $item = false;
+        $item_id = $this->get_positive_int_or_error($id);
+
+        if($item_id !== false) {
+            $item = Item::get_item($item_id);
+            if(!$item) {
+                $this->errorResponse(404, "No item with id $item_id was found");
+            } else if (!$item->is_owner($owner) && !$public_access) {
+                $this->errorResponse(403, "You are not allowed access to this item");
+                $item = false;
+            }
+        }
+
+        return $item;
+    }
+
+    private function get_item_status_or_error(mixed $id, Member $owner, bool $public_access = false): ItemStatus|false {
+        $item_status = false;
+        $item_id = $this->get_positive_int_or_error($id);
+
+        if($item_id !== false) {
+            $item_status = ItemStatus::get_item_status($item_id);
+            if(!$item_status) {
+                $this->errorResponse(404, "No item with id $item_id was found");
+            } else if (!$item_status->is_owner($owner) && !$public_access) {
+                $this->errorResponse(403, "You are not allowed access to this item");
+                $item_status = false;
+            }
+        }
+
+        return $item_status;
+    }
+
+    private function get_item_picture_or_error(mixed $priority, Item $item): ItemPicture|false {
+        $picture = false; //we could use 1 variable only but it might be less readable... sad :(
+        $picture_priority = $this->get_positive_int_or_error($priority);
+
+        if($picture_priority !== false) {
+            $picture = $item->get_picture($picture_priority);
+            if(!$picture) {
+                $this->errorResponse(404, "No picture with priority $picture_priority was found in \"".$item->get_title()."\"");
+            } 
+        }
+
+        return $picture;
+    }
+
+    public function validate_full_item_ajax(): void
     {
         $user = $this->get_user_or_false();
         $id = isset($_GET['param1']) ? (int)$_GET['param1'] : null;
@@ -620,6 +809,13 @@ class ControllerItem extends Controller
         $pic = $item->get_picture($pic_priority);
         if (!$pic)
             $this->redirect($controller, $action, strval($item->get_id()));
+        return $pic;
+    }
+
+    private function get_item_picture_or_false(Item $item, int $pic_priority, string $controller = 'item', string $action = 'manage_images'): ItemPicture|false {
+        $pic = $item->get_picture($pic_priority);
+        if (!$pic)
+            $pic = false;
         return $pic;
     }
 
