@@ -5,6 +5,7 @@ require_once "model/ItemStatus.php";
 require_once "utils/NumberConverter.php";
 require_once 'utils/Image.php';
 require_once 'model/Bid.php';
+require_once 'utils/UrlDataEncoderDecoder.php';
 
 class ControllerItem extends Controller
 {
