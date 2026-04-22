@@ -5,8 +5,12 @@ $(() => {
   );
 
   function validateForm() {
+    // On récupère l'ID 38 directement depuis l'URL de la page actuelle
+    const urlParts = window.location.pathname.split('/');
+    const itemId = urlParts[urlParts.length - 1];
+    
     $.post(
-      "item/validate_full_item_ajax", $form.serialize(),
+      "item/validate_full_item_ajax/" + itemId, $form.serialize(),
       function (data) {
         $(".error-message").hide().text("");
         $(".input").css("border", "1px solid green");
@@ -18,6 +22,7 @@ $(() => {
           // si l'erreur dans le validator a la phrase qui commence par (voir Item.php-> validate_title, ...)
           Object.keys(data.errors).forEach((key) => {
             let msg = data.errors[key];
+            
             if (key == "title") {
               $("#error-title").text(msg).show();
               $("#title").css("border", "2px solid red");
@@ -25,6 +30,10 @@ $(() => {
             if (key == "description") {
               $("#error-description").text(msg).show();
               $("#description").css("border", "2px solid red");
+            }
+            if (key == "days") {
+              $("#error-sale-duration").text(msg).show();
+              $("#days").css("border", "2px solid red");
             }
             if (key == "starting_bid_missing" || key == "starting_bid") {
               $("#error-starting-bid").text(msg).show();

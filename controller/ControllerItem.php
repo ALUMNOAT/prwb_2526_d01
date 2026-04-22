@@ -213,44 +213,10 @@ class ControllerItem extends Controller
             $sale_price = isset($_POST['sale_price']) && $_POST['sale_price'] !== ''
                 ? (float)$_POST['sale_price']
                 : null;
-
-            // VALIDATIONS DES COMBINAISONS
-
-            // 1) starting_bid ET sale_price interdit
-            // bid = on
-            // ipp = null
-            // sale price = on
-            if ($starting_bid !== null && $sale_price !== null) {
-                $errors[] = "You cannot use both 'Starting Bid' and 'Sale Price'. Choose 'Instant Purchase Price' instead.";
-            }
-
-            // 2) buy_now_price sans starting_bid interdit
-            // bid = null
-            // ipp = on
-            // starting bid = on
-            if ($buy_now_price !== null && $starting_bid === null && $sale_price === null) {
-                $errors[] = "Instant Purchase Price requires a Starting Bid for auctions.";
-            }
-
-            // 3) buy_now_price ET sale_price interdit
-            // ipp = on
-            // starting bid = on
-            if ($buy_now_price !== null && $sale_price !== null) {
-                $errors[] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
-            }
-
-            // 4) Pas de prix interdit
-            if ($starting_bid === null && $buy_now_price === null && $sale_price === null) {
-                $errors[] = "You must specify at least one price (Starting Bid or Sale Price).";
-            }
-
-            // Conversion : si sale_price seul => buy only
-            // bid = null
-            // ipp = null
-            // sale price = on
+            
             if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
                 $buy_now_price = $sale_price;
-            }
+            } 
 
             $item = new Item(
                 null,
@@ -269,7 +235,8 @@ class ControllerItem extends Controller
                 $errors = array_merge(
                     $errors,
                     $item->validate_title(),
-                    $item->validate_prices(),
+                    $item->validate_date(),
+                    $item->validate_prices($sale_price !== null),
                     $item->validate_description(),
                     $item->unicity()
                 );
@@ -326,41 +293,7 @@ class ControllerItem extends Controller
             $sale_price = isset($_POST['sale_price']) && $_POST['sale_price'] !== ''
                 ? (float)$_POST['sale_price']
                 : null;
-
-            // VALIDATIONS DES COMBINAISONS
-
-            // 1) starting_bid ET sale_price interdit
-            // bid = on
-            // ipp = null
-            // sale price = on
-            if ($starting_bid !== null && $sale_price !== null) {
-                $errors[] = "You cannot use both 'Starting Bid' and 'Sale Price'. Choose 'Instant Purchase Price' instead.";
-            }
-
-            // 2) buy_now_price sans starting_bid interdit
-            // bid = null
-            // ipp = on
-            // starting bid = on
-            if ($buy_now_price !== null && $starting_bid === null && $sale_price === null) {
-                $errors[] = "Instant Purchase Price requires a Starting Bid for auctions.";
-            }
-
-            // 3) buy_now_price ET sale_price interdit
-            // ipp = on
-            // starting bid = on
-            if ($buy_now_price !== null && $sale_price !== null) {
-                $errors[] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
-            }
-
-            // 4) Pas de prix interdit
-            if ($starting_bid === null && $buy_now_price === null && $sale_price === null) {
-                $errors[] = "You must specify at least one price (Starting Bid or Sale Price).";
-            }
-
-            // Conversion : si sale_price seul => buy only
-            // bid = null
-            // ipp = null
-            // sale price = on
+                
             if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
                 $buy_now_price = $sale_price;
             }
@@ -378,7 +311,8 @@ class ControllerItem extends Controller
                     $errors,
                     $item->validate_title(),
                     $item->validate_description(),
-                    $item->validate_prices(),
+                    $item->validate_date(),
+                    $item->validate_prices($sale_price !== null),
                     $item->unicity()
                 );
             }
@@ -714,25 +648,47 @@ class ControllerItem extends Controller
         $buy_now_price = $_POST['buy_now_price'] === '' ? null : (float)$_POST['buy_now_price'];
         $sale_price = $_POST['sale_price'] === '' ? null : (float)$_POST['sale_price'];
 
-        // Conversion logique
-        if ($sale_price !== null && $starting_bid === null && $buy_now_price === null) {
-            $buy_now_price = $sale_price;
-        }
-
         // On crée l'item
-        $item = new Item($id, $title, $user, AppTime::get_current_datetime(), $days, [], $description, $buy_now_price, $starting_bid);
+        $item = new Item(
+            $id,
+            $title,
+            $user,
+            AppTime::get_current_datetime(),
+            $days,
+            [],
+            $description,
+            $buy_now_price,
+            $starting_bid
+            );
 
         // On récolte toutes les erreurs
         $errors = array_merge(
             $errors,
             $item->validate_title(),
             $item->validate_description(),
+            $item->validate_date(),
             $item->validate_prices($sale_price !== null),
             $item->unicity()
         );
 
-        // On renvoie le tableau complet
-        echo json_encode(['errors' => $errors]);
+        /* // On renvoie le tableau complet
+        echo json_encode(['errors' => $errors]); */
+        
+        // Assure-toi que rien n'a été "echo" avant cette ligne
+        header('Content-Type: application/json');
+        
+        echo json_encode([
+            'debug_input' => [
+                'id_detecte' => $id,
+                'starting_bid' => $starting_bid,
+                'buy_now_price' => $buy_now_price,
+                'sale_price' => $sale_price,
+                'is_sale_price_null' => ($sale_price === null)
+            ],
+            'errors' => $errors
+        ], JSON_PRETTY_PRINT);
+        
+        exit; // On arrête le script ici pour éviter que du HTML parasite ne s'ajoute
     }
 
     public function url_safe_encode_service(): void {

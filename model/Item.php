@@ -413,7 +413,7 @@ class Item extends Model {
     public function validate_description(): array {
         $errors = [];
 
-        if( $this->description !== null && $this->description != '' &&
+        if($this->description !== null && $this->description != '' &&
             mb_strlen($this->description) < Configuration::get("description_min_length", 3)
             || mb_strlen($this->description) > Configuration::get("description_max_length", 10000)
         ) {
@@ -423,19 +423,35 @@ class Item extends Model {
         return $errors;
     }
 
+    public function validate_date(): array {
+        $errors = [];
+
+        if($this->duration_days < Configuration::get("sale_duration_min", 1)
+            || $this->duration_days > Configuration::get("sale_duration_max", 365)
+        ) {
+            $errors["days"] = "Sale duration must be between 1 and 365";
+        }
+
+        return $errors;
+    }
+
     public function validate_prices(bool $has_sale_price = false): array {
         $errors = [];
-        
+
+        if ($this->buy_now_price === null && $this->starting_bid === null && !$has_sale_price) {
+            $errors["sale_price"] = "An item can't be free";
+        }
+
         if ($this->starting_bid !== null && $this->starting_bid <= 0) {
             $errors["starting_bid"] = "Starting bid must be greater than 0.";
         } if ($this->buy_now_price !== null && $this->buy_now_price <= 0) {
             $errors["sale_price"] = "Buy now price must be greater than 0.";
         }
-        
-        if ($this->starting_bid !== null && $this->buy_now_price !== null 
+
+        if ($this->starting_bid !== null && $this->buy_now_price !== null
             && $this->buy_now_price <= $this->starting_bid) {
             $errors["buy_now_price"] = "Buy now price must be greater than starting bid.";
-        } if ($this->buy_now_price !== null && $this->starting_bid === null) {
+        } if ($this->buy_now_price !== null && $this->starting_bid === null && !$has_sale_price) {
             $errors["starting_bid_missing"] = "Instant Purchase Price requires a Starting Bid.";
         }
 
@@ -443,10 +459,10 @@ class Item extends Model {
             $errors["sale_option_conflict"] = "You cannot use both 'Starting Bid' and 'Sale Price'.";
         } else if ($this->starting_bid !== null && $has_sale_price) {
             $errors["sale_option_conflict"] = "You cannot use both 'Starting Bid' and 'Sale Price'.";
-        } else if ($this->buy_now_price !== null && $has_sale_price) {
+        } else if ($this->buy_now_price !== null && $this->starting_bid && $has_sale_price) {
             $errors["sale_option_conflict"] = "You cannot use both 'Instant Purchase Price' and 'Sale Price'.";
         }
-        
+
         return $errors;
     }
 
