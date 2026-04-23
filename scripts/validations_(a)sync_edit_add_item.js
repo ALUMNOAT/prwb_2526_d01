@@ -1,94 +1,91 @@
 $(() => {
   const $form = $("#add_item");
-  const $inputs = $(
-    "#title, #description, #days, #starting_bid, #buy_now_price, #sale_price",
-  );
+  const $inputs = $("#title, #description, #days, #starting_bid, #buy_now_price, #sale_price");
+  const $submitBtn = $("button[type='submit']");
 
+  /**
+   * Fonction de Debounce
+   * Retarde l'exécution de la fonction 'func' jusqu'à ce que 'wait' millisecondes
+   * se soient écoulées depuis la dernière fois qu'elle a été appelée.
+   */
+  function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+      const context = this;
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+  }
+
+  /**
+   * Logique principale de validation AJAX
+   */
   function validateForm() {
-    // On récupère l'ID 38 directement depuis l'URL de la page actuelle
+    // Récupération de l'ID dans l'URL (ex: /item/edit/42 -> 42)
     const urlParts = window.location.pathname.split('/');
     const itemId = urlParts[urlParts.length - 1];
-    
+
     $.post(
-      "item/validate_full_item_ajax/" + itemId, $form.serialize(),
+      "item/validate_full_item_ajax/" + itemId,
+      $form.serialize(),
       function (data) {
+        // Réinitialisation visuelle avant d'afficher les nouvelles erreurs
         $(".error-message").hide().text("");
-        $(".input").css("border", "1px solid green");
+        $inputs.css("border", "1px solid green");
 
+        if (data.errors && Object.keys(data.errors).length > 0) {
+          $submitBtn.prop("disabled", true);
 
-        if (Object.keys(data.errors).length > 0) {
-          $("button[type='submit']").prop("disabled", true);
-
-          // si l'erreur dans le validator a la phrase qui commence par (voir Item.php-> validate_title, ...)
+          // Parcours des erreurs renvoyées par le PHP
           Object.keys(data.errors).forEach((key) => {
             let msg = data.errors[key];
-            
-            if (key == "title") {
+
+            if (key === "title") {
               $("#error-title").text(msg).show();
               $("#title").css("border", "2px solid red");
             }
-            if (key == "description") {
+            if (key === "description") {
               $("#error-description").text(msg).show();
               $("#description").css("border", "2px solid red");
             }
-            if (key == "days") {
+            if (key === "days") {
               $("#error-sale-duration").text(msg).show();
               $("#days").css("border", "2px solid red");
             }
-            if (key == "starting_bid_missing" || key == "starting_bid") {
+            if (key === "starting_bid_missing" || key === "starting_bid") {
               $("#error-starting-bid").text(msg).show();
               $("#starting_bid").css("border", "2px solid red");
             }
-            if (key == "buy_now_price") {
+            if (key === "buy_now_price") {
               $("#error-buy-now-price").text(msg).show();
               $("#buy_now_price").css("border", "2px solid red");
             }
-            if (
-              key == "sale_price" ||
-              key == "sale_option_conflict"
-            ) {
+            if (key === "sale_price" || key === "sale_option_conflict") {
               $("#error-sale-price").text(msg).show();
               $("#sale_price").css("border", "2px solid red");
             }
           });
         } else {
-          $("button[type='submit']").prop("disabled", false);
+          // Aucune erreur : on réactive le bouton
+          $submitBtn.prop("disabled", false);
         }
       },
-      "json",
+      "json"
     );
   }
 
-  $inputs.on("input blur", function () {
+  // Création de la version "debouncée" (400ms de délai)
+  const debouncedValidation = debounce(validateForm, 400);
+
+  // Événement INPUT : l'utilisateur tape (on utilise le debounce pour épargner le serveur)
+  $inputs.on("input", function () {
+    $(this).addClass("touched");
+    debouncedValidation();
+  });
+
+  // Événement BLUR : l'utilisateur quitte le champ (on valide immédiatement)
+  $inputs.on("blur", function () {
     $(this).addClass("touched");
     validateForm();
   });
-
-  /*
-
-  // On sélectionne les spans d'erreur
-  const $errorTitle = $("#error-title");
-  const $errorDesc = $("#error-description");
-  const $errorSaleDuration = $("#error-sale-duration");
-  const $errorStartingBid = $("#error-starting-bid");
-  const $errorBuyNowPrice = $("#error-buy-now-price");
-  const $errorSalePrice = $("#error-sale-price");
-
-  // On écrit "non" à l'intérieur
-  $errorTitle.text("non");
-  $errorDesc.text("non");
-  $errorSaleDuration.text("non");
-  $errorStartingBid.text("non");
-  $errorBuyNowPrice.text("non");
-  $errorSalePrice.text("non");
-
-  // On les affiche (équivalent de display: block ou inline)
-  $errorTitle.show();
-  $errorDesc.show();
-  $errorSaleDuration.show();
-  $errorStartingBid.show();
-  $errorBuyNowPrice.show();
-  $errorSalePrice.show();
-
-  */
 });
