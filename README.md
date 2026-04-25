@@ -23,9 +23,9 @@ En développement, donnez les permissions d'écriture aux dossiers uploads et da
 
 ### URLs deploiement
 
-* étudiant Nom Prenom :
-  * URL :
-  * Mot de passe :
+* étudiant Nom Prenom : Gorski Emilian
+  * URL : http://infolab.epfc.eu:58333/prwb_2526_d01/login/index
+  * Mot de passe : 30permacc
 * étudiant Nom Prenom :
   * URL :
   * Mot de passe :
@@ -33,6 +33,7 @@ En développement, donnez les permissions d'écriture aux dossiers uploads et da
 ### Liste des fonctionnalités supplémentaires
 
 * Check IBAN implémenté
+* Filtre par owner, titre de l'item, description, tout
 
 ### Divers
 
