@@ -53,9 +53,10 @@ class ControllerProfile extends Controller {
         // Si la page est chargée via GET après le redirect
         if (isset($_GET['param1']) && $_GET['param1'] === "ok") {
             $success = "Password updated successfully!";
+            (new View("profile"))->show(["user" => $member, "success" => $success]);
+        } else {
+            (new View("change_password"))->show(["user" => $member, "errors" => $errors, "success" => $success]);
         }
-
-        (new View("change_password"))->show(["user" => $member, "errors" => $errors, "success" => $success]);
     }
 
     public function edit_profile(): void {
