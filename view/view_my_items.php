@@ -1,6 +1,6 @@
 <?php
-/* 
-doc: https: //www.w3schools.com/howto/howto_css_image_text.asp 
+/*
+doc: https: //www.w3schools.com/howto/howto_css_image_text.asp
 doc: https: //www.w3schools.com/icons/tryit.asp?filename=tryicons_google-collections
 doc: https: //www.w3docs.com/snippets/css/how-to-make-a-div-a-clickable-link.html
 doc: https://stackoverflow.com/questions/796087/make-a-div-into-a-link
@@ -13,7 +13,7 @@ ATTENTION: Google's Material Symbols are fiddly to deal with, so watch out !
 doc: https://www.w3schools.com/css/css3_pagination.asp
 */
 
-/** 
+/**
  * @var Member $user
  * @var Item $item
  * @var ItemStatus $item_status
@@ -28,7 +28,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
 
 <head>
     <meta charset="UTF-8">
-    <title>Browse</title>
+    <title>My Items</title>
     <base href="<?= $web_root ?>">
     <link rel="stylesheet" href="css/colors.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,celebration,filter,gavel,home,schedule,settings,shopping_bag,travel_explore,trophy">
@@ -38,6 +38,8 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     <link rel="stylesheet" href="css/menu.css">
     <link rel="stylesheet" href="css/time.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="lib/jquery-4.0.0.min.js" type="text/javascript"></script>
+    <script src="scripts/recherche_fulltext.js" type="text/javascript"></script>
 </head>
 
 <body>

@@ -17,7 +17,6 @@ class ItemPicture extends Model {
         if (file_exists($this->get_thumbnail_path()))
             $this->thumbnail_path = $this->get_thumbnail_path();
     }
-
     public function get_item(): Item {
         return $this->item;
     }
@@ -161,16 +160,18 @@ class ItemPicture extends Model {
             WHERE item = :item_id
             AND priority = :priority;
 
-            SET @p := 0;                #reset priority for each delete !
-            
             UPDATE item_pictures
-            SET priority = @p := (@p + 1)
-            WHERE item = :item_id;",
+            SET priority = priority - 1
+            WHERE item = :item_id
+            AND priority > :priority;",
             [
                 "item_id" => $this->item->get_id(),
                 "priority" => $this->priority
             ]
         );
+
+        //$query->debugDumpParams();
+
         if (file_exists($this->picture_path))
             unlink($this->picture_path);
         if (file_exists($this->thumbnail_path))
@@ -256,5 +257,32 @@ class ItemPicture extends Model {
         }
 
         return $errors;
+    }
+
+    public static function db_update_priorities(Item $item, array $priorities_after): void {
+        //https://stackoverflow.com/questions/20255138/sql-update-multiple-records-in-one-query <-- see Camille's answer
+        //https://medium.com/geekculture/update-multiple-rows-in-sql-with-different-values-at-once-7d2eddb0b85f
+
+        $placeholders2 = [];
+        $params2 = ["item_id" => $item->get_id()];
+
+        foreach ($priorities_after as $index => $priority) {
+            $placeholders2[] = "SELECT -:u$priority AS priority, " . ($index+1) . " AS desired_priority";
+            $params2[":u$priority"] = intval($priority);
+            echo intval($priority);
+        }
+        
+        $query = self::execute(
+            "UPDATE item_pictures AS p
+            SET p.priority = -p.priority
+            WHERE p.item = :item_id;
+
+            UPDATE item_pictures AS pic
+            JOIN ( " . implode(' UNION ALL ', $placeholders2) . " ) AS temp
+            ON pic.priority = temp.priority SET pic.priority = temp.desired_priority;",
+            $params2
+        );
+
+        //$query->debugDumpParams();
     }
 }

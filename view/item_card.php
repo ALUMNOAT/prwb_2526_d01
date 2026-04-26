@@ -11,7 +11,7 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
  */
 ?>
 
-<div class="card">
+<div class="card" data-description="<?= Tools::sanitize($item->get_description()) ?>">
     <!-- CLICKABLE LINK -->
     <a href="item/show/<?= $item->get_id() ?>">
         <span class="link-card"></span>

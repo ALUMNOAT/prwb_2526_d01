@@ -134,6 +134,7 @@ doc: https://css-tricks.com/what-do-you-name-color-variables/
   --flexoki-magenta-950:     #24131D;
 
   --background: var(--flexoki-blue-950);
+  --prwb-background: var(--flexoki-blue-950);
   --middleground: var(--flexoki-850);
   --frontground: var(--flexoki-blue-200);
 
