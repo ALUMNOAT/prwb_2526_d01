@@ -70,6 +70,9 @@ class ControllerProfile extends Controller {
             $email = html_entity_decode($_POST["email"], ENT_QUOTES, 'UTF-8');
             $iban = $_POST["iban"] === "" ? null : $_POST["iban"];
 
+            if($iban !== null)
+                $iban = str_replace(' ', '', $iban);
+
             $member->set_full_name($full_name);
             $member->set_pseudo($pseudo);
             $member->set_email($email);
@@ -117,12 +120,16 @@ class ControllerProfile extends Controller {
             }
         }
 
-        // Si la page est chargée via GET après le redirect
-        if (isset($_GET['param1']) && $_GET['param1'] === "ok") {
-            $success = "Profile updated successfully!";
-        }
+        //https://sentry.io/answers/how-do-i-strip-all-spaces-out-of-a-string-in-php/#:~:text=If%20you%20want%20to%20remove,and%20the%20actual%20string%20variable.
 
-        (new View("edit_profile"))->show(["user" => $member, "errors" => $errors, "success" => $success]);
+        (new View("edit_profile"))->show([
+            "user" => $member, 
+            "errors" => $errors, 
+            "full_name" => $full_name ?? "",
+            "pseudo" => $pseudo ?? "",
+            "email" => $email ?? "",
+            "iban" => $iban ?? ""
+            ]);
     }
 
     /**
