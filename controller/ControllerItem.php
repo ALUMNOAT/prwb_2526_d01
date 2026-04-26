@@ -456,32 +456,27 @@ class ControllerItem extends Controller
 
             $item_status = $this->get_item_status_or_error($_GET['param1'], $user);
             if($item_status !== false) {
+                /** @var ItemStatus $item_status */
+                $error = $item_status->validate_remove_image();
 
-                if($item_status->get_has_bids() || $item_status->has_sold()) {
-                    $this->errorResponse(403, "You can no longer modify this item");
+                if($error !== []) {
+                    $this->errorResponse(403, $error["move_image"]);
 
                 } else {
+
                     if(!isset($_POST['priorities_after'])) {
-                        $this->errorResponse(400, "No priorities given");
+                        $this->errorResponse(400, "No priorities given"); // <-- this error is not in the model, hence it's here ?
 
                     } else {
                         $priorities_after = $_POST['priorities_after'];
-                        if (!is_array($_POST['priorities_after'])) {
-                            $this->errorResponse(400, "No array given for priorities");
+                        $error = $item_status->validate_new_priorities($priorities_after);
 
+                        if($error !== []) {
+                            $this->errorResponse(400, $error["priorities"]);
                         } else {
                             $item = $item_status->get_item();
                             $priorities_after = array_map('intval', $priorities_after);
-                            if ($priorities_after !== array_filter($priorities_after, 'is_int')) {
-                                $this->errorResponse(400, "Priorities in the array need to be integers");
-
-                            } else if ($item->get_picture_count() !== count($priorities_after)) {
-                                $this->errorResponse(400, "Priorities count does not match the item's photos count");
-
-                            } else {
-                                $priorities_after = $_POST['priorities_after'];
-                                ItemPicture::db_update_priorities($item, $priorities_after);
-                            }
+                            ItemPicture::db_update_priorities($item, $priorities_after);
                         }
                     }
                 }
@@ -495,9 +490,10 @@ class ControllerItem extends Controller
 
             $item_status = $this->get_item_status_or_error($_GET['param1'], $user);
             if($item_status !== false) {
+                $error = $item_status->validate_remove_image();
 
-                if($item_status->get_has_bids() || $item_status->has_sold()) {
-                    $this->errorResponse(403, "You cannot remove an image while its item has bids or has been sold");
+                if($error !== []) {
+                    $this->errorResponse(403, $error["remove_image"]); // <-- error validation done in the model
 
                 } else {
                     $item = $item_status->get_item();

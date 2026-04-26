@@ -220,6 +220,39 @@ class ItemStatus extends Model {
         return $this->has_ended() && !$this->has_bids && !$this->buy_now_reached;
     }
 
+    public function validate_remove_image(): array {
+        $error = [];
+        if ($this->get_has_bids() || $this->has_sold()) {
+            $error["remove_image"] = "You cannot remove an image while its item has bids or has been sold";
+        } 
+        return $error;
+    }
+
+    public function validate_move_image(): array {
+        $error = [];
+        if ($this->get_has_bids() || $this->has_sold()) {
+            $error["move_image"] = "You can no longer modify this item";
+        } 
+        return $error;
+    }
+
+    public function validate_new_priorities(mixed $priorities): array {
+        $error = [];
+
+        if (!is_array($priorities))
+            $error["priorities"] = "No array given for priorities";
+        else {
+            $priorities = array_map('intval', $priorities);
+
+            if ($priorities !== array_filter($priorities, 'is_int'))
+                $error["priorities"] = "Priorities in the array need to be integers";
+            else if ($this->item->get_picture_count() !== count($priorities))
+                $error["priorities"] = "Priorities count does not match the item's photos count";
+        }
+
+        return $error;
+    }
+
     public function delete(): void {
         /*
         doc: https://www.w3schools.com/mysql/mysql_delete.asp
@@ -262,5 +295,4 @@ class ItemStatus extends Model {
 
         return (bool)$query->fetch()['is_direct_sale'];
     }
-
 }
