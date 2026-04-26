@@ -26,9 +26,9 @@ En développement, donnez les permissions d'écriture aux dossiers uploads et da
 * étudiant Nom Prenom : Gorski Emilian
   * URL : http://infolab.epfc.eu:58333/prwb_2526_d01/login/index
   * Mot de passe : 30permacc
-* étudiant Nom Prenom :
-  * URL :
-  * Mot de passe :
+* étudiant Nom Prenom : Luca HULOT
+  * URL : http://infolab.epfc.eu:58334/prwb_2526_d01/
+  * Mot de passe : Chene365
 
 ### Liste des fonctionnalités supplémentaires
 
