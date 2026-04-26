@@ -1,4 +1,32 @@
+let description_max_length = 10000, 
+    description_min_length = 3,
+    sale_duration_default = 7,
+    sale_duration_max = 365,
+    sale_duration_min = 1,
+    title_max_length = 255,
+    title_min_length = 3;
+
+console.log(sale_duration_max);
+
+async function get_rules() {
+    $.get({
+      url: "item/get_rules_service",
+      dataType: "json",
+      success: function(data) {
+        description_max_length = data.description_max_length, 
+        description_min_length = data.description_min_length,
+        sale_duration_default = data.sale_duration_default,
+        sale_duration_max = data.sale_duration_max,
+        sale_duration_min = data.sale_duration_min,
+        title_max_length = data.title_max_length,
+        title_min_length = data.title_min_length;
+      }
+  })
+}
+
 $(() => {
+  get_rules();
+
   const $form = $("#add_item");
   const $inputs = $("#title, #description, #days, #starting_bid, #buy_now_price, #sale_price");
   const $submitBtn = $("button[type='submit']");

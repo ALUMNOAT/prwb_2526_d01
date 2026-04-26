@@ -536,7 +536,7 @@ class Item extends Model {
         return $pictures;
     }
 
-    public function unicity(): array {
+    public function validate_unicity(): array {
         $errors = [];
 
         if ($this->get_id() === null) {
@@ -566,7 +566,7 @@ class Item extends Model {
         }
 
         if ($query->fetch()) {
-            $errors[] = "Item already exists.";
+            $errors["title"] = "Item title already exists in your current sales.";
         }
 
         return $errors;

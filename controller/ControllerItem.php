@@ -238,7 +238,7 @@ class ControllerItem extends Controller
                     $item->validate_date(),
                     $item->validate_prices($sale_price !== null),
                     $item->validate_description(),
-                    $item->unicity()
+                    $item->validate_unicity()
                 );
             }
 
@@ -313,7 +313,7 @@ class ControllerItem extends Controller
                     $item->validate_description(),
                     $item->validate_date(),
                     $item->validate_prices($sale_price !== null),
-                    $item->unicity()
+                    $item->validate_unicity()
                 );
             }
 
@@ -664,7 +664,7 @@ class ControllerItem extends Controller
             $item->validate_description(),
             $item->validate_date(),
             $item->validate_prices($sale_price !== null),
-            $item->unicity()
+            $item->validate_unicity()
         );
 
         /* // On renvoie le tableau complet
@@ -685,6 +685,21 @@ class ControllerItem extends Controller
         ], JSON_PRETTY_PRINT);
         
         exit; // On arrête le script ici pour éviter que du HTML parasite ne s'ajoute
+    }
+
+    public function get_rules_service(): void {
+        echo json_encode(
+            [
+                "sale_duration_min" => Configuration::get("sale_duration_min", 1),
+                "sale_duration_default" => Configuration::get("sale_duration_default", 7),
+                "sale_duration_max" => Configuration::get("sale_duration_max", 365),
+                "title_min_length" => Configuration::get("title_min_length", 3),
+                "title_max_length" => Configuration::get("title_max_length", 255),
+                "description_min_length" => Configuration::get("description_min_length", 3),
+                "description_max_length" => Configuration::get("description_max_length", 10000)
+            ],
+            JSON_PRETTY_PRINT
+        );
     }
 
     public function url_safe_encode_service(): void {
