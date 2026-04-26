@@ -630,7 +630,7 @@ class ControllerItem extends Controller
         return $picture;
     }
 
-    public function validate_full_item_ajax(): void
+    public function validate_full_item_service(): void
     {
         $user = $this->get_user_or_false();
         $id = isset($_GET['param1']) ? (int)$_GET['param1'] : null;

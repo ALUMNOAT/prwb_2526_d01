@@ -54,7 +54,7 @@ $(() => {
     const itemId = urlParts[urlParts.length - 1];
 
     $.post(
-      "item/validate_full_item_ajax/" + itemId,
+      "item/validate_full_item_service/" + itemId,
       $form.serialize(),
       function (data) {
         // Réinitialisation visuelle avant d'afficher les nouvelles erreurs
