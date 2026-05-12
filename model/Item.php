@@ -6,7 +6,7 @@ require_once "model/ItemPicture.php";
 
 
 
-class Item extends Model {
+class Item extends Model implements JsonSerializable {
 
     public function __construct(
         private ?int $id, // id nullable pour la création d'item
@@ -19,6 +19,21 @@ class Item extends Model {
         private ?float $buy_now_price = null,
         private ?float $starting_bid = null,
     ) {
+    }
+
+    public function jsonSerialize() : array {
+        //https://www.slingacademy.com/article/how-to-convert-an-object-to-json-in-php-serialization/
+        return [
+            "id" => $this->id,
+            "title" => $this->title,
+            "owner" => $this->owner,
+            "created_at" => $this->created_at,
+            "duration_days" => $this->duration_days,
+            "pictures" => $this->pictures,
+            "description" => $this->description,
+            "buy_now_price" => $this->buy_now_price,
+            "starting_bid" => $this->starting_bid,
+        ];
     }
 
     public function get_id(): ?int {

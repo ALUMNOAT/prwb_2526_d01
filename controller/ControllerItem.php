@@ -533,6 +533,29 @@ class ControllerItem extends Controller
         }
     }
 
+    public function get_all_items_service(): void
+    {
+        $user = $this->get_user_or_error();
+        if($user !== false) {
+            $all_items = [];
+
+            $my_bids = $user->get_my_bids();    //returns '[]' for guests
+            $available_items = Item::get_all_available_items($user);
+            $my_available_items = array_diff_key($available_items, $my_bids);
+
+            $all_items["my_bids"] = $my_bids;
+            $all_items["my_available_items"] = $my_available_items;
+            $test = Item::get_item(1);
+
+            json_encode($my_bids);
+            //$this->jsonResponse($my_bids[32]);
+        }
+    }
+
+    /*private function encode_all(array $arr): void {
+        foreach()
+    }*/
+
     private function jsonResponse($data = null, $status = 200, $message = "Success"): void {
         //https://webreference.com/php/web-development/ajax-json/
         http_response_code($status);
@@ -634,7 +657,7 @@ class ControllerItem extends Controller
         return $picture;
     }
 
-    public function validate_full_item_ajax(): void
+    public function validate_full_item_service(): void
     {
         $user = $this->get_user_or_false();
         $id = isset($_GET['param1']) ? (int)$_GET['param1'] : null;
