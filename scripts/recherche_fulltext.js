@@ -1,4 +1,9 @@
+let all_items;
+
+
 $(() => {
+  get_all_items();
+  
   $("div.content").prepend(`
     <div class="search-bar">
 
@@ -79,3 +84,14 @@ $(() => {
     }
   });
 });
+
+function get_all_items() {
+  $.get({
+    url: "item/get_all_items_service",
+    dataType: "json",
+    success: function(data) {
+      all_items = data;
+      console.log(data);
+    }
+  })
+}
