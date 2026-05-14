@@ -6,6 +6,7 @@ require_once "utils/NumberConverter.php";
 require_once 'utils/Image.php';
 require_once 'model/Bid.php';
 require_once 'utils/UrlDataEncoderDecoder.php';
+require_once "model/ItemCategories.php";
 
 class ControllerItem extends Controller
 {
@@ -86,6 +87,7 @@ class ControllerItem extends Controller
                 $main_pic = reset($picture); // Get first picture
             }
         }
+        $item_category = ItemCategories::get_categories_by_item($item);
 
         $bids = Bid::get_bids_for_item($item_id);
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
@@ -98,6 +100,7 @@ class ControllerItem extends Controller
             "bids" => $bids,
             "main_pic" => $main_pic,
             "pictures" => $picture,
+            "item_category" => $item_category,
             "errors" => [],
             "success" => "",
             "bid_path" => $this->bid_path($item, $main_pic),
