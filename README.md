@@ -77,3 +77,13 @@ array           | Renvoie une collection d'objets.     | get_all_categories()
 Object|false    | Renvoie un résultat unique ou rien.  | get_member_by_pseudo()
 
 Je pense que le reste va etre 10x mieux. J'ai plus codé PHP depuis ... longtemps. 
+
+### Partie C
+
+J'ai commencé à 20:00. Fini 22:00 (pas de js encore)
+
+La plus grosse difficulté était le controller->view. 
+Et comme un con je voulais stocker tout l'objet au lieu de l'id et envoyer (et je voulais stocker les noms comme un con aussi).
+J'ai du aussi chercher la methode in_array de PHP (J'ai utilisé l'IA car je savais que je dois avoir 2 boucles mais j'savais pas comment comparer 2 tableaux.).
+
+

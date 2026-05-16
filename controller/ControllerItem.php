@@ -196,6 +196,7 @@ class ControllerItem extends Controller
     {
         $member = $this->get_user_or_redirect_guess();
         $item = null;
+        $all_categories = Categories::get_all_categories();
         $errors = [];
 
         // If form submitted
@@ -221,6 +222,8 @@ class ControllerItem extends Controller
                 $buy_now_price = $sale_price;
             } 
 
+            $categories = isset($_POST['categories']) && is_array($_POST['categories']) ? $_POST['categories'] : [];
+
             $item = new Item(
                 null,
                 $title,
@@ -241,13 +244,18 @@ class ControllerItem extends Controller
                     $item->validate_date(),
                     $item->validate_prices($sale_price !== null),
                     $item->validate_description(),
-                    $item->validate_unicity()
+                    $item->validate_unicity(),
+                    ItemCategories::validate_categories_count($categories)
+                    
                 );
             }
 
             // If valid, persist and redirect
             if (empty($errors)) {
                 $item->persist();
+                foreach ($categories as $cat_id) {
+                    ItemCategories::persist($item->get_id(), (int)$cat_id);
+                }
                 $this->redirect("item", "show", $item->get_id());
             }
         }
@@ -256,6 +264,7 @@ class ControllerItem extends Controller
         (new View("add_edit_item"))->show([
             "member" => $member,
             "item" => $item,
+            "all_categories" => $all_categories,
             "errors" => $errors
         ]);
     }
@@ -277,6 +286,9 @@ class ControllerItem extends Controller
         if ($item_status->get_has_bids() || $item_status->has_sold()) {
             $this->redirect("item", "show", $item->get_id());
         }
+
+        $all_categories = Categories::get_all_categories();
+        $item_category = ItemCategories::get_categories_by_item($item);
 
         // If form submitted
         if (!empty($_POST)) {
@@ -301,6 +313,8 @@ class ControllerItem extends Controller
                 $buy_now_price = $sale_price;
             }
 
+            $categories = isset($_POST['categories']) && is_array($_POST['categories']) ? $_POST['categories'] : [];
+
             // set the modified values
             $item->set_title($title);
             $item->set_description($description);
@@ -316,13 +330,18 @@ class ControllerItem extends Controller
                     $item->validate_description(),
                     $item->validate_date(),
                     $item->validate_prices($sale_price !== null),
-                    $item->validate_unicity()
+                    $item->validate_unicity(),
+                    ItemCategories::validate_categories_count($categories)
                 );
             }
 
             // If valid, persist and redirect
             if (empty($errors)) {
                 $item->persist();
+                ItemCategories::delete_categories_for_item($item);
+                foreach ($categories as $cat_id) {
+                    ItemCategories::persist($item->get_id(), (int)$cat_id);
+                }
                 $this->redirect("item", "show", $item->get_id());
             }
         }
@@ -331,6 +350,8 @@ class ControllerItem extends Controller
         (new View("add_edit_item"))->show([
             "member" => $member,
             "item" => $item,
+            "all_categories" => $all_categories,
+            "item_category" => $item_category,
             "errors" => $errors
         ]);
     }

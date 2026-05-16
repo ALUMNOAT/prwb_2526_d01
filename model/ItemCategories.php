@@ -43,4 +43,27 @@ class ItemCategories extends Model {
         }
         return $results;
     }
+
+    public static function delete_categories_for_item(Item $item): void {
+        self::execute(
+            "DELETE FROM item_categories WHERE item = :item_id",
+            ["item_id" => $item->get_id()]
+        );
+    }
+
+    public static function persist(int $item_id, int $category_id): void {
+        self::execute(
+            "INSERT INTO item_categories (item, category) VALUES (:item_id, :category_id)",
+            ["item_id" => $item_id, "category_id" => $category_id]
+        );
+    }
+
+    public static function validate_categories_count(array $categories_post): array {
+        $errors = [];
+        if (count($categories_post) > 3) {
+            $errors[] = "You can select up to 3 categories only.";
+        }
+        
+        return $errors;
+    }
 }
