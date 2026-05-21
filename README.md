@@ -86,4 +86,12 @@ La plus grosse difficulté était le controller->view.
 Et comme un con je voulais stocker tout l'objet au lieu de l'id et envoyer (et je voulais stocker les noms comme un con aussi).
 J'ai du aussi chercher la methode in_array de PHP (J'ai utilisé l'IA car je savais que je dois avoir 2 boucles mais j'savais pas comment comparer 2 tableaux.).
 
+La modale terminé
+Regle facile, modale basique aussi
+Probleme avec 'input[name="categories\\[\\]"]' , sinon ok. Dur de debugger
+
+### Partie B
+
+
+
 

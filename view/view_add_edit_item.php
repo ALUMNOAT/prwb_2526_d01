@@ -141,6 +141,23 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
 
         </form>
 
+        <div class="modal fade" id="categoryErrorModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger">Limite atteinte</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        Vous ne pouvez pas sélectionner plus de 3 catégories.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <?php if (count($errors) != 0): ?>
             <div class='errors'>
                 <p>Please correct the following error(s) :</p>

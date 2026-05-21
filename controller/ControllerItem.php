@@ -667,6 +667,7 @@ class ControllerItem extends Controller
         $starting_bid = $_POST['starting_bid'] === '' ? null : (float)$_POST['starting_bid'];
         $buy_now_price = $_POST['buy_now_price'] === '' ? null : (float)$_POST['buy_now_price'];
         $sale_price = $_POST['sale_price'] === '' ? null : (float)$_POST['sale_price'];
+        $categories = isset($_POST['categories']) && is_array($_POST['categories']) ? $_POST['categories'] : [];
 
         // On crée l'item
         $item = new Item(
@@ -688,7 +689,8 @@ class ControllerItem extends Controller
             $item->validate_description(),
             $item->validate_date(),
             $item->validate_prices($sale_price !== null),
-            $item->validate_unicity()
+            $item->validate_unicity(),
+            ItemCategories::validate_categories_count($categories)
         );
 
         /* // On renvoie le tableau complet
@@ -720,7 +722,8 @@ class ControllerItem extends Controller
                 "title_min_length" => Configuration::get("title_min_length", 3),
                 "title_max_length" => Configuration::get("title_max_length", 255),
                 "description_min_length" => Configuration::get("description_min_length", 3),
-                "description_max_length" => Configuration::get("description_max_length", 10000)
+                "description_max_length" => Configuration::get("description_max_length", 10000),
+                "category_per_item_max_count" => Configuration::get("category_per_item_max_count", 3)
             ],
             JSON_PRETTY_PRINT
         );

@@ -60,8 +60,8 @@ class ItemCategories extends Model {
 
     public static function validate_categories_count(array $categories_post): array {
         $errors = [];
-        if (count($categories_post) > 3) {
-            $errors[] = "You can select up to 3 categories only.";
+        if (count($categories_post) > Configuration::get("category_per_item_max_count", 3)) {
+            $errors["categories[]"] = "You can select up to 3 categories only.";
         }
         
         return $errors;

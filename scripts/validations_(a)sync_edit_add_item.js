@@ -4,9 +4,8 @@ let description_max_length = 10000,
     sale_duration_max = 365,
     sale_duration_min = 1,
     title_max_length = 255,
-    title_min_length = 3;
-
-console.log(sale_duration_max);
+    title_min_length = 3,
+    category_per_item_max_count = 3;
 
 async function get_rules() {
     $.get({
@@ -19,7 +18,8 @@ async function get_rules() {
         sale_duration_max = data.sale_duration_max,
         sale_duration_min = data.sale_duration_min,
         title_max_length = data.title_max_length,
-        title_min_length = data.title_min_length;
+        title_min_length = data.title_min_length,
+        category_per_item_max_count = data.category_per_item_max_count;
       }
   })
 }
@@ -28,7 +28,7 @@ $(() => {
   get_rules();
 
   const $form = $("#add_item");
-  const $inputs = $("#title, #description, #days, #starting_bid, #buy_now_price, #sale_price");
+  const $inputs = $("#title, #description, #days, #starting_bid, #buy_now_price, #sale_price, input[name='categories\\[\\]']");
   const $submitBtn = $("button[type='submit']");
 
   /**
@@ -53,6 +53,14 @@ $(() => {
     const urlParts = window.location.pathname.split('/');
     const itemId = urlParts[urlParts.length - 1];
 
+    // --- ICI : Debug de ce qui est dans le formulaire ---
+    const formData = new FormData($form[0]);
+    console.log("Données envoyées au serveur :");
+    for (let [key, value] of formData.entries()) {
+        console.table(key, value);
+    }
+    // ----------------------------------------------------
+
     $.post(
       "item/validate_full_item_service/" + itemId,
       $form.serialize(),
@@ -63,6 +71,8 @@ $(() => {
 
         if (data.errors && Object.keys(data.errors).length > 0) {
           $submitBtn.prop("disabled", true);
+
+          console.log("Erreurs reçues du serveur :", data.errors);
 
           // Parcours des erreurs renvoyées par le PHP
           Object.keys(data.errors).forEach((key) => {
@@ -92,6 +102,15 @@ $(() => {
               $("#error-sale-price").text(msg).show();
               $("#sale_price").css("border", "2px solid red");
             }
+            if (key === "categories[]") {
+              $("#error-categories").text(msg).show();
+              $('input[name="categories\\[\\]"]').css("outline", "2px solid red");
+
+              // Sélectionne la modale existante
+              const modalEl = document.getElementById('categoryErrorModal');
+              const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+              modal.show();
+            }
           });
         } else {
           // Aucune erreur : on réactive le bouton
@@ -115,5 +134,11 @@ $(() => {
   $inputs.on("blur", function () {
     $(this).addClass("touched");
     validateForm();
+  });
+
+  // Forcer le nettoyage quand la modale est fermée
+  $('#categoryErrorModal').on('hidden.bs.modal', function () {
+      $('body').removeClass('modal-open');
+      $('.modal-backdrop').remove(); // Supprime le fond gris récalcitrant
   });
 });
