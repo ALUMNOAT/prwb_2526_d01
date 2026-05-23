@@ -91,6 +91,10 @@ class Member extends Model {
         return $this->id === null;
     }
 
+    public function is_admin(): bool {
+        return $this->role->value === "admin";
+    }
+
     public function persist(): Member {
         // Si l'ID existe (utilisateur existe), on update
         if ($this->id !== null) {
