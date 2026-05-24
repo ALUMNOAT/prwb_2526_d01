@@ -58,6 +58,18 @@
             <button type="submit" name="action" value="add">+</button>
         </form>
     </div>
+
+    <!-- ERRORS -->
+    <?php if (isset($errors) && count($errors) != 0): ?>
+        <div class="errors">
+            <p>Please correct the following error(s) :</p>
+            <ul>
+                <?php foreach ($errors as $error): ?>
+                    <li><?= $error ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
 </body>
 
 </html>

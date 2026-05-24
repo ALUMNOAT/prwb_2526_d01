@@ -172,9 +172,10 @@ class Categories extends Model
         return $this->howMany() > 0;
     }
 
-    public function validate_category_unicity(string $name): array
+    public function validate_category_unicity(): array
     {
         $errors = [];
+        $name = $this->get_name();
 
         $query = self::execute(
             "SELECT name 
@@ -186,7 +187,7 @@ class Categories extends Model
         $data = $query->fetch();
 
         if ($data['name'] === $name) {
-            $errors[] = "Cette catégorie '$name' existe déjà.";
+            $errors["category_name"] = "Cette catégorie '$name' existe déjà.";
         }
         return $errors;
     }

@@ -37,18 +37,40 @@ class ControllerCategory extends Controller
             if ($action === "add") {
                 $name = $_POST["new_category"];
                 $category = new Categories(null, $name, 1000);
-                $category->persist();
-                $this->redirect("category");
+
+                if (empty($errors)) {
+                    $errors = array_merge(
+                        $errors,
+                        $category->validate_category_unicity()
+                    );
+                }
+
+                if (empty($errors)) {
+                    $category->persist();
+                    $this->redirect("category"); 
+                }
             }
 
             if ($action === "save" && $id) {
                 $category = Categories::get_one((int) $id);
-                if ($category) { // si existe et non utilisé
+                if ($category) { // si existe
                     // On update le nom de l'objet par la valeur du POST
                     $newName = $_POST["name"];
                     $category->set_name($newName);
-                    $category->persist();
-                    $this->redirect("category");
+
+                    // On valide
+                    if (empty($errors)) {
+                        $errors = array_merge(
+                            $errors,
+                            $category->validate_category_unicity()
+                        );
+                    }
+
+                    // Si valide, persist et redirect
+                    if (empty($errors)) {
+                        $category->persist();
+                        $this->redirect("category");
+                    }
                 }
             }
 
@@ -78,7 +100,11 @@ class ControllerCategory extends Controller
             }
         }
 
-        (new View("manage_categories"))->show(["user" => $member, "all_categories" => $categories]);
+        (new View("manage_categories"))->show([
+            "user" => $member,
+            "all_categories" => $categories,
+            "errors" => $errors
+        ]);
     }
 
     private function get_admin_or_redirect(bool $guest_pass = false): Member
