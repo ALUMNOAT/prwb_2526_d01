@@ -9,31 +9,72 @@ on a :
 
 require_once "framework/Model.php";
 
-class Categories extends Model {
+class Categories extends Model
+{
     public function __construct(
         private ?int $id,
         private string $name,
         private int $priority
-    ) { }
-    public function get_id(): ?int {
+    ) {
+    }
+    public function get_id(): ?int
+    {
         return $this->id;
     }
-    public function get_name(): string {
+    public function get_name(): string
+    {
         return $this->name;
     }
-    public function get_priority(): int {
+    public function get_priority(): int
+    {
         return $this->priority;
     }
-    public function set_id(?int $new_id): void {
+    public static function get_one(int $id): ?Categories
+    {
+        $query = self::execute(
+            "SELECT * 
+            FROM categories 
+            WHERE id = :id", 
+            ["id" => $id]
+        );
+        $data = $query->fetch();
+        return $data ? new Categories($data['id'], $data['name'], $data['priority']) : null;
+    }
+    public static function get_by_priority(int $priority): ?Categories
+    {
+        $query = self::execute(
+            "SELECT * 
+            FROM categories 
+            WHERE priority = :priority", 
+            ["priority" => $priority]
+        );
+        $data = $query->fetch();
+        return $data ? new Categories($data['id'], $data['name'], $data['priority']) : null;
+    }
+    public static function get_max_priority(): int
+    {
+        $query = self::execute(
+            "SELECT MAX(priority) as max_p 
+            FROM categories", 
+            []
+        );
+        $data = $query->fetch();
+        return (int) ($data['max_p'] ?? 0);
+    }
+    public function set_id(?int $new_id): void
+    {
         $this->id = $new_id;
     }
-    public function set_name(string $new_name): void {
+    public function set_name(string $new_name): void
+    {
         $this->name = $new_name;
-    } 
-    public function set_priority(int $new_priority): void {
+    }
+    public function set_priority(int $new_priority): void
+    {
         $this->priority = $new_priority;
     }
-    public static function get_all_categories(): array {
+    public static function get_all_categories(): array
+    {
         $query = self::execute(
             "SELECT *
             FROM categories",
@@ -51,20 +92,39 @@ class Categories extends Model {
         }
         return $results;
     }
+    public static function get_all_categories_sorted_priority(): array
+{
+    $query = self::execute(
+        "SELECT *
+        FROM categories
+        ORDER BY priority ASC",
+        []
+    );
+
+    $data = $query->fetchAll();
+    $results = [];
+    foreach ($data as $row) {
+        $results[] = new Categories(
+            $row["id"],
+            $row["name"],
+            $row["priority"]
+        );
+    }
+    return $results;
+}
     // récupération de la méthode du member (persist)
-    public function persist(): Categories {
-        // Si l'ID existe (categorie existe), on update
+    public function persist(): Categories
+    {
         if ($this->id !== null) {
-            // On met à jour la catégorie existante (un ID attribué déjà)
             self::execute(
-                "UPDATE categories
-                SET name=:name, priority=:priority, 
-                WHERE id=:id",
-                ["id" => $this->id, 
-                "name" => $this->name,
-                "priority" => $this->priority]
+                "UPDATE categories SET name=:name, priority=:priority WHERE id=:id",
+                ["id" => $this->id, "name" => $this->name, "priority" => $this->priority]
             );
         } else {
+            if ($this->priority === 0 || $this->priority === 1000) { 
+                // si on creer une nouvelle categorie, on donne valeur de base 0
+                $this->priority = self::get_max_priority() + 1;
+        }
             // Insertion nouvelle catégorie (pas d'ID)
             self::execute(
                 "INSERT INTO categories(name, priority) 
@@ -76,7 +136,8 @@ class Categories extends Model {
         }
         return $this;
     }
-    public function delete(): void {
+    public function delete(): void
+    {
         if ($this->id !== null) {
             self::execute(
                 "DELETE FROM categories
@@ -91,6 +152,43 @@ class Categories extends Model {
                 ["priority" => $this->priority]
             );
         }
+    }
+
+    public function howMany(): int
+    {
+        $query = self::execute(
+            "SELECT COUNT(category) as total
+            FROM item_categories
+            WHERE category = :id",
+            ["id" => $this->id]
+        );
+
+        $data = $query->fetch();
+        return (int) $data['total'];
+    }
+
+    public function isUsed(): bool
+    {
+        return $this->howMany() > 0;
+    }
+
+    public function validate_category_unicity(string $name): array
+    {
+        $errors = [];
+
+        $query = self::execute(
+            "SELECT name 
+            FROM categories
+            WHERE name = :name",
+            [":name" => $name]
+        );
+
+        $data = $query->fetch();
+
+        if ($data['name'] === $name) {
+            $errors[] = "Cette catégorie '$name' existe déjà.";
+        }
+        return $errors;
     }
 
 }
