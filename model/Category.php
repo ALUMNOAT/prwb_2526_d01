@@ -130,6 +130,36 @@ class Category extends Model implements JsonSerializable {
         }
     }
 
+    public static function set_item_categories(Item $item) : void {
+        /*
+        doc: https://stackoverflow.com/questions/907806/passing-an-array-to-a-query-using-a-where-clause
+        doc: https://www.daniweb.com/programming/web-development/threads/266686/how-to-use-an-php-array-in-an-sql-query
+        doc A: https://www.codestudy.net/blog/default-array-values-if-key-doesn-t-exist/#method-4-null-coalescing-assignment-
+        */
+        $query = self::execute(
+            "SELECT ic.item, ic.category, c.id, c.name, c.priority
+            FROM item_categories ic
+            LEFT JOIN categories c ON c.id = ic.category
+            WHERE ic.item = :item_id",
+            [':item_id' => $item->get_id()]
+        );
+
+        $data = $query->fetchAll();
+
+        $categories = [];
+        foreach ($data as $row) {
+            //see 'doc A' for '??='
+            //it assigns a value if there are none already
+            $categories[$row['category']] ??= new Category(
+                $row['id'],
+                $row['name'],
+                $row['priority'],
+            );
+        }
+        
+        $item->set_categories($categories);
+        
+    }
 }
 
 

@@ -252,7 +252,7 @@ class Item extends Model implements JsonSerializable {
             }
 
             // Maintenant on peut créer les images en passant l'objet $item
-            $categories = [];
+            /*$categories = [];
             foreach ($data as $row) {
                 // ??= assign a value only if there are none present yet.
                 $categories[$row['c_priority']] ??= new Category(
@@ -260,11 +260,13 @@ class Item extends Model implements JsonSerializable {
                     $row['name'],
                     $row['c_priority']
                 );
-            }
+            }*/
+
+            Category::set_item_categories($item);
 
             // On attache les images à l'item
             $item->set_pictures($item_pictures);
-            $item->set_categories($categories);
+            //$item->set_categories($categories);
 
             return $item;
         }
