@@ -1,8 +1,9 @@
-let all_items;
+let all_items, all_categories;
 
 
 $(() => {
-  get_all_items();
+  //get_all_items();
+  get_all_categories();
   
   $("div.content").prepend(`
     <div class="search-bar">
@@ -13,6 +14,14 @@ $(() => {
       <!-- Menu déroulant pour choisir sur quel champ filtrer -->
       <select id="search-field">
         <option value="all">All</option>
+        <option value="title">Title</option>
+        <option value="owner">Owner</option>
+        <option value="description">Description</option>
+      </select>
+
+      <!-- Menu déroulant pour choisir sur quel champ filtrer -->
+      <select id="category-field">
+        <option value="all_categories">All</option>
         <option value="title">Title</option>
         <option value="owner">Owner</option>
         <option value="description">Description</option>
@@ -92,6 +101,18 @@ function get_all_items() {
     success: function(data) {
       all_items = data;
       console.log(data);
+    }
+  })
+}
+
+async function get_all_categories() {
+  $.get({
+    url: "item/get_all_categories_service",
+    dataType: "json",
+    success: function(data) {
+      all_categories = data.data;
+      console.log(data);
+      console.log(all_categories);
     }
   })
 }

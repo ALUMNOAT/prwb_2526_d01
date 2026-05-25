@@ -549,6 +549,13 @@ class ControllerItem extends Controller
         }
     }
 
+    public function get_all_categories_service(): void
+    {
+        $this->jsonResponse(
+            Category::get_all_categories()
+        );
+    }
+
     /*private function encode_all(array $arr): void {
         foreach()
     }*/
