@@ -3,6 +3,8 @@ require_once "framework/Model.php";
 require_once "utils/AppTime.php";
 require_once "model/Member.php";
 require_once "model/ItemPicture.php";
+require_once "model/Category.php";
+
 
 
 
@@ -190,8 +192,8 @@ class Item extends Model implements JsonSerializable {
             c.id AS c_id, c.name, c.priority AS c_priority
                 FROM items
                 LEFT JOIN item_pictures ON items.id = item_pictures.item
-                LEFT JOIN item_categories ic ON  ic.item = item.id
-                LEFT JOIN categories c ON c.category = ic.id
+                LEFT JOIN item_categories ic ON  ic.item = items.id
+                LEFT JOIN categories c ON c.id = ic.category
                 JOIN users ON items.owner = users.id
                 WHERE items.id = :id",
             ["id" => $id]
@@ -224,6 +226,7 @@ class Item extends Model implements JsonSerializable {
                 $owner,
                 $row['created_at'],
                 $row['duration_days'],
+                [],
                 [],
                 $row['description'],
                 $row['buy_now_price'],
@@ -268,6 +271,7 @@ class Item extends Model implements JsonSerializable {
         */
         $query = self::execute(
             "DELETE FROM item_pictures AS p WHERE p.item = :item_id;
+            DELETE FROM item_categories AS ic WHERE ic.item = :item_id;
             DELETE FROM items WHERE items.id = :item_id;",
             ['item_id' => $this->id]
         );
@@ -330,6 +334,8 @@ class Item extends Model implements JsonSerializable {
                     $row['created_at'],
                     $row['duration_days'],
                     [],
+                    [],
+                    //$categories[$row['id']],
                     $row['description'],
                     $row['buy_now_price'],
                     $row['starting_bid']
@@ -337,6 +343,7 @@ class Item extends Model implements JsonSerializable {
             }
 
             Item::set_items_pictures($items);
+            Category::set_items_categories($items);
         }
 
         return $items;
@@ -372,6 +379,7 @@ class Item extends Model implements JsonSerializable {
                 $row['created_at'],
                 $row['duration_days'],
                 [],
+                [],
                 $row['description'] ?? "",
                 $row['buy_now_price'],
                 $row['starting_bid']
@@ -398,6 +406,8 @@ class Item extends Model implements JsonSerializable {
             if (isset($items_pictures[$id]))
                 $item->set_pictures($items_pictures[$id]);
         }
+
+        Category::set_items_categories($items);
 
         return $available_items;
     }

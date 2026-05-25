@@ -153,7 +153,7 @@
         <!-- ITEM DATA -->
         <div class='item-data' data-item_id="<?= $item->get_id() ?>">
 
-            <!--ITEM DETAILS-->
+            <!--ITEM DETAILS -->
             <div class="item-card">
                 <!-- MAIN PIC -->
                 <div class='img'>
@@ -173,6 +173,7 @@
                 </div>
             </div>
 
+            <!-- PICTURES -->
             <?php if ($item->has_many_pictures()): ?>
                 <!-- THUMBNAILS -->
                 <div id="picture_gallery">
@@ -227,6 +228,7 @@
 
         </div>
 
+        <!-- SELLER DATA -->
         <div class='seller-data'>
             <!-- BIDS/BUY -->
             <div class="price-container">
