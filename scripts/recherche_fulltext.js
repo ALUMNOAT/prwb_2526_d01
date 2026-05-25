@@ -3,7 +3,7 @@ let all_items, all_categories;
 
 $(() => {
   //get_all_items();
-  get_all_categories();
+  add_categories_to_search();
   
   $("div.content").prepend(`
     <div class="search-bar">
@@ -14,14 +14,6 @@ $(() => {
       <!-- Menu déroulant pour choisir sur quel champ filtrer -->
       <select id="search-field">
         <option value="all">All</option>
-        <option value="title">Title</option>
-        <option value="owner">Owner</option>
-        <option value="description">Description</option>
-      </select>
-
-      <!-- Menu déroulant pour choisir sur quel champ filtrer -->
-      <select id="category-field">
-        <option value="all_categories">All</option>
         <option value="title">Title</option>
         <option value="owner">Owner</option>
         <option value="description">Description</option>
@@ -94,6 +86,24 @@ $(() => {
   });
 });
 
+async function add_categories_to_search() {
+  //https://masteringjs.io/tutorials/fundamentals/foreach-object <-- fix the problem of JS object not being a list
+  //https://tutorialreference.com/javascript/examples/faq/javascript-error-typeerror-foreach-is-not-a-function <-- this works better
+  await get_all_categories();
+  let categories_options = [];
+
+  Object.values(all_categories).forEach((category) => {
+    categories_options.push($(
+      '<option value="' + category.name +'">' 
+        + category.name 
+      + '</option>'))
+  });
+
+  let category_field = $('<select id="category-field">').append(categories_options);
+
+  $('div.search-bar').append(category_field);
+}
+
 function get_all_items() {
   $.get({
     url: "item/get_all_items_service",
@@ -106,7 +116,7 @@ function get_all_items() {
 }
 
 async function get_all_categories() {
-  $.get({
+  await $.get({
     url: "item/get_all_categories_service",
     dataType: "json",
     success: function(data) {
