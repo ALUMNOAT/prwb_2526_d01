@@ -172,6 +172,18 @@
                 <div class='item-details'>
                     <h1><?= Tools::sanitize($item->get_title()) ?></h1>
                     <p class="desc"><?= Tools::sanitize($item->get_description()) ?? "No description" ?></p>
+
+                    <?php if (count($item->get_categories()) > 0) : ?>
+                    <p class="desc"><b>Categories:</b></p>
+                    <ul>
+                        <?php foreach($item->get_categories() as $category) : ?>                           
+                            <li>
+                                <?= $category->get_name() ?>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <?php endif; ?>
+
                     <p class="desc"><strong>Start:</strong> <?= $item->get_created_at() ?></p>
                     <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
                 </div>

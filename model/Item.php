@@ -58,8 +58,15 @@ class Item extends Model implements JsonSerializable {
     public function get_pictures(): array {
         return $this->pictures;
     }
-    public function get_categories(): array {
+    public function get_categories(string $order = 'alphabetic'): array {
+        //https://www.php.net/manual/en/function.asort.php
+        switch($order) {
+            case 'alphabetic' :
+                asort($this->categories);
+        }
+
         return $this->categories;
+        
     }
     public function get_description(): ?string {
         return $this->description;
@@ -154,7 +161,6 @@ class Item extends Model implements JsonSerializable {
         return $this->pictures[$first];
     }
 
-
     public function get_main_picture_path(): string|false {
         $main_picture = $this->get_main_picture();
 
@@ -248,7 +254,8 @@ class Item extends Model implements JsonSerializable {
             // Maintenant on peut créer les images en passant l'objet $item
             $categories = [];
             foreach ($data as $row) {
-                $categories[$row['priority']] = new Category(
+                // ??= assign a value only if there are none present yet.
+                $categories[$row['c_priority']] ??= new Category(
                     $row['c_id'],
                     $row['name'],
                     $row['c_priority']
