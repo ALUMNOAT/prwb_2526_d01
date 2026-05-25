@@ -1,12 +1,16 @@
 <?php
 
 /** 
+ * @var string $web_root
  * @var ItemStatus $item_status 
  * @var Item $item 
+ * @var array $pictures
  * @var Member $member
  * @var ItemPicture $main_pic
  * @var string $bid_path
  * @var string $buy_path
+ * @var array $errors
+ * @var string $success
  * */
 ?>
 
