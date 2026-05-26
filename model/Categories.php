@@ -186,6 +186,11 @@ class Categories extends Model
 
         $data = $query->fetch();
 
+        // Si $data est false (rien trouvé), on arrête tout et on renvoie une liste d'erreurs vide
+        if (!$data) {
+            return [];
+        }
+
         if ($data['name'] === $name) {
             $errors["category_name"] = "Cette catégorie '$name' existe déjà.";
         }

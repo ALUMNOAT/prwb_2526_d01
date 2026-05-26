@@ -1,0 +1,30 @@
+.only-js {
+    display: none;
+}
+.only-no-js { 
+    display: inline-block; 
+}
+
+.js-enabled .only-no-js { 
+    display: none; 
+}
+.js-enabled .only-js {
+    display: inline-block;
+}
+
+.dragging {
+    opacity: 0.5;
+    border: 2px dashed #000;
+}
+
+.drag-handle {
+    cursor: grab;
+    margin-right: 10px;
+    font-size: 1.2rem;
+    color: #666;
+    user-select: none; /* Empêche de sélectionner le symbole avec la souris */
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}

@@ -9,13 +9,12 @@ require_once 'utils/Role.php';
 class ControllerCategory extends Controller
 {
 
-    // page d'accueil (à adapter)
+    // page d'accueil
     public function index(): void
     {
         $this->category();
     }
 
-    // profil de l'utilisateur connecté ou donné (à adapter)
     public function category(): void
     {
         $member = $this->get_admin_or_redirect();
@@ -47,7 +46,7 @@ class ControllerCategory extends Controller
 
                 if (empty($errors)) {
                     $category->persist();
-                    $this->redirect("category"); 
+                    $this->redirect("category");
                 }
             }
 
@@ -105,6 +104,80 @@ class ControllerCategory extends Controller
             "all_categories" => $categories,
             "errors" => $errors
         ]);
+    }
+
+    public function update_order_service(): void
+    {
+        $this->get_admin_or_redirect();
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true);
+
+        if ($data && isset($data['order'])) {
+            // 1. ÉTAPE TAMPON : On met toutes les catégories à une priorité négative 
+            // pour libérer toutes les valeurs de 1 à N dans la base de données.
+            foreach ($data['order'] as $item) {
+                $category = Categories::get_one((int) $item['id']);
+                if ($category) {
+                    // On utilise une valeur temporaire unique pour chaque ID pour éviter la collision
+                    $category->set_priority(-((int) $item['id']));
+                    $category->persist();
+                }
+            }
+
+            // 2. ÉTAPE FINALE : On applique les nouvelles priorités maintenant que tout est libre.
+            foreach ($data['order'] as $item) {
+                $category = Categories::get_one((int) $item['id']);
+                if ($category) {
+                    $category->set_priority((int) $item['priority']);
+                    $category->persist();
+                }
+            }
+
+            header('Content-Type: application/json');
+            //debug en réponse
+            //echo json_encode(['status' => 'debug', 'received' => $data]);
+            //exit;
+            echo json_encode(['status' => 'success']);
+            exit;
+        }
+    }
+
+    public function validate_categories_service(): void 
+    {
+        $this->get_admin_or_redirect();
+        $errors = [];
+        $id = $_POST["category_id"] ?? null;
+
+        // Récupérer la valeur saisie dynamiquement
+        // PAS DE FETCH DE LA BASE DE DONNEES, sinon c'est pas dynamique
+        $name = $_POST["name"] ?? $_POST["new_category"] ?? ""; 
+        $id = $_POST["category_id"] ?? null;
+
+        // On crée une catégorie
+        $categorie = new Categories(
+            $id,
+            $name,
+            0
+        );
+
+        // On récolte l'erreur
+        $errors = array_merge(
+            $errors,
+            $categorie->validate_category_unicity()
+        );
+
+        header('Content-Type: application/json');
+
+        echo json_encode([
+            'debug_input' => [
+                'id' => $id,
+                'nom' => $categorie->get_name(),
+                'priorité' => $categorie->get_priority()
+            ],
+            'errors' => $errors
+        ], JSON_PRETTY_PRINT);
+
+        exit;
     }
 
     private function get_admin_or_redirect(bool $guest_pass = false): Member
