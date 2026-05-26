@@ -153,6 +153,15 @@ class Item extends Model implements JsonSerializable {
 
         return $next_priority;
     }
+    public function get_categories_name(): string {
+        $categories_name = "";
+        foreach($this->categories as $category) {
+            /** @var Category $category */
+            $categories_name .= $category->get_name() . ",";
+        }
+        $categories_name = substr($categories_name, 0, -1);
+        return $categories_name;
+    }
 
     private function get_main_picture(): ItemPicture|false {
         if (empty($this->pictures))

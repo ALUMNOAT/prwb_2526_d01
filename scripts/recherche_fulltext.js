@@ -26,6 +26,7 @@ $(() => {
   $("#fulltext-search, #search-field").on("input change", function () {
     const value = $("#fulltext-search").val().toLowerCase();
     const field = $("#search-field").val();
+    const category = $("#category-field").val();
 
     /* On entre dans les séparateurs MY BIDS et AVAILABLE ITEMS (view_browse comme exemple) */
     $("div.content > h1").each(function () {
@@ -88,9 +89,9 @@ $(() => {
 
 async function add_categories_to_search() {
   //https://masteringjs.io/tutorials/fundamentals/foreach-object <-- fix the problem of JS object not being a list
-  //https://tutorialreference.com/javascript/examples/faq/javascript-error-typeerror-foreach-is-not-a-function <-- this works better
+  //https://tutorialreference.com/javascript/examples/faq/javascript-error-typeerror-foreach-is-not-a-function <-- this works
   await get_all_categories();
-  let categories_options = [];
+  let categories_options = ['<option value="all_category">All categories</option>'];
 
   Object.values(all_categories).forEach((category) => {
     categories_options.push($(
