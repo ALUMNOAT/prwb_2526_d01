@@ -34,7 +34,7 @@ class Categories extends Model
         $query = self::execute(
             "SELECT * 
             FROM categories 
-            WHERE id = :id", 
+            WHERE id = :id",
             ["id" => $id]
         );
         $data = $query->fetch();
@@ -45,7 +45,7 @@ class Categories extends Model
         $query = self::execute(
             "SELECT * 
             FROM categories 
-            WHERE priority = :priority", 
+            WHERE priority = :priority",
             ["priority" => $priority]
         );
         $data = $query->fetch();
@@ -55,7 +55,7 @@ class Categories extends Model
     {
         $query = self::execute(
             "SELECT MAX(priority) as max_p 
-            FROM categories", 
+            FROM categories",
             []
         );
         $data = $query->fetch();
@@ -93,25 +93,25 @@ class Categories extends Model
         return $results;
     }
     public static function get_all_categories_sorted_priority(): array
-{
-    $query = self::execute(
-        "SELECT *
+    {
+        $query = self::execute(
+            "SELECT *
         FROM categories
         ORDER BY priority ASC",
-        []
-    );
-
-    $data = $query->fetchAll();
-    $results = [];
-    foreach ($data as $row) {
-        $results[] = new Categories(
-            $row["id"],
-            $row["name"],
-            $row["priority"]
+            []
         );
+
+        $data = $query->fetchAll();
+        $results = [];
+        foreach ($data as $row) {
+            $results[] = new Categories(
+                $row["id"],
+                $row["name"],
+                $row["priority"]
+            );
+        }
+        return $results;
     }
-    return $results;
-}
     // récupération de la méthode du member (persist)
     public function persist(): Categories
     {
@@ -121,10 +121,10 @@ class Categories extends Model
                 ["id" => $this->id, "name" => $this->name, "priority" => $this->priority]
             );
         } else {
-            if ($this->priority === 0 || $this->priority === 1000) { 
+            if ($this->priority === 0 || $this->priority === 1000) {
                 // si on creer une nouvelle categorie, on donne valeur de base 0
                 $this->priority = self::get_max_priority() + 1;
-        }
+            }
             // Insertion nouvelle catégorie (pas d'ID)
             self::execute(
                 "INSERT INTO categories(name, priority) 
@@ -193,6 +193,16 @@ class Categories extends Model
 
         if ($data['name'] === $name) {
             $errors["category_name"] = "Cette catégorie '$name' existe déjà.";
+        }
+        return $errors;
+    }
+
+    public function validate_name_length(): array
+    {
+        $errors = [];
+        $name = $this->get_name();
+        if (mb_strlen($name) < Configuration::get("category_name_length_min", 3) || mb_strlen($name) > Configuration::get("category_name_length_max", 15)) {
+            $errors["category_name"] = "La catégorie doit contenir entre 3 et 15 lettres";
         }
         return $errors;
     }

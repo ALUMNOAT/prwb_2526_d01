@@ -40,6 +40,7 @@ class ControllerCategory extends Controller
                 if (empty($errors)) {
                     $errors = array_merge(
                         $errors,
+                        $category->validate_name_length(),
                         $category->validate_category_unicity()
                     );
                 }
@@ -61,6 +62,7 @@ class ControllerCategory extends Controller
                     if (empty($errors)) {
                         $errors = array_merge(
                             $errors,
+                            $category->validate_name_length(),
                             $category->validate_category_unicity()
                         );
                     }
@@ -142,15 +144,13 @@ class ControllerCategory extends Controller
         }
     }
 
-    public function validate_categories_service(): void 
+    public function validate_categories_service(): void
     {
         $this->get_admin_or_redirect();
-        $errors = [];
-        $id = $_POST["category_id"] ?? null;
 
         // Récupérer la valeur saisie dynamiquement
         // PAS DE FETCH DE LA BASE DE DONNEES, sinon c'est pas dynamique
-        $name = $_POST["name"] ?? $_POST["new_category"] ?? ""; 
+        $name = $_POST["name"] ?? $_POST["new_category"] ?? "";
         $id = $_POST["category_id"] ?? null;
 
         // On crée une catégorie
@@ -160,11 +160,16 @@ class ControllerCategory extends Controller
             0
         );
 
-        // On récolte l'erreur
-        $errors = array_merge(
-            $errors,
-            $categorie->validate_category_unicity()
-        );
+        // Vérification locale
+        $errors = $categorie->validate_name_length();
+
+        // Vérif BDD
+        if (empty($errors)) {
+            $errors = array_merge(
+                $errors,
+                $categorie->validate_category_unicity()
+            );
+        }
 
         header('Content-Type: application/json');
 

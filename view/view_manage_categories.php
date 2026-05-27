@@ -206,6 +206,14 @@
         }
     }
     </script>
+
+    <!-- Config de longueur de nom de la catégorie -->
+    <script>
+        const categoryConfig = {
+            min: <?= Configuration::get("category_name_length_min", 3) ?>,
+            max: <?= Configuration::get("category_name_length_max", 15) ?>
+        };
+    </script>
     
     <!-- Script de vérif de regles métiers (nom) -->
     <script src="scripts/validations_manage_categories.js" type="text/javascript"></script>
