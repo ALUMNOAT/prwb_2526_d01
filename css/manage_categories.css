@@ -1,15 +1,20 @@
-.only-js {
-    display: none;
-}
-.only-no-js { 
-    display: inline-block; 
+/* --- 1. État de base (sans JS) --- */
+.only-js { display: none; }
+.only-no-js { display: inline-block; }
+
+/* --- 2. Bascule JS activé --- */
+.js-enabled .only-no-js { display: none; }
+.js-enabled .only-js { display: inline-block; }
+
+/* --- 3. Mode Édition (via JS) --- */
+.js-enabled .section.is-editing .input, /* input enabled */
+.js-enabled .section.is-editing .save { /* save enabled */
+    display: inline-block;
 }
 
-.js-enabled .only-no-js { 
-    display: none; 
-}
-.js-enabled .only-js {
-    display: inline-block;
+.js-enabled .section.is-editing .only-js, /* span disabled */
+.js-enabled .section.is-editing .edit {  /* edit disabled */
+    display: none;
 }
 
 .dragging {

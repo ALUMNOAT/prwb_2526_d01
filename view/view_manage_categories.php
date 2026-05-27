@@ -35,7 +35,9 @@
 
                 <span class="drag-handle">≡</span>
 
-                <input type="text" name="name" class="input" value="<?= Tools::sanitize($cat_name)?>" required>
+                <input type="text" name="name" class="input only-no-js" value="<?= Tools::sanitize($cat_name)?>" required>
+
+                <span class="only-js"><?= $cat_name ?></span>
 
                 <span class="only-js">(<?= $cat_sum?>)</span>
 
@@ -49,7 +51,8 @@
                     echo "disabled";
                 } ?>
                 >Down</button>
-                <button type="submit" name="action" value="save">Save</button>
+                <button type="submit" name="action" class="edit only-js" value="edit">Edit</button>
+                <button type="submit" name="action" class="save only-no-js" value="save">Save</button>
                 <button type="submit" name="action" value="delete"
                 <?php if ($category->isUsed()) {
                     echo "disabled";
@@ -86,10 +89,29 @@
     <!-- On ajoute la classe js-enabled au body, comme ca pas besoin de s'amuser a changer chaque bouton -->
     <script>document.body.classList.add('js-enabled');</script>
 
-    <!-- On modifie le texte du bouton "Save" en "Edit" -->
+                <!--    On modifie le texte du bouton "Save" en "Edit"
     <script>
     document.querySelectorAll('button[value="save"]').forEach(btn => {
         btn.innerText = "Edit";
+    });
+    </script>
+                -->
+    
+    <!-- Affichage des inputs et boutons si on clique sur edit ou pas-->
+    <script>
+        document.querySelectorAll('.edit').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault(); // Important pour ne pas recharger la page
+        
+            // On récupère la div parente (.section)
+            const section = e.target.closest('.section');
+        
+            // On ajoute la classe. Le CSS fera le reste du travail !
+            section.classList.add('is-editing');
+        
+            // On donne le focus à l'input (optionel)
+            section.querySelector('.input').focus();
+        });
     });
     </script>
 
