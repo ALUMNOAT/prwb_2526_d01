@@ -3,8 +3,6 @@ require_once "framework/Model.php";
 require_once "utils/AppTime.php";
 require_once "model/Member.php";
 require_once "model/ItemPicture.php";
-require_once "model/Category.php";
-
 
 
 
@@ -17,7 +15,6 @@ class Item extends Model implements JsonSerializable {
         private string $created_at, //this needs to be its own class in utils ? would make it easier, string for now
         private int $duration_days,
         private array $pictures = [],
-        private array $categories = [],
         private ?string $description = null,
         private ?float $buy_now_price = null,
         private ?float $starting_bid = null,
@@ -33,7 +30,6 @@ class Item extends Model implements JsonSerializable {
             "created_at" => $this->created_at,
             "duration_days" => $this->duration_days,
             "pictures" => $this->pictures,
-            "categories" => $this->categories,
             "description" => $this->description,
             "buy_now_price" => $this->buy_now_price,
             "starting_bid" => $this->starting_bid,
@@ -57,16 +53,6 @@ class Item extends Model implements JsonSerializable {
     }
     public function get_pictures(): array {
         return $this->pictures;
-    }
-    public function get_categories(string $order = 'alphabetic'): array {
-        //https://www.php.net/manual/en/function.asort.php
-        switch($order) {
-            case 'alphabetic' :
-                asort($this->categories);
-        }
-
-        return $this->categories;
-        
     }
     public function get_description(): ?string {
         return $this->description;
@@ -95,9 +81,6 @@ class Item extends Model implements JsonSerializable {
     }
     public function set_pictures(array $pictures): void {
         $this->pictures = $pictures;
-    }
-    public function set_categories(array $categories): void {
-        $this->categories = $categories;
     }
     public function set_description(?string $new_description): void {
         $this->description = $new_description;
@@ -161,6 +144,7 @@ class Item extends Model implements JsonSerializable {
         return $this->pictures[$first];
     }
 
+
     public function get_main_picture_path(): string|false {
         $main_picture = $this->get_main_picture();
 
@@ -190,16 +174,12 @@ class Item extends Model implements JsonSerializable {
         doc 'C' : https://www.php.net/manual/en/backedenum.from.php
         */
         $query = self::execute(
-            "SELECT items.id AS item_id, items.title, items.created_at, items.duration_days,
-            items.description, items.buy_now_price, items.starting_bid,
-            users.id AS user_id, users.full_name, users.email, users.pseudo,
-            users.password, users.role, users.picture_path AS user_picture, users.iban,
-            item_pictures.priority, item_pictures.picture_path AS item_picture,
-            c.id AS c_id, c.name, c.priority AS c_priority
+            "SELECT items.id AS item_id, items.title, items.created_at, items.duration_days, items.description,
+            items.buy_now_price, items.starting_bid,
+            users.id AS user_id, users.full_name, users.email, users.pseudo, users.password, users.role, users.picture_path AS user_picture, users.iban,
+            item_pictures.priority, item_pictures.picture_path AS item_picture
                 FROM items
                 LEFT JOIN item_pictures ON items.id = item_pictures.item
-                LEFT JOIN item_categories ic ON  ic.item = items.id
-                LEFT JOIN categories c ON c.id = ic.category
                 JOIN users ON items.owner = users.id
                 WHERE items.id = :id",
             ["id" => $id]
@@ -233,7 +213,6 @@ class Item extends Model implements JsonSerializable {
                 $row['created_at'],
                 $row['duration_days'],
                 [],
-                [],
                 $row['description'],
                 $row['buy_now_price'],
                 $row['starting_bid']
@@ -251,22 +230,8 @@ class Item extends Model implements JsonSerializable {
                 }
             }
 
-            // Maintenant on peut créer les images en passant l'objet $item
-            /*$categories = [];
-            foreach ($data as $row) {
-                // ??= assign a value only if there are none present yet.
-                $categories[$row['c_priority']] ??= new Category(
-                    $row['c_id'],
-                    $row['name'],
-                    $row['c_priority']
-                );
-            }*/
-
-            Category::set_item_categories($item);
-
             // On attache les images à l'item
             $item->set_pictures($item_pictures);
-            //$item->set_categories($categories);
 
             return $item;
         }
@@ -280,7 +245,6 @@ class Item extends Model implements JsonSerializable {
         */
         $query = self::execute(
             "DELETE FROM item_pictures AS p WHERE p.item = :item_id;
-            DELETE FROM item_categories AS ic WHERE ic.item = :item_id;
             DELETE FROM items WHERE items.id = :item_id;",
             ['item_id' => $this->id]
         );
@@ -343,8 +307,6 @@ class Item extends Model implements JsonSerializable {
                     $row['created_at'],
                     $row['duration_days'],
                     [],
-                    [],
-                    //$categories[$row['id']],
                     $row['description'],
                     $row['buy_now_price'],
                     $row['starting_bid']
@@ -352,7 +314,6 @@ class Item extends Model implements JsonSerializable {
             }
 
             Item::set_items_pictures($items);
-            Category::set_items_categories($items);
         }
 
         return $items;
@@ -388,7 +349,6 @@ class Item extends Model implements JsonSerializable {
                 $row['created_at'],
                 $row['duration_days'],
                 [],
-                [],
                 $row['description'] ?? "",
                 $row['buy_now_price'],
                 $row['starting_bid']
@@ -415,8 +375,6 @@ class Item extends Model implements JsonSerializable {
             if (isset($items_pictures[$id]))
                 $item->set_pictures($items_pictures[$id]);
         }
-
-        Category::set_items_categories($items);
 
         return $available_items;
     }

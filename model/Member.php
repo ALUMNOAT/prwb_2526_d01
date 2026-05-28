@@ -663,7 +663,6 @@ class Member extends Model {
                     $row['created_at'],
                     $row['duration_days'],
                     [],
-                    [],
                     $row['description'],
                     $row['buy_now_price'],
                     $row['starting_bid']
@@ -697,8 +696,6 @@ class Member extends Model {
                 $item_id = $item->get_id();
                 $item->set_pictures($items_pictures[$item_id] ?? []);
             }
-
-            Category::set_items_categories($items);
         }
 
         return $my_items_status;
@@ -740,7 +737,6 @@ class Member extends Model {
                     $this,
                     $row['created_at'],
                     $row['duration_days'],
-                    [],
                     [],
                     $row['description'],
                     $row['buy_now_price'],
@@ -789,8 +785,6 @@ class Member extends Model {
                 $item_id = $item->get_id();
                 $item->set_pictures($items_pictures[$item_id] ?? []);
             }
-
-            Category::set_items_categories($items);
         }
 
         return $sales;
@@ -845,7 +839,6 @@ class Member extends Model {
                     $row['created_at'],
                     $row['duration_days'],
                     [],
-                    [],
                     $row['description'],
                     $row['buy_now_price'],
                     $row['starting_bid']
@@ -881,8 +874,6 @@ class Member extends Model {
                 $item_id = $item->get_id();
                 $item->set_pictures($items_pictures[$item_id] ?? []);
             }
-
-            Category::set_items_categories($items);
         }
 
         return $purchases;

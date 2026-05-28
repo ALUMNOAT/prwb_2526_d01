@@ -4,7 +4,6 @@ doc
 */
 
 /** 
- * @var string $web_root
  * @var Member $user
  * @var array $errors
  * @var string $success

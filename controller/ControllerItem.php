@@ -225,7 +225,6 @@ class ControllerItem extends Controller
                 AppTime::get_current_datetime(), // created_at
                 $duration_days,
                 [],                 // pictures
-                [],
                 $description,
                 $buy_now_price,
                 $starting_bid
