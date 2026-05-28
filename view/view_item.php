@@ -1,12 +1,16 @@
 <?php
 
 /** 
+ * @var string $web_root
  * @var ItemStatus $item_status 
  * @var Item $item 
+ * @var array $pictures
  * @var Member $member
  * @var ItemPicture $main_pic
  * @var string $bid_path
  * @var string $buy_path
+ * @var array $errors
+ * @var string $success
  * */
 ?>
 
@@ -153,7 +157,7 @@
         <!-- ITEM DATA -->
         <div class='item-data' data-item_id="<?= $item->get_id() ?>">
 
-            <!--ITEM DETAILS-->
+            <!--ITEM DETAILS -->
             <div class="item-card">
                 <!-- MAIN PIC -->
                 <div class='img'>
@@ -168,11 +172,24 @@
                 <div class='item-details'>
                     <h1><?= Tools::sanitize($item->get_title()) ?></h1>
                     <p class="desc"><?= Tools::sanitize($item->get_description()) ?? "No description" ?></p>
+
+                    <?php if (count($item->get_categories()) > 0) : ?>
+                    <p class="desc"><b>Categories:</b></p>
+                    <ul>
+                        <?php foreach($item->get_categories() as $category) : ?>                           
+                            <li>
+                                <?= $category->get_name() ?>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <?php endif; ?>
+
                     <p class="desc"><strong>Start:</strong> <?= $item->get_created_at() ?></p>
                     <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
                 </div>
             </div>
 
+            <!-- PICTURES -->
             <?php if ($item->has_many_pictures()): ?>
                 <!-- THUMBNAILS -->
                 <div id="picture_gallery">
@@ -227,6 +244,7 @@
 
         </div>
 
+        <!-- SELLER DATA -->
         <div class='seller-data'>
             <!-- BIDS/BUY -->
             <div class="price-container">
