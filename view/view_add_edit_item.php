@@ -1,6 +1,10 @@
 <?php
 $isEdit = $item !== null && $item->get_id() !== null;
 $pageTitle = $isEdit ? "Edit Item" : "Add Item";
+
+/**
+ * @var array $categories
+ *  */
 ?>
 
 <!DOCTYPE html>
@@ -104,6 +108,19 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
                 <input type="text" id="sale_price" name="sale_price" class="input" value="<?= $salePriceVal ?>">
                 <span id="error-sale-price" class="error-message" style="color: red; display: none;"></span>
 
+            </div>
+
+            <div class="section">
+                <h3>Categories</h3>
+                <p>You can select up to 3 categories</p>
+
+
+                <?php foreach($categories as $category): 
+                    /** @var Category $category */ 
+                    $unique_name = "category_" . $category->get_priority(); ?>
+                    <input type="checkbox" id="<?= $unique_name ?>" name="<?= $unique_name ?>" value="<?= $category->get_name() ?>">
+                    <label for="<?= $unique_name ?>"><?= $category->get_name() ?></label><br>
+                <?php endforeach; ?>
             </div>
         </form>
 

@@ -254,7 +254,8 @@ class ControllerItem extends Controller
         (new View("add_edit_item"))->show([
             "member" => $member,
             "item" => $item,
-            "errors" => $errors
+            "errors" => $errors,
+            "categories" => Category::get_all_categories(),
         ]);
     }
 
