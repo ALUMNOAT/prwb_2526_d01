@@ -102,7 +102,7 @@ img {
     font-size: 20px;
 }
 
-.search-bar select[id="search-field"] {
+.search-bar select[class="list"] {
     float: right;
     padding: 5px;
     border: none;

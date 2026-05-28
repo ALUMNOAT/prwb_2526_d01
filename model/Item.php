@@ -153,11 +153,12 @@ class Item extends Model implements JsonSerializable {
 
         return $next_priority;
     }
-    public function get_categories_name(): string {
-        $categories_name = "";
+    public function get_categories_name_for_JS(): string {
+        //https://stackoverflow.com/questions/16223786/store-and-retrieve-javascript-arrays-into-and-from-html-data-attributes
+        $categories_name = '';
         foreach($this->categories as $category) {
             /** @var Category $category */
-            $categories_name .= $category->get_name() . ",";
+            $categories_name .= '"' . $category->get_name() . '"' . ",";
         }
         $categories_name = substr($categories_name, 0, -1);
         return $categories_name;

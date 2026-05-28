@@ -1,9 +1,7 @@
 let all_items, all_categories;
 
 
-$(() => {
-  //get_all_items();
-  add_categories_to_search();
+$(async () => {
   
   $("div.content").prepend(`
     <div class="search-bar">
@@ -12,18 +10,21 @@ $(() => {
       <input type="text" id="fulltext-search" placeholder="Search..." autocomplete="off">
 
       <!-- Menu déroulant pour choisir sur quel champ filtrer -->
-      <select id="search-field">
+      <select class="list" id="search-field">
         <option value="all">All</option>
         <option value="title">Title</option>
         <option value="owner">Owner</option>
         <option value="description">Description</option>
       </select>
-
     </div>
   `);
 
+  await get_all_categories();
+  add_categories_to_search();
+
   /* Sur la barre de recherche et sur le filtre si on fait un changement -> fonction */
-  $("#fulltext-search, #search-field").on("input change", function () {
+  $("#fulltext-search, #search-field, #category-field, #test").on("input change", function () {
+    console.log("change !");
     const value = $("#fulltext-search").val().toLowerCase();
     const field = $("#search-field").val();
     const category = $("#category-field").val();
@@ -58,6 +59,11 @@ $(() => {
         // > -1 signifie "value est contenu dans str"
         const check = (str) => str.indexOf(value) > -1;
 
+        const categories = ($(this).data("categories") ?? []);
+
+        //console.log(categories);
+        //console.log(categories[0] ?? "none");
+
         /* matches = vrai si...
            ├── input vide      → on affiche tout OU
            ├── field = "all"   ET match tout  OU
@@ -66,11 +72,20 @@ $(() => {
            └── field = "desc"  ET match desc  OU */
 
         const matches =
-          value === "" ||
-          (field === "all" && (check(title) || check(owner) || check(description))) ||
-          (field === "title" && check(title)) ||
-          (field === "owner" && check(owner)) ||
-          (field === "description" && check(description));
+          (
+            value === "" ||
+            (field === "all" && (check(title) || check(owner) || check(description))) ||
+            (field === "title" && check(title)) ||
+            (field === "owner" && check(owner)) ||
+            (field === "description" && check(description))
+          ) && (
+            category === "all" || categories.includes(category)
+          );
+
+          console.log(
+            category === "all" ||
+            categories.includes(category)
+          );
 
         $(this).toggle(matches);
         if (matches) visible++;
@@ -87,11 +102,10 @@ $(() => {
   });
 });
 
-async function add_categories_to_search() {
+function add_categories_to_search() {
   //https://masteringjs.io/tutorials/fundamentals/foreach-object <-- fix the problem of JS object not being a list
   //https://tutorialreference.com/javascript/examples/faq/javascript-error-typeerror-foreach-is-not-a-function <-- this works
-  await get_all_categories();
-  let categories_options = ['<option value="all_category">All categories</option>'];
+  let categories_options = ['<option value="all">All categories</option>'];
 
   Object.values(all_categories).forEach((category) => {
     categories_options.push($(
@@ -100,8 +114,7 @@ async function add_categories_to_search() {
       + '</option>'))
   });
 
-  let category_field = $('<select id="category-field">').append(categories_options);
-
+  let category_field = $('<select class="list" id="category-field">').append(categories_options);
   $('div.search-bar').append(category_field);
 }
 
@@ -111,7 +124,7 @@ function get_all_items() {
     dataType: "json",
     success: function(data) {
       all_items = data;
-      console.log(data);
+      //console.log(data);
     }
   })
 }
@@ -122,8 +135,8 @@ async function get_all_categories() {
     dataType: "json",
     success: function(data) {
       all_categories = data.data;
-      console.log(data);
-      console.log(all_categories);
+      //console.log(data);
+      //console.log(all_categories);
     }
   })
 }
