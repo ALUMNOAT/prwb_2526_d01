@@ -549,6 +549,13 @@ class ControllerItem extends Controller
         }
     }
 
+    public function get_all_categories_service(): void
+    {
+        $this->jsonResponse(
+            Category::get_all_categories()
+        );
+    }
+
     /*private function encode_all(array $arr): void {
         foreach()
     }*/
@@ -736,8 +743,8 @@ class ControllerItem extends Controller
         $encoded_data = $_GET['param1'];
         $decoded_data = UrlDataEncoderDecoder::url_safe_decode($encoded_data);
 
-        $answer = explode("|", $decoded_data, 2);
-        $answer = ["field" => $answer[0], "search_value" => $answer[1]];        
+        $answer = explode("|", $decoded_data, 3);
+        $answer = ["field" => $answer[0], "search_value" => $answer[1], "category_value" => $answer[2], "test" => $decoded_data];        
 
         echo json_encode(["response" => $answer]);
     }

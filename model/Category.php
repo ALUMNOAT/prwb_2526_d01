@@ -86,6 +86,22 @@ class Category extends Model implements JsonSerializable {
         return $categories;
     }
 
+    public static function get_all_categories() : array {
+        $query = self::execute("SELECT * FROM categories c", []);
+        $data = $query->fetchAll();
+
+        $categories = [];
+        foreach($data as $row) {
+            $categories[$row['priority']] = new Category(
+                $row['id'],
+                $row['name'],
+                $row['priority']
+            );
+        }
+
+        return $categories;
+    }
+
     public static function set_items_categories(array $items) : void {
         /*
         doc: https://stackoverflow.com/questions/907806/passing-an-array-to-a-query-using-a-where-clause

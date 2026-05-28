@@ -39,6 +39,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     <link rel="stylesheet" href="css/time.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="lib/jquery-4.0.0.min.js" type="text/javascript"></script>
+    <script src="scripts/search_propagation.js" type="text/javascript"></script>
     <script src="scripts/recherche_fulltext.js" type="text/javascript"></script>
 </head>
 

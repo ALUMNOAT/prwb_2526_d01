@@ -62,11 +62,14 @@ class Item extends Model implements JsonSerializable {
         //https://www.php.net/manual/en/function.asort.php
         switch($order) {
             case 'alphabetic' :
-                asort($this->categories);
+                asort($this->categories); 
+                break;  //syntax requires break to exit switch case
+            case 'priority' :
+                ksort($this->categories);
+                break;                
         }
 
         return $this->categories;
-        
     }
     public function get_description(): ?string {
         return $this->description;
@@ -152,6 +155,16 @@ class Item extends Model implements JsonSerializable {
             $next_priority = max($priorities) + 1;
 
         return $next_priority;
+    }
+    public function get_categories_name_for_JS(): string {
+        //https://stackoverflow.com/questions/16223786/store-and-retrieve-javascript-arrays-into-and-from-html-data-attributes
+        $categories_name = '';
+        foreach($this->get_categories('priority') as $category) {
+            /** @var Category $category */
+            $categories_name .= '"' . $category->get_name() . '"' . ",";
+        }
+        $categories_name = substr($categories_name, 0, -1);
+        return $categories_name;
     }
 
     private function get_main_picture(): ItemPicture|false {
