@@ -184,6 +184,22 @@ class ControllerCategory extends Controller
 
         exit;
     }
+    
+    public function delete_service(): void
+    {
+        // On récupère l'ID
+        $id = $_POST["category_id"] ?? null;
+        $category = Categories::get_one((int) $id);
+
+        // On traite direct
+        if ($category && !$category->isUsed()) {
+            $category->delete();
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error']);
+        }
+        exit; // On tue le script ici, point barre. Pas de HTML, pas de redirection.
+    }
 
     private function get_admin_or_redirect(bool $guest_pass = false): Member
     {
