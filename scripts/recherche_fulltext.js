@@ -20,11 +20,13 @@ $(async () => {
   `);
 
   await get_all_categories();
-  add_categories_to_search();
+  await add_categories_to_search();
+
+  await set_variables();
+  await set_events();
 
   /* Sur la barre de recherche et sur le filtre si on fait un changement -> fonction */
   $("#fulltext-search, #search-field, #category-field, #test").on("input change", function () {
-    console.log("change !");
     const value = $("#fulltext-search").val().toLowerCase();
     const field = $("#search-field").val();
     const category = $("#category-field").val();
@@ -61,9 +63,6 @@ $(async () => {
 
         const categories = ($(this).data("categories") ?? []);
 
-        //console.log(categories);
-        //console.log(categories[0] ?? "none");
-
         /* matches = vrai si...
            ├── input vide      → on affiche tout OU
            ├── field = "all"   ET match tout  OU
@@ -80,11 +79,6 @@ $(async () => {
             (field === "description" && check(description))
           ) && (
             category === "all" || categories.includes(category)
-          );
-
-          console.log(
-            category === "all" ||
-            categories.includes(category)
           );
 
         $(this).toggle(matches);
@@ -124,7 +118,6 @@ function get_all_items() {
     dataType: "json",
     success: function(data) {
       all_items = data;
-      //console.log(data);
     }
   })
 }
@@ -135,8 +128,6 @@ async function get_all_categories() {
     dataType: "json",
     success: function(data) {
       all_categories = data.data;
-      //console.log(data);
-      //console.log(all_categories);
     }
   })
 }
