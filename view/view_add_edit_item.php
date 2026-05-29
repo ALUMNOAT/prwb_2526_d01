@@ -105,7 +105,58 @@ $pageTitle = $isEdit ? "Edit Item" : "Add Item";
                 <span id="error-sale-price" class="error-message" style="color: red; display: none;"></span>
 
             </div>
+
+            <div class="section">
+                <?php 
+                // 1. On crée un tableau simple contenant uniquement les IDs des catégories déjà actives pour cet item
+                // $item_category (controlleur)= catégories de l'item
+                // $all_categories (controlleur)= toutes les catégories qui existent
+                $enabled_cat_ids = [];
+                if (!empty($item_category) && is_array($item_category)) {
+                    foreach ($item_category as $enabled_cat) {
+                    $enabled_cat_ids[] = $enabled_cat->get_id(); 
+                }
+            }
+            ?>
+
+                <h3>Categories</h3>
+                <fieldset>
+                    <legend>You can select up to 3 categories</legend>
+                    <?php foreach ($all_categories as $category): 
+                        $cat_name = Tools::sanitize($category->get_name());
+                        $cat_id = $category->get_id(); // On récupère l'identifiant unique de la catégorie
+                    ?>
+                        <div>
+                            <input type="checkbox"
+                            id="<?= $cat_id ?>"
+                            name="categories[]"
+                            value="<?= $cat_id ?>"
+                            <?php if (in_array($cat_id, $enabled_cat_ids)) { echo 'checked'; } ?>/>
+                            <label for="<?= $cat_id ?>"><?= $cat_name ?></label>
+                        </div>
+                    <?php endforeach; ?>
+                    <span id="error-categories" class="error-message" style="color: red; display: none;"></span>
+                </fieldset>
+            </div>
+
         </form>
+
+        <div class="modal fade" id="categoryErrorModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger">Limite atteinte</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        Vous ne pouvez pas sélectionner plus de 3 catégories.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <?php if (count($errors) != 0): ?>
             <div class='errors'>

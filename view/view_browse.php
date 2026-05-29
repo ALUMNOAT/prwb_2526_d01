@@ -35,7 +35,7 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
     <title>Browse</title>
     <base href="<?= $web_root ?>">
     <link rel="stylesheet" href="css/colors.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,celebration,filter,gavel,home,schedule,settings,shopping_bag,travel_explore,trophy">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=add,category_search,celebration,filter,gavel,home,schedule,settings,shopping_bag,travel_explore,trophy">
     <link rel="stylesheet" href="css/icons.css">
     <link rel="stylesheet" href="css/browse.css">
     <link rel="stylesheet" href="css/item_card.css">
@@ -48,6 +48,33 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
 </head>
 
 <body>
+    <div class="search-bar only-js">
+
+    <!-- Champ texte où l'utilisateur tape sa recherche -->
+      <input type="text" id="fulltext-search" placeholder="Search..." autocomplete="off">
+
+      <!-- Menu déroulant pour choisir sur quel champ filtrer -->
+      <select id="search-field">
+        <option value="all">All</option>
+        <option value="title">Title</option>
+        <option value="owner">Owner</option>
+        <option value="description">Description</option>
+      </select>
+
+      <?php 
+      $allCategories = Categories::get_all_categories();
+      ?>
+      <!-- Menu déroulant pour les catégories -->
+      <select id="category-field">
+        <option value="all">All Categories</option>
+        <?php foreach ($allCategories as $categoryName) : 
+            $name = $categoryName->get_name()?>
+            <option value="<?= $name ?>"><?= $name ?></option>
+        <?php endforeach ?>
+      </select> 
+
+    </div>
+
     <div class="content">
         <!-- MY BIDS -->
         <?php if ($user->get_id() !== null && !empty($my_bids)): ?>
@@ -106,6 +133,9 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
 
     <!-- NAVBAR MENU -->
     <?php require 'menu.php' ?>
+
+    <!-- On ajoute la classe js-enabled au body, comme ca pas besoin de s'amuser a changer chaque bouton -->
+    <script>document.body.classList.add('js-enabled');</script>
 
 </body>
 

@@ -170,6 +170,10 @@
                     <p class="desc"><?= Tools::sanitize($item->get_description()) ?? "No description" ?></p>
                     <p class="desc"><strong>Start:</strong> <?= $item->get_created_at() ?></p>
                     <p class="desc"><strong>Ends:</strong> <?= $item_status->get_end_at() ?></p>
+                    <p><strong>Categories:</strong></p>
+                    <?php foreach ($item_category as $category): ?>
+                        <li><?= Tools::sanitize($category->get_name()) ?></li>
+                    <?php endforeach; ?>    
                 </div>
             </div>
 

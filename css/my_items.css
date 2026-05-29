@@ -73,21 +73,10 @@ img {
     background-color: lightgray;
 }
 
-/* javascript */
-.search-bar input[type="text"] {
-    float: right;
-    padding: 5px;
-    border: none;
-    margin-top: 3px;
-    margin-right: 16px;
-    font-size: 20px;
-}
+/* --- 1. État de base (sans JS) --- */
+.only-js { display: none; }
+.only-no-js { display: inline-block; }
 
-.search-bar select[id="search-field"] {
-    float: right;
-    padding: 5px;
-    border: none;
-    margin-top: 3px;
-    margin-right: 16px;
-    font-size: 20px;
-}
+/* --- 2. Bascule JS activé --- */
+.js-enabled .only-no-js { display: none; }
+.js-enabled .only-js { display: inline-block; }
