@@ -9,7 +9,7 @@ doc
  * @var string $success
  */
 
-$icons = "account_circle,add,arrow_back,celebration,home,logout,manage_accounts,password,receipt_long,save,settings,shopping_cart,travel_explore";
+$icons = "account_circle,add,arrow_back,category_search,celebration,home,logout,manage_accounts,password,receipt_long,save,settings,shopping_cart,travel_explore";
 ?>
 
 <!DOCTYPE html>
