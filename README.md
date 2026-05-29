@@ -52,4 +52,46 @@ En développement, donnez les permissions d'écriture aux dossiers uploads et da
 
 ## Notes de version itération 3
 
-...
+### Partie A
+
+Bon ... je vais etre franc. Je pense que je ne suis pas pret.
+
+J'ai commencé à 18:30. Terminé à 20:30. 2 heures c'est trop. Ca devrais prendre pas plus de 30 minutes. 1 heure max
+J'ai eu du mal niveau requete SQL: 
+- Je voulais juste fetch() au lieu de fetchAll().
+- fetch array -> [Objet, Objet, Objet] -> boucle -> prendre les données de chaque objet
+- type de retour sur le SQL
+J'ai déja mis une méthode delete/persist et autres choses alors que pas besoin.
+Niveau logique, j'étais bien. Mais au lieu d'ecrire du code, j'étais en train de copier coller comme un con. Alors que c'etait hyper facile.
+View : j'ai fait "ul" au lieu de "li", 1ere erreur 
+Controlleur : aucune erreur
+Model (Categories et ItemCategories): difficulté niveau transformation de la réponse SQL vers un array -> new Object
+
+J'avais la logique, j'ai plus struggle sur le PDO et création du retour
+
+Type de retour  | Signification                        | Exemple typique
+----------------|--------------------------------------|-----------------------
+void            | Action pure, pas de donnée à rendre. | delete(), set_name()
+static / self   | Renvoie l'objet modifié/créé.        | persist()
+array           | Renvoie une collection d'objets.     | get_all_categories()
+Object|false    | Renvoie un résultat unique ou rien.  | get_member_by_pseudo()
+
+Je pense que le reste va etre 10x mieux. J'ai plus codé PHP depuis ... longtemps. 
+
+### Partie C
+
+J'ai commencé à 20:00. Fini 22:00 (pas de js encore)
+
+La plus grosse difficulté était le controller->view. 
+Et comme un con je voulais stocker tout l'objet au lieu de l'id et envoyer (et je voulais stocker les noms comme un con aussi).
+J'ai du aussi chercher la methode in_array de PHP (J'ai utilisé l'IA car je savais que je dois avoir 2 boucles mais j'savais pas comment comparer 2 tableaux.).
+
+La modale terminé
+Regle facile, modale basique aussi
+Probleme avec 'input[name="categories\\[\\]"]' , sinon ok. Dur de debugger
+
+### Partie B
+
+
+
+

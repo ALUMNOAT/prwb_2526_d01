@@ -6,6 +6,7 @@ require_once "utils/NumberConverter.php";
 require_once 'utils/Image.php';
 require_once 'model/Bid.php';
 require_once 'utils/UrlDataEncoderDecoder.php';
+require_once "model/ItemCategories.php";
 
 class ControllerItem extends Controller
 {
@@ -86,6 +87,7 @@ class ControllerItem extends Controller
                 $main_pic = reset($picture); // Get first picture
             }
         }
+        $item_category = ItemCategories::get_categories_by_item($item);
 
         $bids = Bid::get_bids_for_item($item_id);
         $current_bid = $item_status->get_max_bid() ?? $item->get_starting_bid();
@@ -98,6 +100,7 @@ class ControllerItem extends Controller
             "bids" => $bids,
             "main_pic" => $main_pic,
             "pictures" => $picture,
+            "item_category" => $item_category,
             "errors" => [],
             "success" => "",
             "bid_path" => $this->bid_path($item, $main_pic),
@@ -193,6 +196,7 @@ class ControllerItem extends Controller
     {
         $member = $this->get_user_or_redirect_guess();
         $item = null;
+        $all_categories = Categories::get_all_categories();
         $errors = [];
 
         // If form submitted
@@ -218,6 +222,8 @@ class ControllerItem extends Controller
                 $buy_now_price = $sale_price;
             } 
 
+            $categories = isset($_POST['categories']) && is_array($_POST['categories']) ? $_POST['categories'] : [];
+
             $item = new Item(
                 null,
                 $title,
@@ -238,13 +244,18 @@ class ControllerItem extends Controller
                     $item->validate_date(),
                     $item->validate_prices($sale_price !== null),
                     $item->validate_description(),
-                    $item->validate_unicity()
+                    $item->validate_unicity(),
+                    ItemCategories::validate_categories_count($categories)
+                    
                 );
             }
 
             // If valid, persist and redirect
             if (empty($errors)) {
                 $item->persist();
+                foreach ($categories as $cat_id) {
+                    ItemCategories::persist($item->get_id(), (int)$cat_id);
+                }
                 $this->redirect("item", "show", $item->get_id());
             }
         }
@@ -253,6 +264,7 @@ class ControllerItem extends Controller
         (new View("add_edit_item"))->show([
             "member" => $member,
             "item" => $item,
+            "all_categories" => $all_categories,
             "errors" => $errors
         ]);
     }
@@ -274,6 +286,9 @@ class ControllerItem extends Controller
         if ($item_status->get_has_bids() || $item_status->has_sold()) {
             $this->redirect("item", "show", $item->get_id());
         }
+
+        $all_categories = Categories::get_all_categories();
+        $item_category = ItemCategories::get_categories_by_item($item);
 
         // If form submitted
         if (!empty($_POST)) {
@@ -298,6 +313,8 @@ class ControllerItem extends Controller
                 $buy_now_price = $sale_price;
             }
 
+            $categories = isset($_POST['categories']) && is_array($_POST['categories']) ? $_POST['categories'] : [];
+
             // set the modified values
             $item->set_title($title);
             $item->set_description($description);
@@ -313,13 +330,18 @@ class ControllerItem extends Controller
                     $item->validate_description(),
                     $item->validate_date(),
                     $item->validate_prices($sale_price !== null),
-                    $item->validate_unicity()
+                    $item->validate_unicity(),
+                    ItemCategories::validate_categories_count($categories)
                 );
             }
 
             // If valid, persist and redirect
             if (empty($errors)) {
                 $item->persist();
+                ItemCategories::delete_categories_for_item($item);
+                foreach ($categories as $cat_id) {
+                    ItemCategories::persist($item->get_id(), (int)$cat_id);
+                }
                 $this->redirect("item", "show", $item->get_id());
             }
         }
@@ -328,6 +350,8 @@ class ControllerItem extends Controller
         (new View("add_edit_item"))->show([
             "member" => $member,
             "item" => $item,
+            "all_categories" => $all_categories,
+            "item_category" => $item_category,
             "errors" => $errors
         ]);
     }
@@ -666,6 +690,7 @@ class ControllerItem extends Controller
         $starting_bid = $_POST['starting_bid'] === '' ? null : (float)$_POST['starting_bid'];
         $buy_now_price = $_POST['buy_now_price'] === '' ? null : (float)$_POST['buy_now_price'];
         $sale_price = $_POST['sale_price'] === '' ? null : (float)$_POST['sale_price'];
+        $categories = isset($_POST['categories']) && is_array($_POST['categories']) ? $_POST['categories'] : [];
 
         // On crée l'item
         $item = new Item(
@@ -687,7 +712,8 @@ class ControllerItem extends Controller
             $item->validate_description(),
             $item->validate_date(),
             $item->validate_prices($sale_price !== null),
-            $item->validate_unicity()
+            $item->validate_unicity(),
+            ItemCategories::validate_categories_count($categories)
         );
 
         /* // On renvoie le tableau complet
@@ -719,7 +745,8 @@ class ControllerItem extends Controller
                 "title_min_length" => Configuration::get("title_min_length", 3),
                 "title_max_length" => Configuration::get("title_max_length", 255),
                 "description_min_length" => Configuration::get("description_min_length", 3),
-                "description_max_length" => Configuration::get("description_max_length", 10000)
+                "description_max_length" => Configuration::get("description_max_length", 10000),
+                "category_per_item_max_count" => Configuration::get("category_per_item_max_count", 3)
             ],
             JSON_PRETTY_PRINT
         );
@@ -735,8 +762,8 @@ class ControllerItem extends Controller
         $encoded_data = $_GET['param1'];
         $decoded_data = UrlDataEncoderDecoder::url_safe_decode($encoded_data);
 
-        $answer = explode("|", $decoded_data, 2);
-        $answer = ["field" => $answer[0], "search_value" => $answer[1]];        
+        $answer = explode("|", $decoded_data, 3);
+        $answer = ["field" => $answer[0], "search_value" => $answer[1], "category" => $answer[2]];        
 
         echo json_encode(["response" => $answer]);
     }

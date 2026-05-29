@@ -9,9 +9,15 @@ doc: https://stackoverflow.com/questions/22545325/how-to-vertically-align-text-w
  * @var Item $item
  * @var ItemStatus $item_status 
  */
+
+$categories = ItemCategories::get_categories_by_item($item);
+
+$categoryNames = array_map(fn($cat) => $cat->get_name(), $categories);
+
+$categoriesString = implode(', ', $categoryNames);
 ?>
 
-<div class="card" data-description="<?= Tools::sanitize($item->get_description()) ?>">
+<div class="card" data-description="<?= Tools::sanitize($item->get_description()) ?>" data-categories="<?= Tools::sanitize($categoriesString) ?>">
     <!-- CLICKABLE LINK -->
     <a href="item/show/<?= $item->get_id() ?>">
         <span class="link-card"></span>

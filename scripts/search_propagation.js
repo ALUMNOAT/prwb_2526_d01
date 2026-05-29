@@ -1,4 +1,4 @@
-let search_bar, search_field, search_value, field_value, encoded_value, card_link;
+let search_bar, search_field, search_value, field_value, category_field, category_value, encoded_value, card_link;
 
 $(document).ready(async function() {
     await set_variables();
@@ -10,6 +10,7 @@ async function set_variables() {
     //https://stackoverflow.com/questions/13343566/set-select-option-selected-by-value
     search_bar = $("#fulltext-search");
     search_field = $("#search-field");
+    category_field = $("#category-field");
 
     let pathname = $(location).attr("href");
     let last_param = pathname.split("/").pop();
@@ -24,6 +25,8 @@ async function set_variables() {
 
         } else {
             search_bar.val(search_value);
+            search_field.val(field_value);
+            category_field.val(category_value);
             search_field.children().each(function() {
                 let option = $(this);
                 if(option.val().toLowerCase() == field_value)
@@ -48,6 +51,11 @@ async function set_events() {
         set_encoded_value();
     });
 
+    await category_field.on("change", function () {
+        category_value = category_field.val();
+        set_encoded_value();
+    });
+
     $(".card > a").on("click", function() {
         if(typeof encoded_value !== "undefined" && search_value !== "") {
             $(this).attr("href", $(this).attr("href") + "/1/" + encoded_value);
@@ -57,7 +65,7 @@ async function set_events() {
 
 async function set_encoded_value() {
     //https://api.jquery.com/text/#:~:text=To%20set%20or%20get%20the,html()%20method.
-    let data_to_encode = field_value + "|" + search_value;
+    let data_to_encode = field_value + "|" + search_value + "|" + category_value;
 
     $.post("item/url_safe_encode_service/", {search: data_to_encode},
         function (data, textStatus, jqXHR) {
@@ -72,7 +80,8 @@ async function get_decoded_values(encoded_value) {
         function (data) {
             search_value = data.response.search_value.trim();
             field_value = data.response.field;
-            console.log(field_value + "    " + search_value)
+            category_value = data.response.category;
+            console.log(field_value + "    " + search_value + "    " + category_value)
         },
         "json"
     );
