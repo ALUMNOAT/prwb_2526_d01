@@ -43,6 +43,33 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
 </head>
 
 <body>
+    <div class="search-bar only-js">
+
+    <!-- Champ texte où l'utilisateur tape sa recherche -->
+      <input type="text" id="fulltext-search" placeholder="Search..." autocomplete="off">
+
+      <!-- Menu déroulant pour choisir sur quel champ filtrer -->
+      <select id="search-field">
+        <option value="all">All</option>
+        <option value="title">Title</option>
+        <option value="owner">Owner</option>
+        <option value="description">Description</option>
+      </select>
+
+      <?php 
+      $allCategories = Categories::get_all_categories();
+      ?>
+      <!-- Menu déroulant pour les catégories -->
+      <select id="category-field">
+        <option value="all">All Categories</option>
+        <?php foreach ($allCategories as $categoryName) : 
+            $name = $categoryName->get_name()?>
+            <option value="<?= $name ?>"><?= $name ?></option>
+        <?php endforeach ?>
+      </select> 
+
+    </div>
+    
     <div class='content'>
         <!-- ACTIVE ITEMS -->
         <?php if (!empty($active_items)): ?>
@@ -88,6 +115,9 @@ doc: https://www.w3schools.com/css/css3_pagination.asp
 
     <!-- NAVBAR MENU -->
     <?php require 'menu.php' ?>
+
+    <!-- On ajoute la classe js-enabled au body, comme ca pas besoin de s'amuser a changer chaque bouton -->
+    <script>document.body.classList.add('js-enabled');</script>
 
 </body>
 

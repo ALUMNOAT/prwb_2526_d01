@@ -739,8 +739,8 @@ class ControllerItem extends Controller
         $encoded_data = $_GET['param1'];
         $decoded_data = UrlDataEncoderDecoder::url_safe_decode($encoded_data);
 
-        $answer = explode("|", $decoded_data, 2);
-        $answer = ["field" => $answer[0], "search_value" => $answer[1]];        
+        $answer = explode("|", $decoded_data, 3);
+        $answer = ["field" => $answer[0], "search_value" => $answer[1], "category" => $answer[2]];        
 
         echo json_encode(["response" => $answer]);
     }

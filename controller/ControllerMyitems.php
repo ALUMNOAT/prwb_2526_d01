@@ -3,6 +3,7 @@ require_once "framework/Controller.php";
 require_once "model/Item.php";
 require_once "model/ItemStatus.php";
 require_once "utils/NumberConverter.php";
+require_once "model/ItemCategories.php";
 
 
 class ControllerMyitems extends Controller {
