@@ -201,6 +201,28 @@ class ControllerCategory extends Controller
         exit; // On tue le script ici, point barre. Pas de HTML, pas de redirection.
     }
 
+    public function add_service(): void{
+        
+        // On récupère le nom
+        $name = trim($_POST["new_category"] ?? "");
+
+        if (empty($name) || strlen($name) < 3) {
+            echo json_encode(['status' => 'error']);
+            exit;
+        } 
+
+        $newCat = new Categories(null, $name, 1000);
+        $newCat->persist();
+
+        echo json_encode([
+            'status' => 'success',
+            'id' => $newCat->get_id(),
+            'name' => $newCat->get_name(),
+            'priority' => $newCat->get_priority()
+        ]);
+        exit;
+    }
+
     private function get_admin_or_redirect(bool $guest_pass = false): Member
     {
         /** @var Member $user */
