@@ -221,6 +221,8 @@
     <script src="scripts/validations_manage_categories.js" type="text/javascript"></script>
     <!-- Script de la modale en Delete -->
     <script src="scripts/categories_delete_modal.js" type="text/javascript"></script>
+    <!-- Script de l'ajout d'une catégorie -->
+    <script src="scripts/add_category_ajax.js" type="text/javascript"></script>
 
     </body>
 </html>
