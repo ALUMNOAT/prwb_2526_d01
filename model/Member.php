@@ -569,6 +569,35 @@ class Member extends Model {
         return $users;
     }
 
+    public static function get_users_using_category(int $id_cat): array {
+        $query = self::execute(
+            "SELECT distinct users.*
+            FROM users
+            left join items on users.id = items.owner
+            Left join item_categories on item_categories.item = items.id
+            where item_categories.category = :id",
+            ["id" => $id_cat]
+        );
+
+        $data = $query->fetchAll();
+        $results = [];
+        foreach ($data as $row) {
+            $results[$row["id"]] = new Member(
+                $row["id"],
+                $row["full_name"],
+                $row["email"],
+                $row['pseudo'],
+                $row['password'],
+                Role::from($row['role']),
+                $row['picture_path'],
+                $row['iban']
+            );
+        }
+
+        return $results;
+
+    }
+
     public function get_my_bids(): array {
         /*
         doc: https://www.interviewquery.com/p/sql-max-case-when

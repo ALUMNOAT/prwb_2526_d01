@@ -275,6 +275,26 @@ class Item extends Model implements JsonSerializable {
         );
     }
 
+    public static function items_having_category(int $cat_id, int $user_id): array {
+        $query = self::execute(
+            "SELECT items.*
+            FROM items
+            Left join item_categories on item_categories.item = items.id
+            where items.owner = :user_id AND item_categories.category = :cat_id",
+            ['user_id' => $user_id,
+            'cat_id' => $cat_id]
+        );
+
+        $data = $query->fetchAll();
+        $results=[];
+        foreach ($data as $row) {
+            $results[$row["id"]] = $row["title"];
+        }
+        
+        return $results;
+
+    }
+
     public static function get_items(array $ids): array {
         $items = [];
 
