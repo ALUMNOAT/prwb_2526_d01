@@ -54,6 +54,11 @@ class ControllerExam extends Controller
         exit;
     }
 
+    public function delete_category_of_an_item_service(): void {
+        $this->get_admin_or_redirect();
+        $selected_category_id = $_GET["param1"] ?? 0;
+    }
+
     private function get_admin_or_redirect(bool $guest_pass = false): Member
     {
         /** @var Member $user */

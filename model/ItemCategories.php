@@ -51,6 +51,14 @@ class ItemCategories extends Model {
         );
     }
 
+    public static function delete_category_of_an_item(int $item_id, int $category_id): void {
+        self::execute(
+            "DELETE FROM item_categories WHERE item = :item_id AND category = :category_id",
+            ["item_id" => $item_id,
+            "category_id" => $category_id]
+        );
+    }
+
     public static function persist(int $item_id, int $category_id): void {
         self::execute(
             "INSERT INTO item_categories (item, category) VALUES (:item_id, :category_id)",
