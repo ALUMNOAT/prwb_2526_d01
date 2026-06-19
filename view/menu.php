@@ -43,6 +43,13 @@
             </a>
         </li>
 
+        <li>
+            <a href="exam">
+                <span class="material-symbols-outlined size-40">exam</span>
+                <br>Exam
+            </a>
+        </li>
+
         
     <!-- USER -->
     <?php elseif (!$user->is_guest()): ?>
