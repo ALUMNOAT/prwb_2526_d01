@@ -18,6 +18,7 @@ class ControllerExam extends Controller
         $this->get_admin_or_redirect();
         $categories = Categories::get_all_categories();
         $selected_category = $_GET["param1"] ?? 0;
+        $errors = [];
 
         if (isset($selected_category)) {
             $users = Member::get_users_using_category($selected_category);
@@ -33,8 +34,11 @@ class ControllerExam extends Controller
     public function selected_category_post(): void {
         $this->get_admin_or_redirect();
         $selected_category_post = $_POST["category_selected"];
+        $errors = [];
 
-        $this->redirect("exam", "index", $selected_category_post);
+        if (empty($errors)) {
+            $this->redirect("exam", "index", $selected_category_post);
+        }
     }
 
     public function user_get_items_category_service(): void {
@@ -56,7 +60,27 @@ class ControllerExam extends Controller
 
     public function delete_category_of_an_item_service(): void {
         $this->get_admin_or_redirect();
-        $selected_category_id = $_GET["param1"] ?? 0;
+
+        $json_data = file_get_contents('php://input');
+
+        $data = json_decode($json_data, true);
+
+        $selected_category_id = $data["cat_id"] ?? 0;
+        $selected_items_id = $data["items_id"] ?? null;
+
+        foreach ($selected_items_id as $id) {
+            ItemCategories::delete_category_of_an_item($id, $selected_category_id);
+        }
+
+        header('Content-Type: application/json');
+
+        echo json_encode([
+            'status' => 'success',
+            'cat_id' => $selected_category_id,
+            'items_id' => $selected_items_id
+        ]);
+
+        exit;
     }
 
     private function get_admin_or_redirect(bool $guest_pass = false): Member

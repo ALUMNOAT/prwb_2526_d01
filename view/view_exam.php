@@ -106,29 +106,22 @@
                 }
             }
 
-            /* https://stackoverflow.com/questions/19650108/how-to-delete-a-check-box-using-javascript */
+            /* https://stackoverflow.com/questions/19650108/how-to-delete-a-check-box-using-javascript 
+            source d'inspi + retravail */
             function deletecheckedboxes() {
-                var rmvBtn = document.getElementById('remove-btn');
+                let checkedBoxes = document.querySelectorAll('input[name="items[]"]:checked');
 
-                rmvBtn.addEventListener('click', function() {
-                var rmvCheckBoxes = document.getElementsByName('items[]');
+                checkedBoxes.forEach((checkbox) => {
+                    checkbox.parentElement.remove();
+                });
 
-                for(var i = 0; i <= rmvCheckBoxes.length; i++) {
-                    if(rmvCheckBoxes[i].checked) {
-                        removeElm(rmvCheckBoxes[i]);   
-                    }
-                }  
-            });
-
-            function removeElm(elm) {
-                elm.parentElement.remove(elm);
+                updateButton();
             }
-        }
 
 
             function updateButton() {
                 let bouton = document.getElementById("remove-btn");
-                let estcoché = document.querySelector('input[name="items[]"]');
+                let estcoché = document.querySelectorAll('input[name="items[]"]:checked').length > 0;
 
                 bouton.disabled = !estcoché;
             }
@@ -145,16 +138,50 @@
                 Object.entries(items).forEach(([id, title]) => {
                     html += `
                         <div>
-                            <input type="checkbox" name="items[]" onclick="updateButton(), deletecheckedboxes()" value="${id}">
+                            <input type="checkbox" name="items[]" onclick="updateButton()" value="${id}">
                             ${title}
                         </div>`;
                 });
 
 
-
-                html += `<button type="button" id="remove-btn" disabled>Remove category</button>`;
+                html += `<button type="button" id="remove-btn" onclick="delete_category_of_an_item()" disabled>Remove category</button>`;
 
                 item_container.insertAdjacentHTML('afterbegin', html);
+            }
+
+            async function delete_category_of_an_item() {
+                let cat_id = get_category_id();
+                let items_list_html = document.querySelectorAll('input[name="items[]"]');
+                let items_list = [];
+
+                items_list_html.forEach((elem) => {
+                   let id = elem.value;
+                   items_list.push(id);
+                });
+
+                console.log(cat_id);
+                console.log(items_list);
+
+                try {
+                    const response = await fetch("exam/delete_category_of_an_item_service/",
+                    {
+                        method: "POST",
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ 
+                            cat_id : cat_id,
+                            items_id : items_list})
+                    }
+                );
+
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        deletecheckedboxes();
+                        
+                        console.log("A été supprimé");
+                    }
+                } catch (error) {
+                    console.error("Erreur lors du post :", error);
+                }
             }
 
             function launch() {
