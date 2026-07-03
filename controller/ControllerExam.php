@@ -27,7 +27,8 @@ class ControllerExam extends Controller
         (new View("exam"))->show(
             ["categories" => $categories,
             "selected_category" => $selected_category,
-            "users" => $users]
+            "users" => $users,
+            "errors" => $errors]
         );
     }
 
